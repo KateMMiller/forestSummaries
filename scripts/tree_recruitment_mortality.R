@@ -55,18 +55,18 @@ Exotic_spp <- c('Acer platanoides', 'Aesculus hippocastanum', 'Ailanthus altissi
                 'Rhamnus cathartica', 'Salix alba')
 
 tree_mr <- tree_mr %>% 
-  mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                             ScientificName %in% Betula ~ "BETSPP",
-                             ScientificName %in% Carya ~ "CARSPP",
-                             ScientificName %in% Fraxinus ~ "FRASPP",
-                             ScientificName %in% Pinus ~ "PINSPP",
-                             ScientificName %in% Populus ~ "POPSPP",
-                             ScientificName %in% Prunus ~ "PRUSPP",
-                             ScientificName %in% Quercus ~ "QUESPP",
-                             ScientificName %in% Ulmus ~ "ULMSPP",
-                             ScientificName %in% Other_Native ~ "OTHNAT",
-                             ScientificName %in% Exotic_spp ~ "EXOTIC",
-                             ScientificName %in% Subcanopy ~ "SUBCAN",
+  mutate(spp_grp = case_when(ScientificName %in% Acer ~ "Acer spp. (maple)",
+                             ScientificName %in% Betula ~ "Betula spp. (birch)",
+                             ScientificName %in% Carya ~ "Carya spp. (hickory)",
+                             ScientificName %in% Fraxinus ~ "Fraxinus spp. (ash)",
+                             ScientificName %in% Pinus ~ "Pinus spp. (pine)",
+                             ScientificName %in% Populus ~ "Populus spp. (poplar)",
+                             ScientificName %in% Prunus ~ "Prunus spp. (cherry)",
+                             ScientificName %in% Quercus ~ "Quercus spp. (oak)",
+                             ScientificName %in% Ulmus ~ "Ulmus spp. (elm)",
+                             ScientificName %in% Other_Native ~ "Other Native spp.",
+                             ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
+                             ScientificName %in% Subcanopy ~ "Subcanopy spp.",
                              TRUE ~ toupper(paste0(
                                substr(word(ScientificName, 1), 1, 3), 
                                substr(word(ScientificName, 2), 1, 3))))) 
