@@ -45,6 +45,8 @@ reg_cycle <- reg %>% group_by(Plot_Name, cycle) %>%
                                  names_prefix = "cycle_", values_fill = 0) %>% 
                      rename(X = xCoordinate, Y = yCoordinate) #abbr for shapefile
 
+max(reg_cycle[,4:ncol(reg_cycle)])
+
 write_to_shp(reg_cycle, 
              shp_name = paste0(new_path, "shapefiles/", park, "_regen_by_cycle_", to, ".shp" ))
 
@@ -226,7 +228,7 @@ Acer <- c('Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer negundo')
 Betula <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
-Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pensylvanica')
+Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica')
 Pinus <- c("Pinus resinosa", "Pinus strobus", "Pinus")
 Populus <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
 Prunus <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')

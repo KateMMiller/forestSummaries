@@ -1,5 +1,5 @@
 #---- Figure 2 Recruitment and Mortality ----
-library(gridExtra)
+library(grid)
 tree_mr <- do.call(joinTreeData, args = args_vs)
 # tree_mr <- joinTreeData(park = c("MABI", "MIMA", "MORR", "ROVA", "SAGA", "SARA", "WEFA"))
 
@@ -19,7 +19,8 @@ tree_mr <- tree_mr %>% mutate(status = case_when(TreeStatusCode %in% alive_stat 
                               stems = 1) %>%
   select(Plot_Name, ParkUnit, TagCode, PanelCode, cycle, ScientificName, 
          status, DBHcm, stems, BA_m2ha) %>%
-  arrange(Plot_Name, cycle)
+  arrange(Plot_Name, cycle) %>% 
+  left_join(., prepTaxa() %>% select(ScientificName, CommonName), by = "ScientificName")
 
 head(tree_mr)
 
@@ -29,7 +30,7 @@ Acer <- c('Acer', 'Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer neg
 Betula <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
-Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pensylvanica')
+Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica')
 Pinus <- c("Pinus resinosa", "Pinus strobus", "Pinus")
 Populus <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
 Prunus <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')
@@ -67,9 +68,10 @@ tree_mr <- tree_mr %>%
                              ScientificName %in% Other_Native ~ "Other Native spp.",
                              ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
                              ScientificName %in% Subcanopy ~ "Subcanopy spp.",
-                             TRUE ~ toupper(paste0(
-                               substr(word(ScientificName, 1), 1, 3), 
-                               substr(word(ScientificName, 2), 1, 3))))) 
+                             TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
+                             # TRUE ~ toupper(paste0(
+                             #   substr(word(ScientificName, 1), 1, 3), 
+                             #   substr(word(ScientificName, 2), 1, 3))))) 
 head(tree_mr)
 
 tree_mr$stems[tree_mr$status == "exclude"] <- -999
@@ -318,37 +320,6 @@ head(mor_rec_spp_long)
 
 BA_max = max(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "BA"]), na.rm = T)
 
-p1 <- ggplot(mor_rec_spp_long %>% filter(unit_type == "BA" & rate_type == 'recr'), 
-       aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
-       geom_bar(stat = 'identity', color = 'DimGrey', position = 'dodge', width = 5)+
-       coord_flip() +  
-       scale_x_discrete(limits = rev(sort(mor_rec_spp_long$spp_grp))) +
-       theme_FHM()+ labs(x = NULL) + 
-       theme(legend.position = 'bottom', 
-             axis.text.y = element_blank(), 
-             axis.ticks.y = element_blank(),
-             plot.margin = unit(c(0, 0, 0, 0), "cm")) +
-       ylim(0, round(BA_max, digits = 0)) +
-       scale_fill_manual(values = c("2" = "#AECBBA", 
-                                    "3" = "#79A98E", 
-                                    "4" = "#537A64"),
-                         name = 'Recruitment by cycle')
-
-p2 <- ggplot(mor_rec_spp_long %>% filter(unit_type == "BA" & rate_type == 'mort'), 
-       aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
-       geom_bar(stat = 'identity', color = 'DimGrey', position = 'dodge', width = 5)+
-       coord_flip() + 
-       geom_hline(aes(yintercept = 0))+
-       scale_x_discrete(limits = rev(sort(mor_rec_spp_long$spp_grp))) +
-       theme_FHM()+ labs(x = NULL) +
-       theme(legend.position = 'bottom', 
-             plot.margin = unit(c(0, 0, 0, 0), 'cm')) +
-       ylim(round(-BA_max, digits = 0), 0) +
-       scale_fill_manual(values = c("2" = "#F19898", 
-                                    "3" = "#CD5C5C", 
-                                    "4" = "#7F3D3D"), 
-                         name = 'Mortality by cycle')
-
 # For ggplot order
 mor_rec_spp_long$met_fac <- factor(mor_rec_spp_long$metric, 
                                    levels = c(
@@ -365,37 +336,73 @@ mor_rec_spp_long$met_fac <- factor(mor_rec_spp_long$metric,
                                      "c2_3_mort_stem", 
                                      "c1_2_mort_stem" 
                                    ))
+mor_rec_spp_nz <- mor_rec_spp_long %>% group_by(spp_grp) %>% 
+  mutate(nonzero = sum(rate != 0)) %>% filter(nonzero > 0) %>% 
+  droplevels()
 
-p <- ggplot(mor_rec_spp_long %>% filter(unit_type == "BA"), 
-             aes(x = spp_grp, y = rate, group = met_fac, fill = met_fac))+ 
-       geom_bar(stat = 'identity', color = 'DimGrey', position = 'dodge', width = 10)+
-       coord_flip() +  
-       geom_hline(aes(yintercept = 0))+
-       scale_x_discrete(limits = rev(sort(mor_rec_spp_long$spp_grp))) +
-       theme_FHM()+ labs(x = NULL, y = "Rate (%BA/year)") + 
-       theme(legend.position = 'bottom') + 
-       ylim(-round(BA_max, digits = 0), round(BA_max, digits = 0)) +
-       scale_fill_manual(values = c(
-                                    "c1_2_mort_BA" = "#F19898", 
-                                    "c2_3_mort_BA" = "#CD5C5C", 
-                                    "c3_4_mort_BA" = "#7F3D3D",
-                                    "c1_2_recr_BA" = "#AECBBA",
-                                    "c2_3_recr_BA" = "#79A98E", 
-                                    "c3_4_recr_BA" = "#537A64"
-                                    ),
-                         labels = c(
-                                    "Mortality cycle 1 \U2013 2",
-                                    "Mortality cycle 2 \U2013 3",
-                                    "Mortality cycle 3 \U2013 4",
-                                    "Recruitment cycle 1 \U2013 2",
-                                    "Recruitment cycle 2 \U2013 3", 
-                                    "Recruitment cycle 3 \U2013 4"
-                                    ),
-                         name = NULL)+
-      guides(fill = guide_legend(ncol = 2))
+head(mor_rec_spp_nz)
 
-p
+p1 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'recr'), 
+             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
+  geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
+  coord_flip() +  
+  scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
+  scale_y_continuous(limits = c(0, round(BA_max, digits = 0)), 
+                     breaks = c(1, 2, 3)) +
+  theme_FHM()+ labs(x = NULL) + 
+  theme(legend.position = 'bottom',
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        plot.margin=unit(c(t=0.5,r=0.75,b=2,l=-0.87),"cm"),
+        axis.text.y = element_blank(),
+        axis.line.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  scale_fill_manual(values = c("2" = "#AECBBA", 
+                               "3" = "#79A98E", 
+                               "4" = "#537A64"),
+                    labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
+                    name = 'Recruitment by cycle')
 
+p1
+p2 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'mort'), 
+             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
+  geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
+  coord_flip() + 
+  geom_hline(aes(yintercept = 0))+
+  scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
+  theme_FHM()+ labs(x = NULL) +
+  theme(legend.position = 'bottom', 
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        plot.margin=unit(c(t=0.5,r=0,b=2,l=0),"cm"))+
+  #ylim(round(-BA_max, digits = 0), 0) +
+  scale_fill_manual(values = c("2" = "#F19898", 
+                               "3" = "#CD5C5C", 
+                               "4" = "#7F3D3D"),
+                    labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
+                    name = 'Mortality by cycle')+
+  scale_y_continuous(limits = c(-round(BA_max, digits = 0),0), 
+                     breaks = c(0, -1.0, -2.0, -3.0))
+
+fig_layout = grid.layout(nrow = 1, ncol = 2, 
+                         respect = TRUE,
+                         heights = unit(c(6, 6), c('in', 'in')),
+                         widths = unit(c(5.5, 3.25), c('in', 'in')))
+
+fig_vp <- viewport(name = "fig_vp", layout = fig_layout,
+                   width = unit(8, 'in'), height = unit(6, 'in'))
+
+
+svg(paste0(new_path, "figures/", "Figure_2_", park, "_treeBA_by_species_cycle.svg"),
+    height = 6, width = 9)
+
+grid.newpage()
+pushViewport(fig_vp)
+print(p2, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(p1, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+popViewport()
+
+dev.off()
 
 # Park level averaging by cycle
 head(mor_rec2)
