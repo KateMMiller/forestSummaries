@@ -337,50 +337,8 @@ dbi <- left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordin
 write_to_shp(dbi, shp_name = 
          paste0(new_path, "shapefiles/", park, "_dbi_cycle_", cycle_latest, ".shp"))
 
-#---- Map 7 Tree Pests/Diseases ----
-# First compile plot-level disturbances that may include priority pests/pathogens
-disturb <- do.call(joinStandDisturbance, args = args_4yr) %>% 
-  filter(DisturbanceLabel != "None") %>% 
-  mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
-                          grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
-                          grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
-                          grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
-                                DisturbanceNote) ~ "HWA",
-                          grepl("BBD|beech bark disease|Beech bark disease", DisturbanceNote) ~ "BBD",
-                          TRUE ~ NA_character_
-         )) %>% filter(!is.na(pest)) %>% 
-  select(Plot_Name, pest) %>% unique()
-  #mutate(detect = 'plot_dist')
 
-# Next compile pest/pathogens from Tree Conditions
-treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live'))
-
-pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
-           "SB", "SLF", "SOD", "SPB", "SW")
-
-treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>% 
-  group_by(Plot_Name) %>% summarize(across(all_of(pests), ~ifelse(sum(.x) > 0, 1, 0))) %>% 
-  #mutate(detect = rowSums(.[, pests])) %>% 
-  pivot_longer(all_of(pests), names_to = "pest", values_to = 'tree_cond') %>% 
-  filter(tree_cond > 0) %>% 
-  arrange(Plot_Name) %>% unique() %>% select(Plot_Name, pest)
-
-# Combine detections to 1 shapefile
-pest_detects <- rbind(treepests, disturb) %>% 
-  left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
-            ., by = "Plot_Name") %>% 
-  select(Plot_Name, X, Y, everything()) %>% unique() %>%  
-  mutate(pest = replace_na(pest, "None"),
-         detect = ifelse(pest == "None", 0, 1))
-
-pests_wide <- pest_detects %>% 
-  pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
-  select(-None)
-
-write_to_shp(pests_wide, shp_name = 
-         paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
-
-#---- Map 8 Invasive % Cover by Cycle ----
+#---- Map 7 Invasive % Cover by Cycle ----
 invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive')) %>% 
   select(Plot_Name, cycle, ScientificName, quad_avg_cov) %>% 
   group_by(Plot_Name, cycle) %>% summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% 
@@ -388,10 +346,12 @@ invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive'))
             ., by = c("Plot_Name", "cycle")) %>% 
   mutate(quad_cov = replace_na(quad_cov, 0))
 
-write_to_shp(invcov, shp_name = 
+invcov_wide <- invcov %>% pivot_wider(names_from = cycle, values_from = quad_cov)
+
+write_to_shp(invcov_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_cycle.shp"))
 
-#---- Map 9 Invasive % Cover by Species ----
+#---- Map 8 Invasive % Cover by Species ----
 # Lump some species in the same genus
 invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive') %>% 
   select(ScientificName) %>% unique() %>% arrange(ScientificName)
@@ -459,6 +419,58 @@ invspp <- invspp1 %>%
 
 write_to_shp(invspp, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_species.shp"))
+
+#---- Map 9 Tree Pests/Diseases ----
+# First compile plot-level disturbances that may include priority pests/pathogens
+disturb <- do.call(joinStandDisturbance, args = args_4yr) %>% 
+  filter(DisturbanceLabel != "None") %>% 
+  mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
+                          grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
+                          grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
+                          grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
+                                DisturbanceNote) ~ "HWA",
+                          grepl("BBD|beech bark disease|Beech bark disease", DisturbanceNote) ~ "BBD",
+                          TRUE ~ NA_character_
+  )) %>% filter(!is.na(pest)) %>% 
+  select(Plot_Name, pest) %>% unique()
+#mutate(detect = 'plot_dist')
+
+# Next compile pest/pathogens from Tree Conditions
+treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live'))
+
+pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
+           "SB", "SLF", "SOD", "SPB", "SW")
+
+treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>% 
+  group_by(Plot_Name) %>% summarize(across(all_of(pests), ~ifelse(sum(.x) > 0, 1, 0))) %>% 
+  #mutate(detect = rowSums(.[, pests])) %>% 
+  pivot_longer(all_of(pests), names_to = "pest", values_to = 'tree_cond') %>% 
+  filter(tree_cond > 0) %>% 
+  arrange(Plot_Name) %>% unique() %>% select(Plot_Name, pest)
+
+# Combine detections to 1 shapefile
+pest_detects <- rbind(treepests, disturb) %>% 
+  left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
+            ., by = "Plot_Name") %>% 
+  select(Plot_Name, X, Y, everything()) %>% unique() %>%  
+  mutate(pest = replace_na(pest, "None"),
+         detect = ifelse(pest == "None", 0, 1))
+
+pests_wide <- pest_detects %>% 
+  pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
+  select(-None)
+
+write_to_shp(pests_wide, shp_name = 
+               paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
+
+
+#---- Map 10 Canopy Cover ----
+cancov <- do.call(joinStandData, args = args_all) %>% 
+  select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure)
+
+cancov_wide <- cancov %>% pivot_wider(names_from = cycle, values_from = CrownClos)
+
+write_to_shp(cancov_wide, shp_name = paste0(new_path, "shapefiles/", park, "_canopy_cover.shp"))
 
 #---- Table 2 Average Invasive cover by plot and cycle ----
 inv_plots <- do.call(sumSpeciesList, args = c(args_all, speciesType = "invasive")) %>% 
