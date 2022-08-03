@@ -20,17 +20,22 @@ reg <- do.call(joinRegenData,
                         canopyForm = 'canopy', units = 'sq.m'))
 
 
-reg_cycle_table <- reg %>% group_by(Plot_Name, SampleYear) %>% 
+reg_cycle_table <- reg %>% group_by(Plot_Name, cycle) %>% 
                            summarize(seed_den = round(sum(seed_den, na.rm = TRUE), 2),
                                      sap_den = round(sum(sap_den, na.rm = TRUE), 2),
                                      stock = round(sum(stock, na.rm = TRUE), 2), 
                                      .groups = 'drop') %>% 
                            left_join(plotevs %>% 
-                                       select(Plot_Name, SampleYear, Plot = PlotCode, Panel = PanelCode),
-                                     ., by = c("Plot_Name", "SampleYear"))
+                                       select(Plot_Name, cycle, Plot = PlotCode, Panel = PanelCode),
+                                     ., by = c("Plot_Name", "cycle"))
 
 reg_cols <- c("seed_den", "sap_den", "stock")
 reg_cycle_table[, reg_cols][is.na(reg_cycle_table[, reg_cols])] <- 0 
+
+reg_cycle_wide <- reg_cycle_table %>% 
+  pivot_wider(names_from = cycle, values_from = c(seed_den, sap_den, stock))
+
+head(reg_cycle_wide)
 
 write.csv(reg_cycle_table, 
           paste0(new_path, "tables/", "Table_1_", park, "_regen_by_cycle.csv"), row.names = FALSE)
