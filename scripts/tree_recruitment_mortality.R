@@ -97,7 +97,8 @@ trees_wide <- tree_mr %>% pivot_wider(names_from = c(cycle, status),
 
 # Next steps are if a combination of status and cycle aren't represented
 new_names <- c(full_names[!full_names %in% names(trees_wide)])
-new_df <- as_tibble(matrix(rep(0, nrow(trees_wide) * length(new_names)), nrow = nrow(trees_wide), ncol = length(new_names)), 
+new_df <- as_tibble(matrix(rep(0, nrow(trees_wide) * length(new_names)), 
+                           nrow = nrow(trees_wide), ncol = length(new_names)), 
                     .name_repair = ~ new_names)
 
 head(new_df)
@@ -319,6 +320,7 @@ mor_rec_spp_long <- mor_rec_spp %>%
 head(mor_rec_spp_long)
 
 BA_max = max(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "BA"]), na.rm = T)
+stem_max = max(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "stem"]), na.rm = T)
 
 # For ggplot order
 mor_rec_spp_long$met_fac <- factor(mor_rec_spp_long$metric, 
@@ -342,13 +344,14 @@ mor_rec_spp_nz <- mor_rec_spp_long %>% group_by(spp_grp) %>%
 
 head(mor_rec_spp_nz)
 
+# Basal Area plots
 p1 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'recr'), 
              aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
   geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
   coord_flip() +  
   scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
   scale_y_continuous(limits = c(0, round(BA_max, digits = 0)), 
-                     breaks = c(1, 2, 3)) +
+                     breaks = c(1, 2, 3), name = "Annual Recruitment (% Basal Area)") +
   theme_FHM()+ labs(x = NULL) + 
   theme(legend.position = 'bottom',
         panel.border = element_blank(),
@@ -357,13 +360,12 @@ p1 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'recr'),
         axis.text.y = element_blank(),
         axis.line.y = element_blank(),
         axis.ticks.y = element_blank()) +
-  scale_fill_manual(values = c("2" = "#AECBBA", 
+  scale_fill_manual(values = c("2" = "#CAD7D0", 
                                "3" = "#79A98E", 
-                               "4" = "#537A64"),
+                               "4" = "#4D6A5A"),
                     labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
-                    name = 'Recruitment by cycle')
+                    name = 'Recr. by cycle')
 
-p1
 p2 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'mort'), 
              aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
   geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
@@ -376,13 +378,14 @@ p2 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'mort'),
         panel.background = element_blank(),
         plot.margin=unit(c(t=0.5,r=0,b=2,l=0),"cm"))+
   #ylim(round(-BA_max, digits = 0), 0) +
-  scale_fill_manual(values = c("2" = "#F19898", 
+  scale_fill_manual(values = c("2" = "#F5BBBB", 
                                "3" = "#CD5C5C", 
-                               "4" = "#7F3D3D"),
+                               "4" = "#6E3838"),
                     labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
-                    name = 'Mortality by cycle')+
+                    name = 'Mort. by cycle')+
   scale_y_continuous(limits = c(-round(BA_max, digits = 0),0), 
-                     breaks = c(0, -1.0, -2.0, -3.0))
+                     breaks = c(0, -1.0, -2.0, -3.0), 
+                     name = "Annual Mortality (% Basal Area)")
 
 fig_layout = grid.layout(nrow = 1, ncol = 2, 
                          respect = TRUE,
@@ -394,12 +397,76 @@ fig_vp <- viewport(name = "fig_vp", layout = fig_layout,
 
 
 svg(paste0(new_path, "figures/", "Figure_2_", park, "_treeBA_by_species_cycle.svg"),
-    height = 6, width = 9)
+    height = 5, width = 9.5)
 
 grid.newpage()
 pushViewport(fig_vp)
 print(p2, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
 print(p1, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
+popViewport()
+
+dev.off()
+
+# Stem plots
+p1s <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "stem" & rate_type == 'recr'), 
+             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
+  geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
+  coord_flip() +  
+  scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
+  scale_y_continuous(limits = c(0, round(stem_max, digits = 0)), 
+                     breaks = c(1, 2, 3), name = "Annual Recruitment (% stems)") +
+  theme_FHM()+ labs(x = NULL) + 
+  theme(legend.position = 'bottom',
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        plot.margin=unit(c(t=0.5,r=0.75,b=2,l=-0.87),"cm"),
+        axis.text.y = element_blank(),
+        axis.line.y = element_blank(),
+        axis.ticks.y = element_blank()) +
+  scale_fill_manual(values = c("2" = "#CAD7D0", 
+                               "3" = "#79A98E", 
+                               "4" = "#4D6A5A"),
+                    labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
+                    name = 'Recr. by cycle')
+
+p1s
+p2s <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "stem" & rate_type == 'mort'), 
+             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
+  geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
+  coord_flip() + 
+  geom_hline(aes(yintercept = 0))+
+  scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
+  theme_FHM()+ labs(x = NULL) +
+  theme(legend.position = 'bottom', 
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        plot.margin=unit(c(t=0.5,r=0,b=2,l=0),"cm"))+
+  #ylim(round(-BA_max, digits = 0), 0) +
+  scale_fill_manual(values = c("2" = "#F5BBBB", 
+                               "3" = "#CD5C5C", 
+                               "4" = "#6E3838"),
+                    labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
+                    name = "Mort. by cycle")+
+  scale_y_continuous(limits = c(-round(stem_max, digits = 0),0), 
+                     breaks = c(0, -1.0, -2.0, -3.0),
+                     name = 'Annual Mortality (% stems)')
+
+fig_layout = grid.layout(nrow = 1, ncol = 2, 
+                         respect = TRUE,
+                         heights = unit(c(6, 6), c('in', 'in')),
+                         widths = unit(c(5.5, 3.25), c('in', 'in')))
+
+fig_vp <- viewport(name = "fig_vp", layout = fig_layout,
+                   width = unit(8, 'in'), height = unit(6, 'in'))
+
+
+svg(paste0(new_path, "figures/", "Figure_2_", park, "_treeStem_by_species_cycle.svg"),
+    height = 5, width = 9.5)
+
+grid.newpage()
+pushViewport(fig_vp)
+print(p2s, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(p1s, vp = viewport(layout.pos.row = 1, layout.pos.col = 2))
 popViewport()
 
 dev.off()
@@ -417,6 +484,22 @@ mor_rec_long <- mor_rec2 %>% group_by(ParkUnit, Plot_Name) %>%
 
 
 head(mor_rec_long)
+
+# Park level averaging by cycle
+head(mor_rec2)
+mor_rec_long <- mor_rec2 %>% group_by(ParkUnit, Plot_Name) %>% 
+  summarize(c1_live_BA = sum(c1_live_BA, na.rm = T), 
+            c2_live_BA = sum(c2_live_BA, na.rm = T), 
+            c3_live_BA = sum(c3_live_BA, na.rm = T), 
+            c4_live_BA = sum(c4_live_BA, na.rm = T), 
+            .groups = 'drop') %>% 
+  pivot_longer(-c(ParkUnit, Plot_Name), names_to = 'tree_cycle', values_to = 'BAm2ha') %>% 
+  mutate(cycle = as.numeric(substr(tree_cycle, 2, 2)))
+
+
+head(mor_rec_long)
+
+
 # Calculate average BAm2/ha per cycle using loess smoother
 BA_smooth <- case_boot_loess(mor_rec_long, x = 'cycle', y = 'BAm2ha', ID = 'Plot_Name', 
                              span = 8/4, num_reps = 1000, chatty = TRUE)

@@ -129,7 +129,7 @@ reg_trend_plot <-
 reg_trend_plot
   
 ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"),
-       height = 8, width = 11, units = 'in')
+       height = 5, width = 7.5, units = 'in')
 
 #---- Figure 1B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
@@ -215,7 +215,7 @@ dbh_trend_plot <-
 dbh_trend_plot
 
 ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
-       height = 8, width = 11, units = 'in')
+       height = 5, width = 7.5, units = 'in')
 
 #---- Map 3 Regen by composition ----
 reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m'))
