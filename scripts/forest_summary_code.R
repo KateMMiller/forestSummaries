@@ -37,7 +37,7 @@ reg_cycle_wide <- reg_cycle_table %>%
 
 head(reg_cycle_wide)
 
-write.csv(reg_cycle_table, 
+write.csv(reg_cycle_wide, 
           paste0(new_path, "tables/", "Table_1_", park, "_regen_by_cycle.csv"), row.names = FALSE)
 
 #---- Map 1 regen by cycle ----
@@ -492,7 +492,7 @@ write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park,
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
 #---- Table 3 Invasive species by number of plots cycle
-inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
+inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
