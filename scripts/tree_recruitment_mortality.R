@@ -25,20 +25,21 @@ tree_mr <- tree_mr %>% mutate(status = case_when(TreeStatusCode %in% alive_stat 
 head(tree_mr)
 
 table(tree_mr$status)
+table(tree_mr$ScientificName)
 
-Acer <- c('Acer', 'Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer negundo')
-Betula <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
+Acer_spp <- c('Acer', 'Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer negundo')
+Betula_spp <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
-Carya <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
-Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica')
-Pinus <- c("Pinus resinosa", "Pinus strobus", "Pinus")
-Populus <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
-Prunus <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')
-Quercus <- c('Quercus', 'Quercus (Red group)', 'Quercus (White group)',
+Carya_spp <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
+Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica')
+Pinus_spp <- c("Pinus resinosa", "Pinus strobus", "Pinus")
+Populus_spp <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
+Prunus_spp <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')
+Quercus_spp <- c('Quercus', 'Quercus (Red group)', 'Quercus (White group)',
              'Quercus alba', 'Quercus bicolor', 'Quercus coccinea',
              'Quercus montana', 'Quercus palustris', 'Quercus rubra',
              'Quercus velutina')
-Ulmus <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
+Ulmus_spp <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 
 Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
@@ -56,15 +57,15 @@ Exotic_spp <- c('Acer platanoides', 'Aesculus hippocastanum', 'Ailanthus altissi
                 'Rhamnus cathartica', 'Salix alba')
 
 tree_mr <- tree_mr %>% 
-  mutate(spp_grp = case_when(ScientificName %in% Acer ~ "Acer spp. (maple)",
-                             ScientificName %in% Betula ~ "Betula spp. (birch)",
-                             ScientificName %in% Carya ~ "Carya spp. (hickory)",
-                             ScientificName %in% Fraxinus ~ "Fraxinus spp. (ash)",
-                             ScientificName %in% Pinus ~ "Pinus spp. (pine)",
-                             ScientificName %in% Populus ~ "Populus spp. (poplar)",
-                             ScientificName %in% Prunus ~ "Prunus spp. (cherry)",
-                             ScientificName %in% Quercus ~ "Quercus spp. (oak)",
-                             ScientificName %in% Ulmus ~ "Ulmus spp. (elm)",
+  mutate(spp_grp = case_when(ScientificName %in% Acer_spp ~ "Acer spp. (maple)",
+                             ScientificName %in% Betula_spp ~ "Betula spp. (birch)",
+                             ScientificName %in% Carya_spp ~ "Carya spp. (hickory)",
+                             ScientificName %in% Fraxinus_spp ~ "Fraxinus spp. (ash)",
+                             ScientificName %in% Pinus_spp ~ "Pinus spp. (pine)",
+                             ScientificName %in% Populus_spp ~ "Populus spp. (poplar)",
+                             ScientificName %in% Prunus_spp ~ "Prunus spp. (cherry)",
+                             ScientificName %in% Quercus_spp ~ "Quercus spp. (oak)",
+                             ScientificName %in% Ulmus_spp ~ "Ulmus spp. (elm)",
                              ScientificName %in% Other_Native ~ "Other Native spp.",
                              ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
                              ScientificName %in% Subcanopy ~ "Subcanopy spp.",
@@ -72,12 +73,13 @@ tree_mr <- tree_mr %>%
                              # TRUE ~ toupper(paste0(
                              #   substr(word(ScientificName, 1), 1, 3), 
                              #   substr(word(ScientificName, 2), 1, 3))))) 
-head(tree_mr)
+names(tree_mr)
 
 tree_mr$stems[tree_mr$status == "exclude"] <- -999
 tree_mr$BA_m2ha[tree_mr$status == "exclude"] <- -999
 
-full_names <- c("stems_1_alive", "stems_1_dead",  
+full_names <- c("DBHcm_2_missed", 'DBHcm_3_missed', 'DBHcm_4_missed', # "DBHcm_5_missed",
+                "stems_1_alive", "stems_1_dead",  
                 "stems_2_alive", "stems_2_dead", "stems_2_exclude", "stems_2_recruit", "stems_2_missed",
                 "stems_3_alive", "stems_3_dead", "stems_3_exclude", "stems_3_recruit", "stems_3_missed",   
                 "stems_4_alive", "stems_4_dead", "stems_4_exclude", "stems_4_recruit", "stems_4_missed",  
@@ -90,10 +92,13 @@ full_names <- c("stems_1_alive", "stems_1_dead",
 )
 
 
-trees_wide <- tree_mr %>% pivot_wider(names_from = c(cycle, status),
-                                      values_from = c(stems, BA_m2ha),
-                                      values_fill = 0) %>%
+trees_wide <- tree_mr %>% arrange(Plot_Name, TagCode, cycle, status) %>% 
+  pivot_wider(names_from = c(cycle, status),
+              values_from = c(stems, BA_m2ha, DBHcm),
+              values_fill = 0) %>%
   arrange(Plot_Name, TagCode) #%>%
+
+names(trees_wide)
 
 # Next steps are if a combination of status and cycle aren't represented
 new_names <- c(full_names[!full_names %in% names(trees_wide)])
@@ -101,7 +106,7 @@ new_df <- as_tibble(matrix(rep(0, nrow(trees_wide) * length(new_names)),
                            nrow = nrow(trees_wide), ncol = length(new_names)), 
                     .name_repair = ~ new_names)
 
-head(new_df)
+new_names
 
 #trees_wide2 <- cbind(trees_wide, new_df)
 trees_wide2 <- trees_wide %>% bind_cols(., new_df) %>%                           
@@ -114,10 +119,11 @@ trees_wide2 <- trees_wide %>% bind_cols(., new_df) %>%
                                                      #stems_5_exclude == -999 ~ 1,
                                                      TRUE ~ 0)) %>%
                           filter(exclude != 1)
-names(trees_wide)
+names(trees_wide2)
 
 trees_wide3 <- trees_wide2 %>%
-  select(ParkUnit, Plot_Name, PanelCode, TagCode, DBHcm, spp_grp,
+  select(ParkUnit, Plot_Name, PanelCode, TagCode, spp_grp,
+         DBHcm_2_missed, DBHcm_3_missed, DBHcm_4_missed, #DBHcm_5_missed,
          stems_1_alive, 
          stems_2_alive, stems_2_dead, stems_2_recruit, stems_2_missed,
          stems_3_alive, stems_3_dead, stems_3_recruit, stems_3_missed,
@@ -132,13 +138,13 @@ trees_wide3 <- trees_wide2 %>%
 
          ) %>%
   mutate(stems_1_alive_adj = ifelse(stems_2_missed == 1 | 
-                                   (stems_3_missed == 1 & DBHcm > 14.0) | # adjust for AMs using RS cutoff + 2cm 
-                                   (stems_4_missed == 1 & DBHcm > 16.0), #|
+                                   (stems_3_missed == 1 & DBHcm_3_missed > 14.0) | # adjust for AMs using RS cutoff + 2cm 
+                                   (stems_4_missed == 1 & DBHcm_4_missed > 16.0), #|
                                    #(stems_5_missed == 1 & DBHcm > 18.0), # for cycle 5 in ACAD
                                     1, stems_1_alive), 
          stems_2_alive_adj = ifelse(stems_2_missed == 1 |
                                     stems_3_missed == 1 | 
-                                   (stems_4_missed == 1 & DBHcm > 14.0) | # adjust for AMs using RS cutoff + 2cm 
+                                   (stems_4_missed == 1 & DBHcm_4_missed > 14.0) | # adjust for AMs using RS cutoff + 2cm 
                                    #(stems_5_missed == 1 & DBHcm > 16.0) | # for cycle 5 in ACAD
                                     stems_2_recruit == 1, 
                                     1, stems_2_alive), 
@@ -153,14 +159,14 @@ trees_wide3 <- trees_wide2 %>%
 #        stems_5_alive_adj = ifelse(stems_5_missed == 1 | stems_5_recruit == 1, 1, stems_5_alive),
          
          BA_m2ha_1_alive_adj = case_when(BA_m2ha_2_missed > 0 ~ BA_m2ha_2_missed,
-                                         BA_m2ha_3_missed > 0 & DBHcm > 14.0 ~ BA_m2ha_3_missed, # adjust for AMs like above
-                                         BA_m2ha_4_missed > 0 & DBHcm > 14.0 ~ BA_m2ha_4_missed,
+                                         BA_m2ha_3_missed > 0 & DBHcm_3_missed > 14.0 ~ BA_m2ha_3_missed, # adjust for AMs like above
+                                         BA_m2ha_4_missed > 0 & DBHcm_4_missed > 14.0 ~ BA_m2ha_4_missed,
                                          #BA_m2ha_5_missed > 0 & DBHcm > 18.0 ~ BA_m2ha_5_missed,
                                          TRUE ~ BA_m2ha_1_alive),
          
          BA_m2ha_2_alive_adj = case_when(BA_m2ha_2_missed > 0 ~ BA_m2ha_2_missed,
                                          BA_m2ha_3_missed > 0 ~ BA_m2ha_3_missed,
-                                         BA_m2ha_4_missed > 0 & DBHcm > 14.0 ~ BA_m2ha_4_missed,
+                                         BA_m2ha_4_missed > 0 & DBHcm_4_missed > 14.0 ~ BA_m2ha_4_missed,
                                          #BA_m2ha_5_missed > 0 & DBHcm > 16.0 ~ BA_m2ha_5_missed,
                                          BA_m2ha_2_recruit > 0 ~ BA_m2ha_2_recruit,
                                          TRUE ~ BA_m2ha_2_alive), # adjust for AMs and recrs
@@ -211,7 +217,7 @@ trees_wide3 <- trees_wide2 %>%
 
 )
 
-names(trees_wide3)
+
 mor_rec <- trees_wide3 %>% group_by(ParkUnit, Plot_Name, PanelCode, spp_grp) %>%
   summarize(c1_live_stem = sum(stems_1_alive_adj, na.rm = T),
             c2_live_stem = sum(stems_2_alive_adj, na.rm = T),
@@ -321,7 +327,8 @@ head(mor_rec_spp_long)
 
 BA_max = max(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "BA"]), na.rm = T)
 stem_max = max(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "stem"]), na.rm = T)
-
+BA_max
+stem_max
 # For ggplot order
 mor_rec_spp_long$met_fac <- factor(mor_rec_spp_long$metric, 
                                    levels = c(
@@ -351,7 +358,8 @@ p1 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'recr'),
   coord_flip() +  
   scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
   scale_y_continuous(limits = c(0, round(BA_max, digits = 0)), 
-                     breaks = c(1, 2, 3), name = "Annual Recruitment (% Basal Area)") +
+                     #breaks = c(1, 2, 3), 
+                     name = "Annual Recruitment (% Basal Area)") +
   theme_FHM()+ labs(x = NULL) + 
   theme(legend.position = 'bottom',
         panel.border = element_blank(),
@@ -384,7 +392,7 @@ p2 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'mort'),
                     labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
                     name = 'Mort. by cycle')+
   scale_y_continuous(limits = c(-round(BA_max, digits = 0),0), 
-                     breaks = c(0, -1.0, -2.0, -3.0), 
+                     #breaks = c(0, -1.0, -2.0, -3.0), 
                      name = "Annual Mortality (% Basal Area)")
 
 fig_layout = grid.layout(nrow = 1, ncol = 2, 
@@ -397,7 +405,7 @@ fig_vp <- viewport(name = "fig_vp", layout = fig_layout,
 
 
 svg(paste0(new_path, "figures/", "Figure_2_", park, "_treeBA_by_species_cycle.svg"),
-    height = 5, width = 9.5)
+    height = 5.2, width = 9.5)
 
 grid.newpage()
 pushViewport(fig_vp)
@@ -414,7 +422,8 @@ p1s <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "stem" & rate_type == 'recr
   coord_flip() +  
   scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
   scale_y_continuous(limits = c(0, round(stem_max, digits = 0)), 
-                     breaks = c(1, 2, 3), name = "Annual Recruitment (% stems)") +
+                     #breaks = c(1, 2, 3), 
+                     name = "Annual Recruitment (% stems)") +
   theme_FHM()+ labs(x = NULL) + 
   theme(legend.position = 'bottom',
         panel.border = element_blank(),
@@ -448,7 +457,7 @@ p2s <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "stem" & rate_type == 'mort
                     labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
                     name = "Mort. by cycle")+
   scale_y_continuous(limits = c(-round(stem_max, digits = 0),0), 
-                     breaks = c(0, -1.0, -2.0, -3.0),
+                     #breaks = c(0, -1.0, -2.0, -3.0),
                      name = 'Annual Mortality (% stems)')
 
 fig_layout = grid.layout(nrow = 1, ncol = 2, 
@@ -461,7 +470,7 @@ fig_vp <- viewport(name = "fig_vp", layout = fig_layout,
 
 
 svg(paste0(new_path, "figures/", "Figure_2_", park, "_treeStem_by_species_cycle.svg"),
-    height = 5, width = 9.5)
+    height = 5.2, width = 9.5)
 
 grid.newpage()
 pushViewport(fig_vp)
