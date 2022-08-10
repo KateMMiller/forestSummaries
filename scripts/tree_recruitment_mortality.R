@@ -391,7 +391,7 @@ head(mor_rec_spp_nz)
 
 # Basal Area plots
 p1 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'recr'), 
-             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
+             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(cycle)))+ 
   geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
   coord_flip() +  
   scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
@@ -413,7 +413,7 @@ p1 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'recr'),
                     name = 'Recr. by cycle')
 
 p2 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'mort'), 
-             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
+             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(cycle)))+ 
   geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
   coord_flip() + 
   geom_hline(aes(yintercept = 0))+
@@ -455,7 +455,7 @@ dev.off()
 
 # Stem plots
 p1s <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "stem" & rate_type == 'recr'), 
-             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
+             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(cycle)))+ 
   geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
   coord_flip() +  
   scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
@@ -478,7 +478,7 @@ p1s <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "stem" & rate_type == 'recr
 
 p1s
 p2s <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "stem" & rate_type == 'mort'), 
-             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(rev(cycle))))+ 
+             aes(x = spp_grp, y = rate, group = factor(cycle), fill = factor(cycle)))+ 
   geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
   coord_flip() + 
   geom_hline(aes(yintercept = 0))+
@@ -562,3 +562,10 @@ ggsave(paste0(new_path, "figures/", "Figure_X_", park, "_treeBA_by_cycle.svg"),
        height = 8, width = 11, units = 'in')
 # Turns out these aren't that helpful
 
+# Total BA lost in last cycle
+head(mor_rec_spp_nz)
+mor_rec_4yr <- mor_rec_spp_nz %>% filter(unit_type == "BA") %>% 
+  group_by(cycle, rate_type) %>% 
+  summarize(BA = sum(rate, na.rm = T))
+
+mor_rec_4yr
