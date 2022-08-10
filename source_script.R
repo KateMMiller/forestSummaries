@@ -31,6 +31,7 @@ args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 # Set up file structure
 path = 'D:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
 new_path = paste0(path, park, "/", as.character(to), "/")
+
 if(!dir.exists(new_path)){dir.create(new_path)}
 
 folders <- c("ArcMap_projects", "figures", "map_exports", "shapefiles", "tables")
