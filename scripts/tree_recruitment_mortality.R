@@ -120,6 +120,7 @@ trees_wide2 <- trees_wide %>% bind_cols(., new_df) %>%
                                                      TRUE ~ 0)) %>%
                           filter(exclude != 1)
 names(trees_wide2)
+names(trees_wide3)
 
 trees_wide3 <- trees_wide2 %>%
   select(ParkUnit, Plot_Name, PanelCode, TagCode, spp_grp,
@@ -195,11 +196,20 @@ trees_wide3 <- trees_wide2 %>%
          c2_3_recr = ifelse(stems_3_recruit == 1, 1, 0),
          c3_4_recr = ifelse(stems_4_recruit == 1, 1, 0),
          #c4_5_recr = ifelse(stems_5_recruit == 1, 1, 0),
-          
-         c1_2_dead_ba = ifelse(stems_1_alive_adj == 1 & stems_2_dead == 1, BA_m2ha_2_dead, 0),
-         c2_3_dead_ba = ifelse(stems_2_alive_adj == 1 & stems_3_dead == 1, BA_m2ha_3_dead, 0),
-         c3_4_dead_ba = ifelse(stems_3_alive_adj == 1 & stems_4_dead == 1, BA_m2ha_4_dead, 0),
-         #c4_5_dead_ba = ifelse(stems_4_alive_adj == 1 & stems_5_dead == 1, BA_m2ha_5_dead, 0),
+        
+         #### For trees that are DF the first time they're observed as dead, use previous alive BA
+         c1_2_dead_ba = case_when(stems_1_alive_adj == 1 & stems_2_dead == 1 & BA_m2ha_2_dead > 0 ~ BA_m2ha_2_dead,
+                                  stems_1_alive_adj == 1 & stems_2_dead == 1 & is.na(BA_m2ha_2_dead) ~ BA_m2ha_1_alive_adj,
+                                  TRUE ~ 0),
+         c2_3_dead_ba = case_when(stems_2_alive_adj == 1 & stems_3_dead == 1 & BA_m2ha_3_dead > 0 ~ BA_m2ha_3_dead,
+                                  stems_2_alive_adj == 1 & stems_3_dead == 1 & is.na(BA_m2ha_3_dead) ~ BA_m2ha_2_alive_adj,
+                                  TRUE ~ 0),
+         c3_4_dead_ba = case_when(stems_3_alive_adj == 1 & stems_4_dead == 1 & BA_m2ha_4_dead > 0 ~ BA_m2ha_4_dead,
+                                  stems_3_alive_adj == 1 & stems_4_dead == 1 & is.na(BA_m2ha_4_dead) ~ BA_m2ha_3_alive_adj,
+                                  TRUE ~ 0),
+         # c4_5_dead_ba = case_when(stems_4_alive_adj == 1 & stems_5_dead == 1 & BA_m2ha_5_dead > 0 ~ BA_m2ha_5_dead,
+         #                          stems_4_alive_adj == 1 & stems_5_dead == 1 & BA_m2ha_5_dead == 0 ~ BA_m2ha_5_alive_adj,
+         #                          TRUE ~ 0),
 
          c1_2_recr_ba = ifelse(stems_2_recruit == 1, BA_m2ha_2_recruit, 0),
          c2_3_recr_ba = ifelse(stems_3_recruit == 1, BA_m2ha_3_recruit, 0),
@@ -217,6 +227,34 @@ trees_wide3 <- trees_wide2 %>%
 
 )
 
+# tree_check <- trees_wide3 %>% filter(spp_grp == "Fraxinus spp. (ash)" & Plot_Name == "MORR-013") %>%
+#   select(Plot_Name,TagCode, spp_grp,
+#          stems_1_alive_adj, stems_2_alive_adj, stems_3_alive_adj, stems_4_alive_adj,
+#          BA_m2ha_1_alive_adj, BA_m2ha_2_alive_adj, BA_m2ha_3_alive_adj, BA_m2ha_4_alive_adj,
+#          stems_2_dead, stems_3_dead, stems_4_dead,
+#          BA_m2ha_2_dead, BA_m2ha_3_dead, BA_m2ha_4_dead,
+#          c1_2_dead, c2_3_dead, c3_4_dead,
+#          c1_2_dead_ba, c2_3_dead_ba, c3_4_dead_ba)
+
+# Convert NA to 0; Update for cycle 5 in ACAD
+nz_cols <- c("DBHcm_2_missed", "DBHcm_3_missed", "DBHcm_4_missed",
+             "stems_1_alive", 
+             "stems_2_alive", "stems_2_dead", "stems_2_recruit", "stems_2_missed", 
+             "stems_3_alive", "stems_3_dead", "stems_3_recruit", "stems_3_missed", 
+             "stems_4_alive", "stems_4_dead", "stems_4_recruit", "stems_4_missed", 
+             "BA_m2ha_1_alive", 
+             "BA_m2ha_2_alive", "BA_m2ha_2_dead", "BA_m2ha_2_recruit", "BA_m2ha_2_missed", 
+             "BA_m2ha_3_alive", "BA_m2ha_3_dead", "BA_m2ha_3_recruit", "BA_m2ha_3_missed",    
+             "BA_m2ha_4_alive", "BA_m2ha_4_dead", "BA_m2ha_4_recruit", "BA_m2ha_4_missed",    
+             "stems_1_alive_adj", "stems_2_alive_adj", "stems_3_alive_adj", "stems_4_alive_adj", 
+             "BA_m2ha_1_alive_adj", "BA_m2ha_2_alive_adj", "BA_m2ha_3_alive_adj", "BA_m2ha_4_alive_adj", 
+             "c1_2_dead", "c2_3_dead", "c3_4_dead", 
+             "c1_2_recr", "c2_3_recr", "c3_4_recr", 
+             "c1_2_dead_ba", "c2_3_dead_ba", "c3_4_dead_ba", 
+             "c1_2_recr_ba", "c2_3_recr_ba", "c3_4_recr_ba", 
+             "c1_2_grow_ba", "c2_3_grow_ba", "c3_4_grow_ba")
+  
+trees_wide3[nz_cols][is.na(trees_wide3[,nz_cols])] <- 0
 
 mor_rec <- trees_wide3 %>% group_by(ParkUnit, Plot_Name, PanelCode, spp_grp) %>%
   summarize(c1_live_stem = sum(stems_1_alive_adj, na.rm = T),
@@ -325,8 +363,8 @@ mor_rec_spp_long <- mor_rec_spp %>%
 
 head(mor_rec_spp_long)
 
-BA_max = max(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "BA"]), na.rm = T)
-stem_max = max(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "stem"]), na.rm = T)
+BA_max = max(ceiling(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "BA"])))
+stem_max = max(ceiling(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "stem"])))
 BA_max
 stem_max
 # For ggplot order
@@ -357,7 +395,7 @@ p1 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'recr'),
   geom_bar(stat = 'identity', color = 'black', position = 'dodge', width = 5, size = 0.2)+
   coord_flip() +  
   scale_x_discrete(limits = rev(sort(mor_rec_spp_nz$spp_grp))) +
-  scale_y_continuous(limits = c(0, round(BA_max, digits = 0)), 
+  scale_y_continuous(limits = c(0, BA_max), 
                      #breaks = c(1, 2, 3), 
                      name = "Annual Recruitment (% Basal Area)") +
   theme_FHM()+ labs(x = NULL) + 
@@ -391,7 +429,7 @@ p2 <- ggplot(mor_rec_spp_nz %>% filter(unit_type == "BA" & rate_type == 'mort'),
                                "4" = "#6E3838"),
                     labels = c("1 \U2013 2", "2 \U2013 3", "3 \U2013 4"),
                     name = 'Mort. by cycle')+
-  scale_y_continuous(limits = c(-round(BA_max, digits = 0),0), 
+  scale_y_continuous(limits = c(-BA_max,0), 
                      #breaks = c(0, -1.0, -2.0, -3.0), 
                      name = "Annual Mortality (% Basal Area)")
 
