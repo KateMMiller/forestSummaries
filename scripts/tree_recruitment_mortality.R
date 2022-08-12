@@ -586,32 +586,32 @@ popViewport()
 dev.off()
 
 # Park level averaging by cycle
-head(mor_rec2)
-mor_rec_long <- mor_rec2 %>% group_by(ParkUnit, Plot_Name) %>% 
-  summarize(c1_live_BA = sum(c1_live_BA, na.rm = T), 
-            c2_live_BA = sum(c2_live_BA, na.rm = T), 
-            c3_live_BA = sum(c3_live_BA, na.rm = T), 
-            c4_live_BA = sum(c4_live_BA, na.rm = T), 
+names(trees_wide3)
+
+mor_rec_long <- trees_wide3 %>% group_by(ParkUnit, Plot_Name) %>% 
+  summarize(c1_live_BA = sum(BA_m2ha_1_alive, na.rm = T), 
+            c2_live_BA = sum(BA_m2ha_2_alive, na.rm = T), 
+            c3_live_BA = sum(BA_m2ha_3_alive, na.rm = T), 
+            c4_live_BA = sum(BA_m2ha_4_alive, na.rm = T), 
             .groups = 'drop') %>% 
   pivot_longer(-c(ParkUnit, Plot_Name), names_to = 'tree_cycle', values_to = 'BAm2ha') %>% 
   mutate(cycle = as.numeric(substr(tree_cycle, 2, 2)))
 
-
 head(mor_rec_long)
 
 # Calculate average BAm2/ha per cycle using loess smoother
-BA_smooth <- case_boot_loess(mor_rec_long, x = 'cycle', y = 'BAm2ha', ID = 'Plot_Name', 
-                             span = 8/4, num_reps = 1000, chatty = TRUE)
-
-BA_smooth
-
-ggplot(BA_smooth, aes(x = cycle, y = estimate))+
-  geom_line() + theme_FHM() + ylim(0, 40) +
-  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2)+
-  labs(y = expression("Basal Area ("*m^2*")/ha)"))
-
-ggsave(paste0(new_path, "figures/", "Figure_X_", park, "_treeBA_by_cycle.svg"),
-       height = 8, width = 11, units = 'in')
+# BA_smooth <- case_boot_loess(mor_rec_long, x = 'cycle', y = 'BAm2ha', ID = 'Plot_Name', 
+#                              span = 8/4, num_reps = 1000, chatty = TRUE)
+# 
+# BA_smooth
+# 
+# ggplot(BA_smooth, aes(x = cycle, y = estimate))+
+#   geom_line() + theme_FHM() + ylim(0, 40) +
+#   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2)+
+#   labs(y = expression("Basal Area ("*m^2*")/ha)"))
+# 
+# ggsave(paste0(new_path, "figures/", "Figure_X_", park, "_treeBA_by_cycle.svg"),
+#        height = 8, width = 11, units = 'in')
 # Turns out these aren't that helpful
 
 # Total BA lost in last cycle
