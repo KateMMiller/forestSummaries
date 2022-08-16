@@ -233,7 +233,7 @@ Acer <- c('Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer negundo')
 Betula <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
-Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica')
+Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', "Fraxinus nigra")
 Pinus <- c("Pinus resinosa", "Pinus strobus", "Pinus")
 Populus <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
 Prunus <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')
@@ -508,6 +508,24 @@ inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
+
+centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+  filter(grepl("Centaurea", ScientificName)) %>% 
+  mutate(present = 1) %>% 
+  group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
+  pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
+              names_prefix = "cycle_") 
+
+colSums(centaurea[,-1])
+
+lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+  filter(grepl("Lonicera", ScientificName)) %>% 
+  mutate(present = 1) %>% 
+  group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
+  pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
+              names_prefix = "cycle_") 
+
+colSums(lonicera[,-1])
 
 inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything())

@@ -35,7 +35,7 @@ Acer_spp <- c('Acer', 'Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer
 Betula_spp <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya_spp <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
-Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica')
+Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', 'Fraxinus nigra')
 Pinus_spp <- c("Pinus resinosa", "Pinus strobus", "Pinus")
 Populus_spp <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
 Prunus_spp <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')
@@ -351,6 +351,7 @@ mor_rec_ov_long <- mor_rec_overall %>%
 
 mor_rec_tot <- mor_rec_ov_long %>% group_by(metric, cycle, unit_type) %>% 
   summarize(park_total = sum(net_total, na.rm = T), .groups = 'drop')
+table(mor_rec_ov_long$spp_grp)
 
 net_ba <- 
   ggplot(mor_rec_ov_long %>% filter(unit_type == "BA"), 
@@ -369,8 +370,8 @@ net_ba <-
                                   "Liriodendron tulipifera (tuliptree)" = "#73AAFF",
                                   "Other Exotic spp." = "#FF0000",
                                   "Other Native spp." = "#828282",
-                                  #"Pinus spp. (pine)" = "#286F05",
-                                  #"Prunus spp. (cherry)" ="#00E6A9",  
+                                  "Pinus spp. (pine)" = "#286F05", # turn off for MORR
+                                  "Prunus spp. (cherry)" ="#00E6A9", # turn off for MORR  
                                   "Quercus spp. (oak)" = "#C500FF",
                                   "Robinia pseudoacacia (black locust)" = "#CBCC7E",
                                   "Subcanopy spp." = "#FFBEE8",
@@ -399,8 +400,8 @@ net_stems <-
                                   "Liriodendron tulipifera (tuliptree)" = "#73AAFF",
                                   "Other Exotic spp." = "#FF0000",
                                   "Other Native spp." = "#828282",
-                                  #"Pinus spp. (pine)" = "#286F05",
-                                  #"Prunus spp. (cherry)" ="#00E6A9",  
+                                  "Pinus spp. (pine)" = "#286F05", # turn off for MORR
+                                  "Prunus spp. (cherry)" ="#00E6A9", # turn off for MORR  
                                   "Quercus spp. (oak)" = "#C500FF",
                                   "Robinia pseudoacacia (black locust)" = "#CBCC7E",
                                   "Subcanopy spp." = "#FFBEE8",
@@ -600,7 +601,7 @@ mor_rec_long <- trees_wide3 %>% group_by(ParkUnit, Plot_Name) %>%
 head(mor_rec_long)
 
 # Calculate average BAm2/ha per cycle using loess smoother
-# BA_smooth <- case_boot_loess(mor_rec_long, x = 'cycle', y = 'BAm2ha', ID = 'Plot_Name', 
+# BA_smooth <- case_boot_loess(mor_rec_long, x = 'cycle', y = 'BAm2ha', ID = 'Plot_Name',
 #                              span = 8/4, num_reps = 1000, chatty = TRUE)
 # 
 # BA_smooth
@@ -612,6 +613,7 @@ head(mor_rec_long)
 # 
 # ggsave(paste0(new_path, "figures/", "Figure_X_", park, "_treeBA_by_cycle.svg"),
 #        height = 8, width = 11, units = 'in')
+#
 # Turns out these aren't that helpful
 
 # Total BA lost in last cycle
@@ -652,5 +654,5 @@ mor_rec_all <- mor_rec %>% group_by(ParkUnit) %>%
   ) 
 head(mor_rec_all)
 
-write.csv(mor_rec_all, "D:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/MORR/2022/overall_mort_recr.csv",
-          row.names = F)
+# write.csv(mor_rec_all, "D:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/MORR/2022/overall_mort_recr.csv",
+#           row.names = F)
