@@ -245,19 +245,44 @@ Ulmus <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 
 Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
-                  'Nyssa sylvatica', 'Tilia americana', 'Picea rubens', ' Platanus occidentalis',
+                  'Nyssa sylvatica', 'Tilia americana', 'Picea rubens', 'Platanus occidentalis',
                   'Salix', 'Unknown Conifer',
                   'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
+
 Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
                'Carpinus caroliniana', 'Cornus florida', 
                 'Ilex opaca', 'Juniperus virginiana', 
                'Ostrya virginiana',
                'Sassafras albidum', 'Salix discolor', 'Viburnum prunifolium')
+
+if(park == "ROVA"){
+Exotic_spp <- c('Aesculus hippocastanum', 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
+                'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "Pinus sylvestris",
+                'Rhamnus cathartica', 'Salix alba')
+} else {
 Exotic_spp <- c('Acer platanoides', 'Aesculus hippocastanum', 'Ailanthus altissima',
                 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
-                'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "{inus sylvestris",
+                'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "Pinus sylvestris",
                 'Rhamnus cathartica', 'Salix alba')
+}
 
+if(park == "ROVA"){
+  reg_all <- reg_all %>% 
+    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
+                               ScientificName %in% Betula ~ "BETSPP",
+                               ScientificName %in% Carya ~ "CARSPP",
+                               ScientificName %in% Fraxinus ~ "FRASPP",
+                               ScientificName %in% Pinus ~ "PINSPP",
+                               ScientificName %in% Populus ~ "POPSPP",
+                               ScientificName %in% Prunus ~ "PRUSPP",
+                               ScientificName %in% Quercus ~ "QUESPP",
+                               ScientificName %in% c(Other_Native, Ulmus) ~ "OTHNAT",
+                               ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
+                               ScientificName %in% Subcanopy ~ "SUBCAN",
+                               TRUE ~ toupper(paste0(
+                                 substr(word(ScientificName, 1), 1, 3), 
+                                 substr(word(ScientificName, 2), 1, 3))))) 
+} else {
 reg_all <- reg_all %>% 
   mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
                              ScientificName %in% Betula ~ "BETSPP",
@@ -274,7 +299,7 @@ reg_all <- reg_all %>%
                              TRUE ~ toupper(paste0(
                                substr(word(ScientificName, 1), 1, 3), 
                                substr(word(ScientificName, 2), 1, 3))))) 
-
+}
 reg_wide <- reg_all %>% group_by(Plot_Name, spp_grp) %>% 
   summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
@@ -284,6 +309,9 @@ reg_wide <- reg_all %>% group_by(Plot_Name, spp_grp) %>%
 
 reg_wide <- if("NONPRE" %in% names(reg_wide)){reg_wide %>% select(-NONPRE)}else{reg_wide} 
 
+reg_wide$total <- rowSums(reg_wide[,4:ncol(reg_wide)])
+reg_wide$logtot <- log(reg_wide$total + 1)
+
 write_to_shp(reg_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
@@ -291,7 +319,23 @@ write_to_shp(reg_wide, shp_name =
 trees_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
 
 #table(joinTreeData(from = 2019, to = 2022)$ScientificName, joinTreeData(from = 2019, to = 2022)$ParkUnit)
-
+if(park == "ROVA"){
+trees_4yr <- trees_4yr %>% 
+  mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
+                             ScientificName %in% Betula ~ "BETSPP",
+                             ScientificName %in% Carya ~ "CARSPP",
+                             ScientificName %in% Fraxinus ~ "FRASPP",
+                             ScientificName %in% Pinus ~ "PINSPP",
+                             ScientificName %in% Populus ~ "POPSPP",
+#                             ScientificName %in% Prunus ~ "PRUSPP",
+                             ScientificName %in% Quercus ~ "QUESPP",
+                             ScientificName %in% c(Other_Native, Ulmus, Prunus) ~ "OTHNAT",
+                             ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
+                             ScientificName %in% Subcanopy ~ "SUBCAN",
+                             TRUE ~ toupper(paste0(
+                               substr(word(ScientificName, 1), 1, 3), 
+                               substr(word(ScientificName, 2), 1, 3))))) 
+} else {
 trees_4yr <- trees_4yr %>% 
   mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
                              ScientificName %in% Betula ~ "BETSPP",
@@ -308,12 +352,15 @@ trees_4yr <- trees_4yr %>%
                              TRUE ~ toupper(paste0(
                                substr(word(ScientificName, 1), 1, 3), 
                                substr(word(ScientificName, 2), 1, 3))))) 
-
+}
 tree_wide <- trees_4yr %>% group_by(Plot_Name, spp_grp) %>% 
   summarize(BAm2ha = sum(BA_cm2, na.rm = TRUE)/400, .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
             ., by = "Plot_Name") %>% arrange(spp_grp) %>% 
   pivot_wider(names_from = spp_grp, values_from = BAm2ha, values_fill = 0) 
+
+tree_wide$total <- rowSums(tree_wide[,4:ncol(tree_wide)])
+tree_wide$logtot <- log(tree_wide$total + 1)
 
 write_to_shp(tree_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, ".shp"))
