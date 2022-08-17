@@ -591,6 +591,34 @@ lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) 
 
 colSums(lonicera[,-1])
 
+euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+  filter(grepl("Euonymus", ScientificName)) %>% 
+  mutate(present = 1) %>% 
+  group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
+  pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
+              names_prefix = "cycle_") 
+
+colSums(euonymus[,-1])
+
+ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+  filter(grepl("Ligustrum", ScientificName)) %>% 
+  mutate(present = 1) %>% 
+  group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
+  pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
+              names_prefix = "cycle_") 
+
+colSums(ligustrum[,-1])
+
+vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+  filter(grepl("Vincetoxicum", ScientificName)) %>% 
+  mutate(present = 1) %>% 
+  group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
+  pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
+              names_prefix = "cycle_") 
+
+colSums(vincetoxicum[,-1])
+
+
 inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything())
 
