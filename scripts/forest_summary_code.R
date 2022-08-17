@@ -480,6 +480,8 @@ invspp <- invspp1 %>%
   pivot_wider(names_from = sppcode, values_from = quad_cov, values_fill = 0) %>% 
   select(-NONPRE)
 
+invspp$totcov = rowSums(invspp[,4:ncol(invspp)])
+
 write_to_shp(invspp, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_species.shp"))
 
@@ -511,8 +513,21 @@ treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>%
   filter(tree_cond > 0) %>% 
   arrange(Plot_Name) %>% unique() %>% select(Plot_Name, pest)
 
+# Compile notes from visit that could contain mentions of pests
+
+vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
+  mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ "BLD",
+                          grepl("Emerald|emerald|EAB", Notes) ~ "EAB",
+                          grepl("Red pine scale|RPS|red pine scale", Notes) ~ "RPS",
+                          grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
+                                Notes) ~ "HWA",
+                          grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ "BBD",
+                          TRUE ~ NA_character_
+  )) %>% filter(!is.na(pest)) %>% 
+  select(Plot_Name, pest) %>% unique()
+
 # Combine detections to 1 shapefile
-pest_detects <- rbind(treepests, disturb) %>% 
+pest_detects <- rbind(treepests, disturb, vnotes) %>% 
   left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% 
   select(Plot_Name, X, Y, everything()) %>% unique() %>%  
@@ -522,6 +537,8 @@ pest_detects <- rbind(treepests, disturb) %>%
 pests_wide <- pest_detects %>% 
   pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
   select(-None)
+
+pests_wide$none <- rowSums(pests_wide[,4:ncol(pests_wide)])
 
 write_to_shp(pests_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
