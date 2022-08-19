@@ -51,7 +51,6 @@ reg_cycle <- reg %>% group_by(Plot_Name, cycle) %>%
                      rename(X = xCoordinate, Y = yCoordinate) #abbr for shapefile
 
 max(reg_cycle[,4:ncol(reg_cycle)])
-
 write_to_shp(reg_cycle, 
              shp_name = paste0(new_path, "shapefiles/", park, "_regen_by_cycle_", to, ".shp" ))
 
@@ -69,6 +68,8 @@ reg_size_4yr[, reg_sz_cols][reg_size_4yr[is.na(reg_size_4yr[,reg_sz_cols])]] <- 
 
 colnames(reg_size_4yr) <- c("Plot_Name", "X", "Y", "cycle", 
                              "s15_30", "s30_100", "s100_150", "s150p", "sap") #abbr. for shapefile
+
+reg_size_4yr$total <- rowSums(reg_size_4yr[,5:ncol(reg_size_4yr)])
 
 write_to_shp(reg_size_4yr, 
              shp_name = paste0(new_path, "shapefiles/", park, 
@@ -259,12 +260,19 @@ if(park == "ROVA"){
 Exotic_spp <- c('Aesculus hippocastanum', 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
                 'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "Pinus sylvestris",
                 'Rhamnus cathartica', 'Salix alba')
+} else if(park == "MABI"){
+Exotic_spp <- c('Aesculus hippocastanum', 'Ailanthus altissima',
+                'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
+                'Photinia villosa', 'Prunus avium', 'Pyrus', 
+                'Rhamnus cathartica', 'Salix alba')
 } else {
 Exotic_spp <- c('Acer platanoides', 'Aesculus hippocastanum', 'Ailanthus altissima',
                 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
                 'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "Pinus sylvestris",
                 'Rhamnus cathartica', 'Salix alba')
+  
 }
+table(reg_all$ScientificName)
 
 if(park == "ROVA"){
   reg_all <- reg_all %>% 
@@ -277,6 +285,20 @@ if(park == "ROVA"){
                                ScientificName %in% Prunus ~ "PRUSPP",
                                ScientificName %in% Quercus ~ "QUESPP",
                                ScientificName %in% c(Other_Native, Ulmus) ~ "OTHNAT",
+                               ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
+                               ScientificName %in% Subcanopy ~ "SUBCAN",
+                               TRUE ~ toupper(paste0(
+                                 substr(word(ScientificName, 1), 1, 3), 
+                                 substr(word(ScientificName, 2), 1, 3))))) 
+} else if(park == "MABI"){
+  reg_all <- reg_all %>% 
+    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
+                               ScientificName %in% Betula ~ "BETSPP",
+                               ScientificName %in% Fraxinus ~ "FRASPP",
+                               ScientificName %in% Pinus ~ "PINSPP",
+                               ScientificName %in% Prunus ~ "PRUSPP",
+                               ScientificName %in% Quercus ~ "QUESPP",
+                               ScientificName %in% c(Other_Native, Ulmus, Populus, Carya) ~ "OTHNAT",
                                ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
                                ScientificName %in% Subcanopy ~ "SUBCAN",
                                TRUE ~ toupper(paste0(
@@ -319,6 +341,9 @@ write_to_shp(reg_wide, shp_name =
 trees_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
 
 #table(joinTreeData(from = 2019, to = 2022)$ScientificName, joinTreeData(from = 2019, to = 2022)$ParkUnit)
+
+table(trees_4yr$ScientificName)
+
 if(park == "ROVA"){
 trees_4yr <- trees_4yr %>% 
   mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
@@ -335,6 +360,23 @@ trees_4yr <- trees_4yr %>%
                              TRUE ~ toupper(paste0(
                                substr(word(ScientificName, 1), 1, 3), 
                                substr(word(ScientificName, 2), 1, 3))))) 
+} else if(park == "MABI"){
+  trees_4yr <- trees_4yr %>% 
+    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
+                               ScientificName %in% Betula ~ "BETSPP",
+                               ScientificName %in% Carya ~ "CARSPP",
+                               ScientificName %in% Fraxinus ~ "FRASPP",
+                               ScientificName %in% Pinus ~ "PINSPP",
+                               ScientificName %in% Quercus ~ "QUESPP",
+                               ScientificName %in% c(Other_Native, Ulmus, Prunus, Populus,
+                                                     "Tilia americana", "Picea rubens") ~ "OTHNAT",
+                               ScientificName %in% 
+                                 c(Exotic_spp, "Robinia pseudoacacia", 
+                                   "Larix decidua", "Pinus sylvestris") ~ "EXOTIC",
+                               ScientificName %in% Subcanopy ~ "SUBCAN",
+                               TRUE ~ toupper(paste0(
+                                 substr(word(ScientificName, 1), 1, 3), 
+                                 substr(word(ScientificName, 2), 1, 3))))) 
 } else {
 trees_4yr <- trees_4yr %>% 
   mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
@@ -538,7 +580,22 @@ pests_wide <- pest_detects %>%
   pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
   select(-None)
 
+if(park == "MABI" & to == 2022){
+pests_wide$EAB[pests_wide$Plot_Name == "MABI-013"] <- 0
+# Tree note said "No EAB", but was picked up in query for positive EAB detections
+}
+
 pests_wide$none <- rowSums(pests_wide[,4:ncol(pests_wide)])
+
+if(park == "MABI"){
+  worms <- do.call(joinStandData, args = args_vs) %>% select(Plot_Name, cycle, Earthworms) %>% 
+    mutate(Earthworms = ifelse(Earthworms == 1, 1, 0)) %>% 
+    group_by(Plot_Name) %>% 
+    summarize(worms = ifelse(sum(Earthworms, na.rm = T) > 0, 1, 0))
+  
+  pests_wide <- left_join(pests_wide, worms, by = "Plot_Name")
+  
+  }
 
 write_to_shp(pests_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
@@ -670,4 +727,43 @@ pest_eds <- pests_wide %>% select(Plot_Name, X, Y, any_of(priority_pests)) %>%
 
 if(nrow(pest_eds) > 0){
 write.csv(pest_eds, paste0(new_path, 'tables/', park, "_pest_detections.csv"), row.names = F)
+}
+
+#---- Rubus cover for MABI -----
+if(park == "MABI"){
+rubus <- do.call(joinQuadSpecies, args = args_vs) %>% filter(grepl("Rubus", ScientificName))
+
+rubus2 <- rubus %>% group_by(Plot_Name, cycle) %>% 
+  summarize(avg_cov = sum(quad_avg_cov, na.rm = T), .groups = 'drop') %>% 
+  left_join(plotevs %>% select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate), 
+            ., by = c("Plot_Name", "cycle")) 
+
+rubus2$avg_cov[is.na(rubus2$avg_cov)] <- 0
+
+rubus_wide <- rubus2 %>% pivot_wider(names_from = cycle, values_from = avg_cov, values_fill = 0)
+
+write_to_shp(rubus_wide, shp_name = 
+               paste0(new_path, "shapefiles/", park, "_Rubus_cover_", ".shp"))
+
+}
+
+#---- CWD by cycle
+if(park %in% c("MABI", "SAGA", "MIMA")){
+cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol)
+
+cwd <- cwd1 %>% group_by(Plot_Name, cycle) %>% 
+  summarize(cwd_vol = sum(CWD_Vol, na.rm = T), .groups = 'drop') %>% 
+  left_join(plotevs %>% select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate), 
+            ., by = c("Plot_Name", "cycle"))
+  
+cwd$cwd_vol[is.na(cwd$cwd_vol)] <- 0
+
+cwd_wide <- cwd %>% pivot_wider(names_from = cycle, 
+                                values_from = cwd_vol, 
+                                names_prefix = "cycle_",
+                                values_fill = 0) 
+
+write_to_shp(cwd_wide, shp_name = 
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", ".shp"))
+
 }
