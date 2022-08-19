@@ -47,7 +47,8 @@ Ulmus_spp <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 
 Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
-                  'Nyssa sylvatica', 'Tilia americana', 'Picea rubens', ' Platanus occidentalis',
+                  'Nyssa sylvatica', #'Tilia americana',# Turned off for MABI
+                  'Picea rubens', ' Platanus occidentalis',
                   'Salix', 'Unknown Conifer',
                   'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
 Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
@@ -57,8 +58,10 @@ Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
                'Sassafras albidum', 'Salix discolor', 'Viburnum prunifolium')
 Exotic_spp <- c('Acer platanoides', 'Aesculus hippocastanum', 'Ailanthus altissima',
                 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
-                'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "{inus sylvestris",
+                'Photinia villosa', 'Prunus avium', 'Pyrus', 
+                #'Picea abies', "Pinus sylvestris",  # turned off for MABI
                 'Rhamnus cathartica', 'Salix alba')
+table(tree_mr$spp_grp)
 
 if(park == "MORR"){
   tree_mr <- tree_mr %>% 
@@ -73,6 +76,21 @@ if(park == "MORR"){
                                ScientificName %in% Ulmus_spp ~ "Ulmus spp. (elm)",
                                ScientificName %in% 
                                  c(Other_Native, Pinus_spp, Populus_spp, Prunus_spp) ~ "Other Native spp.",
+                               ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
+                               ScientificName %in% Subcanopy ~ "Subcanopy spp.",
+                               TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
+} else if(park == "MABI") {
+  tree_mr <- tree_mr %>% 
+    mutate(spp_grp = case_when(ScientificName %in% Acer_spp ~ "Acer spp. (maple)",
+                               ScientificName %in% Betula_spp ~ "Betula spp. (birch)",
+                               ScientificName %in% Carya_spp ~ "Carya spp. (hickory)",
+                               ScientificName %in% Fraxinus_spp ~ "Fraxinus spp. (ash)",
+                               ScientificName %in% Pinus_spp ~ "Pinus spp. (pine)",
+                               #ScientificName %in% Populus_spp ~ "Populus spp. (poplar)",
+                               #ScientificName %in% Prunus_spp ~ "Prunus spp. (cherry)",
+                               ScientificName %in% Quercus_spp ~ "Quercus spp. (oak)",
+                               ScientificName %in% Ulmus_spp ~ "Ulmus spp. (elm)",
+                               ScientificName %in% c(Other_Native, Prunus_spp, Populus_spp) ~ "Other Native spp.",
                                ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
                                ScientificName %in% Subcanopy ~ "Subcanopy spp.",
                                TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
@@ -351,6 +369,7 @@ mor_rec_ov_long <- mor_rec_overall %>%
 
 mor_rec_tot <- mor_rec_ov_long %>% group_by(metric, cycle, unit_type) %>% 
   summarize(park_total = sum(net_total, na.rm = T), .groups = 'drop')
+
 table(mor_rec_ov_long$spp_grp)
 
 net_ba <- 
@@ -362,20 +381,28 @@ net_ba <-
     #           aes(x = cycle, y = park_total), color = 'black') + 
     theme_FHM()+
     # may have to update for different parks
-    scale_color_manual(values = c("Acer spp. (maple)" = "#54FF00",
+    scale_color_manual(values = c(
+                                  "Acer spp. (maple)" = "#54FF00",
                                   "Betula spp. (birch)" = "#38A800",
-                                  "Carya spp. (hickory)" = "#FFFF00",
+                                  #"Carya spp. (hickory)" = "#FFFF00",
                                   "Fagus grandifolia (American beech)" = "#FFAA00",
                                   "Fraxinus spp. (ash)" = "#A87000",
-                                  "Liriodendron tulipifera (tuliptree)" = "#73AAFF",
-                                  "Other Exotic spp." = "#FF0000",
+                                  #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI
+                                  "Larix decidua (European larch)" = "#C8CE00", # MABI only
+                                  #"Other Exotic spp." = "#FF0000", # off for MABI
                                   "Other Native spp." = "#828282",
-                                  "Pinus spp. (pine)" = "#286F05", # turn off for MORR
-                                  "Prunus spp. (cherry)" ="#00E6A9", # turn off for MORR  
+                                  "Picea abies (Norway spruce)" = "#C2037A",
+                                  "Pinus spp. (pine)" = "#286F05", # off for MORR 
+                                  "Pinus sylvestris (Scots pine)" = "#D94600", # MABI only
+                                  #"Populus spp. (poplar)" = "#FFFF00", # same as Carya; off for MABI
+                                  #"Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
                                   "Quercus spp. (oak)" = "#C500FF",
-                                  "Robinia pseudoacacia (black locust)" = "#CBCC7E",
+                                  #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
                                   "Subcanopy spp." = "#FFBEE8",
-                                  "Ulmus spp. (elm)" = "#59538A"),
+                                  "Tilia americana (American basswood)" = "#53CEF2", # MABI only
+                                  "Tsuga canadensis (eastern hemlock)" = "#005CE6" # MABI/SAGA only
+                                  #"Ulmus spp. (elm)" = "#59538A" # off for MABI
+                                  ),
                     name = NULL)
 
 svg(paste0(new_path, "figures/", "Figure_3_", park, "_net_BA_by_species_cycle.svg"),
@@ -392,20 +419,28 @@ net_stems <-
     #           aes(x = cycle, y = park_total), color = 'black') +
     theme_FHM()+
     # may have to update for different parks
-    scale_color_manual(values = c("Acer spp. (maple)" = "#54FF00",
+    scale_color_manual(values = c(
+                                  "Acer spp. (maple)" = "#54FF00",
                                   "Betula spp. (birch)" = "#38A800",
-                                  "Carya spp. (hickory)" = "#FFFF00",
+                                  #"Carya spp. (hickory)" = "#FFFF00",
                                   "Fagus grandifolia (American beech)" = "#FFAA00",
                                   "Fraxinus spp. (ash)" = "#A87000",
-                                  "Liriodendron tulipifera (tuliptree)" = "#73AAFF",
-                                  "Other Exotic spp." = "#FF0000",
+                                  #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI
+                                  "Larix decidua (European larch)" = "#C8CE00", # MABI only
+                                  #"Other Exotic spp." = "#FF0000", # off for MABI
                                   "Other Native spp." = "#828282",
-                                  "Pinus spp. (pine)" = "#286F05", # turn off for MORR
-                                  "Prunus spp. (cherry)" ="#00E6A9", # turn off for MORR  
+                                  "Picea abies (Norway spruce)" = "#C2037A",
+                                  "Pinus spp. (pine)" = "#286F05", # off for MORR 
+                                  "Pinus sylvestris (Scots pine)" = "#D94600", # MABI only
+                                  #"Populus spp. (poplar)" = "#FFFF00", # same as Carya; off for MABI
+                                  #"Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
                                   "Quercus spp. (oak)" = "#C500FF",
-                                  "Robinia pseudoacacia (black locust)" = "#CBCC7E",
+                                  #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
                                   "Subcanopy spp." = "#FFBEE8",
-                                  "Ulmus spp. (elm)" = "#59538A"),
+                                  "Tilia americana (American basswood)" = "#53CEF2", # MABI only
+                                  "Tsuga canadensis (eastern hemlock)" = "#005CE6" # MABI/SAGA only
+                                  #"Ulmus spp. (elm)" = "#59538A" # off for MABI
+      ),
                      name = NULL)
        
 svg(paste0(new_path, "figures/", "Figure_3_", park, "_net_stems_by_species_cycle.svg"),
@@ -426,6 +461,7 @@ mor_rec_spp_long <- mor_rec2 %>%
 
 mor_rec_spp_long$rate[is.na(mor_rec_spp_long$rate)] <- 0
 head(mor_rec_spp_long)
+
 
 BA_max = max(ceiling(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "BA"]))) + 1
 stem_max = max(ceiling(abs(mor_rec_spp_long$rate[mor_rec_spp_long$unit_type == "stem"]))) + 1
