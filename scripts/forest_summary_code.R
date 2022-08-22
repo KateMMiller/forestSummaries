@@ -229,6 +229,7 @@ reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m'))
 reg_spp <- do.call(joinRegenData, args = list(park = 'all', from = 2019, to = 2022))
 
 table(reg_spp$ScientificName, reg_spp$ParkUnit)
+table(reg_all$ScientificName)
 
 Acer <- c('Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer negundo')
 Betula <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
@@ -260,7 +261,7 @@ if(park == "ROVA"){
 Exotic_spp <- c('Aesculus hippocastanum', 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
                 'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "Pinus sylvestris",
                 'Rhamnus cathartica', 'Salix alba')
-} else if(park == "MABI"){
+} else if(park %in% c("MABI", "SAGA")){ # so Acer platanoides is splot
 Exotic_spp <- c('Aesculus hippocastanum', 'Ailanthus altissima',
                 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
                 'Photinia villosa', 'Prunus avium', 'Pyrus', 
@@ -304,6 +305,20 @@ if(park == "ROVA"){
                                TRUE ~ toupper(paste0(
                                  substr(word(ScientificName, 1), 1, 3), 
                                  substr(word(ScientificName, 2), 1, 3))))) 
+} else if(park == "SAGA"){
+  reg_all <- reg_all %>% 
+    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
+                               ScientificName %in% Betula ~ "BETSPP",
+                               ScientificName %in% Fraxinus ~ "FRASPP",
+                               ScientificName %in% Pinus ~ "PINSPP",
+                               ScientificName %in% Prunus ~ "PRUSPP",
+                               ScientificName %in% Quercus ~ "QUESPP",
+                               ScientificName %in% c(Other_Native, Populus, Prunus) ~ "OTHNAT",
+                               ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
+                               ScientificName %in% Subcanopy ~ "SUBCAN",
+                               TRUE ~ toupper(paste0(
+                                 substr(word(ScientificName, 1), 1, 3), 
+                                 substr(word(ScientificName, 2), 1, 3)))))  
 } else {
 reg_all <- reg_all %>% 
   mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
@@ -322,12 +337,15 @@ reg_all <- reg_all %>%
                                substr(word(ScientificName, 1), 1, 3), 
                                substr(word(ScientificName, 2), 1, 3))))) 
 }
+
 reg_wide <- reg_all %>% group_by(Plot_Name, spp_grp) %>% 
   summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
             ., by = "Plot_Name") %>% arrange(spp_grp) %>% 
   pivot_wider(names_from = spp_grp, values_from = regen_den, values_fill = 0) %>% 
   arrange(Plot_Name)
+
+table(reg_all$ScientificName, reg_all$spp_grp)
 
 reg_wide <- if("NONPRE" %in% names(reg_wide)){reg_wide %>% select(-NONPRE)}else{reg_wide} 
 
@@ -377,6 +395,20 @@ trees_4yr <- trees_4yr %>%
                                TRUE ~ toupper(paste0(
                                  substr(word(ScientificName, 1), 1, 3), 
                                  substr(word(ScientificName, 2), 1, 3))))) 
+} else if(park == "SAGA"){
+  trees_4yr <- trees_4yr %>% 
+    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
+                               ScientificName %in% Betula ~ "BETSPP",
+                               ScientificName %in% Fraxinus ~ "FRASPP",
+                               ScientificName %in% Pinus ~ "PINSPP",
+                               ScientificName %in% Prunus ~ "PRUSPP",
+                               ScientificName %in% Quercus ~ "QUESPP",
+                               ScientificName %in% c(Other_Native, Populus, Prunus) ~ "OTHNAT",
+                               ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
+                               ScientificName %in% Subcanopy ~ "SUBCAN",
+                               TRUE ~ toupper(paste0(
+                                 substr(word(ScientificName, 1), 1, 3), 
+                                 substr(word(ScientificName, 2), 1, 3)))))  
 } else {
 trees_4yr <- trees_4yr %>% 
   mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
@@ -404,6 +436,7 @@ tree_wide <- trees_4yr %>% group_by(Plot_Name, spp_grp) %>%
 tree_wide$total <- rowSums(tree_wide[,4:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
 
+names(tree_wide)
 write_to_shp(tree_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, ".shp"))
 
@@ -427,6 +460,8 @@ stand_4yr <- do.call(joinStandData, args_4yr)
 dbi <- left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
                  stand_4yr, by = "Plot_Name") %>% 
        select(Plot_Name, X, Y, DBI = Deer_Browse_Index)
+
+mean(dbi$DBI) #SAGA = 3.67 
 
 write_to_shp(dbi, shp_name = 
          paste0(new_path, "shapefiles/", park, "_dbi_cycle_", cycle_latest, ".shp"))
@@ -585,9 +620,14 @@ pests_wide$EAB[pests_wide$Plot_Name == "MABI-013"] <- 0
 # Tree note said "No EAB", but was picked up in query for positive EAB detections
 }
 
+if(park == "SAGA" & to == 2022){
+  pests_wide$EAB[pests_wide$Plot_Name == "SAGA-017"] <- 0
+  # Tree note said "No EAB", but was picked up in query for positive EAB detections
+}
+
 pests_wide$none <- rowSums(pests_wide[,4:ncol(pests_wide)])
 
-if(park == "MABI"){
+if(park %in% c("MABI", "SAGA")){
   worms <- do.call(joinStandData, args = args_vs) %>% select(Plot_Name, cycle, Earthworms) %>% 
     mutate(Earthworms = ifelse(Earthworms == 1, 1, 0)) %>% 
     group_by(Plot_Name) %>% 

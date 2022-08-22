@@ -47,7 +47,7 @@ Ulmus_spp <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 
 Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
-                  'Nyssa sylvatica', #'Tilia americana',# Turned off for MABI
+                  'Nyssa sylvatica', #'Tilia americana',# Turned off for MABI & SAGA
                   'Picea rubens', ' Platanus occidentalis',
                   'Salix', 'Unknown Conifer',
                   'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
@@ -56,12 +56,12 @@ Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
                'Ilex opaca', 'Juniperus virginiana', 
                'Ostrya virginiana',
                'Sassafras albidum', 'Salix discolor', 'Viburnum prunifolium')
-Exotic_spp <- c('Acer platanoides', 'Aesculus hippocastanum', 'Ailanthus altissima',
+Exotic_spp <- c(#'Acer platanoides',  #Turned off for SAGA
+                'Aesculus hippocastanum', 'Ailanthus altissima',
                 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
                 'Photinia villosa', 'Prunus avium', 'Pyrus', 
                 #'Picea abies', "Pinus sylvestris",  # turned off for MABI
                 'Rhamnus cathartica', 'Salix alba')
-table(tree_mr$spp_grp)
 
 if(park == "MORR"){
   tree_mr <- tree_mr %>% 
@@ -94,6 +94,21 @@ if(park == "MORR"){
                                ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
                                ScientificName %in% Subcanopy ~ "Subcanopy spp.",
                                TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
+} else if(park == "SAGA") {
+  tree_mr <- tree_mr %>% 
+    mutate(spp_grp = case_when(ScientificName %in% Acer_spp ~ "Acer spp. (maple)",
+                               ScientificName %in% Betula_spp ~ "Betula spp. (birch)",
+                               ScientificName %in% Carya_spp ~ "Carya cordiformis (bitternut hickory)",
+                               ScientificName %in% Fraxinus_spp ~ "Fraxinus spp. (ash)",
+                               ScientificName %in% Pinus_spp ~ "Pinus spp. (pine)",
+                               ScientificName %in% Populus_spp ~ "Populus spp. (poplar)",
+                               #ScientificName %in% Prunus_spp ~ "Prunus spp. (cherry)",
+                               ScientificName %in% Quercus_spp ~ "Quercus spp. (oak)",
+                               ScientificName %in% Ulmus_spp ~ "Ulmus spp. (elm)",
+                               ScientificName %in% c(Other_Native, Prunus_spp, Populus_spp) ~ "Other Native spp.",
+                               ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
+                               ScientificName %in% Subcanopy ~ "Subcanopy spp.",
+                               TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
 } else {
 tree_mr <- tree_mr %>% 
   mutate(spp_grp = case_when(ScientificName %in% Acer_spp ~ "Acer spp. (maple)",
@@ -110,6 +125,7 @@ tree_mr <- tree_mr %>%
                              ScientificName %in% Subcanopy ~ "Subcanopy spp.",
                              TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
 }                             
+table(tree_mr$spp_grp)
 
 tree_mr$stems[tree_mr$status == "exclude"] <- -999
 tree_mr$BA_m2ha[tree_mr$status == "exclude"] <- -999
@@ -382,19 +398,21 @@ net_ba <-
     theme_FHM()+
     # may have to update for different parks
     scale_color_manual(values = c(
+                                  "Acer platanoides (Norway maple)" = "#FF0000", #SAGA and MIMA only
                                   "Acer spp. (maple)" = "#54FF00",
                                   "Betula spp. (birch)" = "#38A800",
                                   #"Carya spp. (hickory)" = "#FFFF00",
+                                  "Carya cordiformis (bitternut hickory)" = "#FFFF00", #SAGA only
                                   "Fagus grandifolia (American beech)" = "#FFAA00",
                                   "Fraxinus spp. (ash)" = "#A87000",
-                                  #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI
-                                  "Larix decidua (European larch)" = "#C8CE00", # MABI only
+                                  #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
+                                  #"Larix decidua (European larch)" = "#C8CE00", # MABI only
                                   #"Other Exotic spp." = "#FF0000", # off for MABI
-                                  "Other Native spp." = "#828282",
-                                  "Picea abies (Norway spruce)" = "#C2037A",
+                                  #"Other Native spp." = "#828282",
+                                  #"Picea abies (Norway spruce)" = "#C2037A",
                                   "Pinus spp. (pine)" = "#286F05", # off for MORR 
-                                  "Pinus sylvestris (Scots pine)" = "#D94600", # MABI only
-                                  #"Populus spp. (poplar)" = "#FFFF00", # same as Carya; off for MABI
+                                  #"Pinus sylvestris (Scots pine)" = "#D94600", # MABI only
+                                  "Populus spp. (poplar)" = "#CBCC7E", # same as Carya; off for MABI
                                   #"Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
                                   "Quercus spp. (oak)" = "#C500FF",
                                   #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
@@ -420,19 +438,21 @@ net_stems <-
     theme_FHM()+
     # may have to update for different parks
     scale_color_manual(values = c(
+                                  "Acer platanoides (Norway maple)" = "#FF0000", #SAGA and MIMA only
                                   "Acer spp. (maple)" = "#54FF00",
                                   "Betula spp. (birch)" = "#38A800",
                                   #"Carya spp. (hickory)" = "#FFFF00",
+                                  "Carya cordiformis (bitternut hickory)" = "#FFFF00", #SAGA only
                                   "Fagus grandifolia (American beech)" = "#FFAA00",
                                   "Fraxinus spp. (ash)" = "#A87000",
-                                  #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI
-                                  "Larix decidua (European larch)" = "#C8CE00", # MABI only
+                                  #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
+                                  #"Larix decidua (European larch)" = "#C8CE00", # MABI only
                                   #"Other Exotic spp." = "#FF0000", # off for MABI
-                                  "Other Native spp." = "#828282",
-                                  "Picea abies (Norway spruce)" = "#C2037A",
+                                  #"Other Native spp." = "#828282",
+                                  #"Picea abies (Norway spruce)" = "#C2037A",
                                   "Pinus spp. (pine)" = "#286F05", # off for MORR 
-                                  "Pinus sylvestris (Scots pine)" = "#D94600", # MABI only
-                                  #"Populus spp. (poplar)" = "#FFFF00", # same as Carya; off for MABI
+                                  #"Pinus sylvestris (Scots pine)" = "#D94600", # MABI only
+                                  "Populus spp. (poplar)" = "#CBCC7E", # same as Carya; off for MABI
                                   #"Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
                                   "Quercus spp. (oak)" = "#C500FF",
                                   #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
@@ -636,21 +656,21 @@ mor_rec_long <- trees_wide3 %>% group_by(ParkUnit, Plot_Name) %>%
 
 head(mor_rec_long)
 
-# Calculate average BAm2/ha per cycle using loess smoother
+# ## Calculate average BAm2/ha per cycle using loess smoother
 # BA_smooth <- case_boot_loess(mor_rec_long, x = 'cycle', y = 'BAm2ha', ID = 'Plot_Name',
 #                              span = 8/4, num_reps = 1000, chatty = TRUE)
 # 
-# BA_smooth
+# ## BA_smooth
 # 
 # ggplot(BA_smooth, aes(x = cycle, y = estimate))+
-#   geom_line() + theme_FHM() + ylim(0, 40) +
+#   geom_line() + theme_FHM() + ylim(0, 55) +
 #   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2)+
 #   labs(y = expression("Basal Area ("*m^2*")/ha)"))
 # 
 # ggsave(paste0(new_path, "figures/", "Figure_X_", park, "_treeBA_by_cycle.svg"),
 #        height = 8, width = 11, units = 'in')
 #
-# Turns out these aren't that helpful
+# ##Turns out these aren't that helpful
 
 # Total BA lost in last cycle
 mor_rec_all <- mor_rec %>% group_by(ParkUnit) %>% 
