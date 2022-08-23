@@ -47,7 +47,8 @@ Ulmus_spp <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 
 Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
-                  'Nyssa sylvatica', 'Tilia americana',# Turned off for MABI & SAGA
+                  'Nyssa sylvatica', 
+                  'Tilia americana',# Turned off for MABI & SAGA
                   'Picea rubens', ' Platanus occidentalis', 
                   'Salix', 'Unknown Conifer',
                   'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
@@ -56,7 +57,7 @@ Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
                'Ilex opaca', 'Juniperus virginiana', 
                'Ostrya virginiana',
                'Sassafras albidum', 'Salix discolor', 'Viburnum prunifolium')
-Exotic_spp <- c(#'Acer platanoides',  #Turned off for SAGA
+Exotic_spp <- c('Acer platanoides',  #Turned off for SAGA
                 'Aesculus hippocastanum', 'Ailanthus altissima',
                 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
                 'Photinia villosa', 'Prunus avium', 'Pyrus', 
@@ -110,7 +111,7 @@ if(park == "MORR"){
                                ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
                                ScientificName %in% Subcanopy ~ "Subcanopy spp.",
                                TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
-} else if(park == "MIMA") {
+} else if(park %in% c("MIMA", "WEFA")) {
   tree_mr <- tree_mr %>% 
     mutate(spp_grp = case_when(ScientificName %in% Acer_spp ~ "Acer spp. (maple)",
                                ScientificName %in% Betula_spp ~ "Betula spp. (birch)",
@@ -414,27 +415,27 @@ net_ba <-
     theme_FHM()+
     # may have to update for different parks
     scale_color_manual(values = c(
-                                  "Acer platanoides (Norway maple)" = "#A80000", #SAGA and MIMA only
+                                  #"Acer platanoides (Norway maple)" = "#A80000", #SAGA and MIMA only
                                   "Acer spp. (maple)" = "#54FF00",
                                   "Betula spp. (birch)" = "#38A800",
-                                  #"Carya spp. (hickory)" = "#FFFF00",
+                                  "Carya spp. (hickory)" = "#FFFF00", 
                                   #"Carya cordiformis (bitternut hickory)" = "#FFFF00", #SAGA only
                                   "Fagus grandifolia (American beech)" = "#FFAA00",
                                   "Fraxinus spp. (ash)" = "#A87000",
-                                  #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
+                                  "Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
                                   #"Larix decidua (European larch)" = "#C8CE00", # MABI only
-                                  "Other Exotic spp." = "#FF0000", # off for MABI
+                                  #"Other Exotic spp." = "#FF0000", # off for MABI
                                   "Other Native spp." = "#828282",
                                   #"Picea abies (Norway spruce)" = "#C2037A",
-                                  "Pinus spp. (pine)" = "#286F05", # off for MORR 
-                                  "Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
+                                  #"Pinus spp. (pine)" = "#286F05", # off for MORR 
+                                  #"Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
                                   #"Populus spp. (poplar)" = "#CBCC7E", # off for MABI
                                   "Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
                                   "Quercus spp. (oak)" = "#C500FF",
-                                  "Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
-                                  "Subcanopy spp." = "#FFBEE8",
+                                  #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
+                                  #"Subcanopy spp." = "#FFBEE8",
                                   #"Tilia americana (American basswood)" = "#53CEF2", # MABI only
-                                  #"Tsuga canadensis (eastern hemlock)" = "#005CE6" # MABI/SAGA only
+                                  "Tsuga canadensis (eastern hemlock)" = "#005CE6", # MABI/SAGA only
                                   "Ulmus spp. (elm)" = "#59538A" # off for MABI
                                   ),
                     name = NULL)
@@ -454,27 +455,27 @@ net_stems <-
     theme_FHM()+
     # may have to update for different parks
     scale_color_manual(values = c(
-                                  "Acer platanoides (Norway maple)" = "#A80000", #SAGA and MIMA only
+                                  #"Acer platanoides (Norway maple)" = "#A80000", #SAGA and MIMA only
                                   "Acer spp. (maple)" = "#54FF00",
                                   "Betula spp. (birch)" = "#38A800",
-                                  #"Carya spp. (hickory)" = "#FFFF00",
+                                  "Carya spp. (hickory)" = "#FFFF00", 
                                   #"Carya cordiformis (bitternut hickory)" = "#FFFF00", #SAGA only
                                   "Fagus grandifolia (American beech)" = "#FFAA00",
                                   "Fraxinus spp. (ash)" = "#A87000",
-                                  #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
+                                  "Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
                                   #"Larix decidua (European larch)" = "#C8CE00", # MABI only
-                                  "Other Exotic spp." = "#FF0000", # off for MABI
+                                  #"Other Exotic spp." = "#FF0000", # off for MABI
                                   "Other Native spp." = "#828282",
                                   #"Picea abies (Norway spruce)" = "#C2037A",
-                                  "Pinus spp. (pine)" = "#286F05", # off for MORR 
-                                  "Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
+                                  #"Pinus spp. (pine)" = "#286F05", # off for MORR 
+                                  #"Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
                                   #"Populus spp. (poplar)" = "#CBCC7E", # off for MABI
                                   "Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
                                   "Quercus spp. (oak)" = "#C500FF",
-                                  "Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
-                                  "Subcanopy spp." = "#FFBEE8",
+                                  #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
+                                  #"Subcanopy spp." = "#FFBEE8",
                                   #"Tilia americana (American basswood)" = "#53CEF2", # MABI only
-                                  #"Tsuga canadensis (eastern hemlock)" = "#005CE6" # MABI/SAGA only
+                                  "Tsuga canadensis (eastern hemlock)" = "#005CE6", # MABI/SAGA only
                                   "Ulmus spp. (elm)" = "#59538A" # off for MABI
       ),
                      name = NULL)
