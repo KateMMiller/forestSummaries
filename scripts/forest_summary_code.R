@@ -6,7 +6,7 @@
 # Write dataframe to shapefile using common settings
 write_to_shp <- function(data, x = "X", y = "Y", shp_name){
   st_write(st_as_sf(data, coords = c(x, y), crs = park_crs),
-           shp_name, delete_layer = TRUE)
+           shp_name, delete_layer = FALSE)#TRUE)
 }
 
 #---- Plot event lists ----
@@ -57,16 +57,17 @@ write_to_shp(reg_cycle,
 #---- Map 2 regen by size class ----
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
-reg_size <- reg %>% group_by(Plot_Name, cycle) %>% 
+reg_size <- reg %>% group_by(Plot_Name, SampleYear) %>% 
                     summarize_at(all_of(reg_sz_cols), sum, na.rm = TRUE) 
 
-
-reg_size_4yr <- reg_size %>% filter(cycle == cycle_latest) %>% 
+reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
                              left_join(plotevs_4yr %>% select(Plot_Name, xCoordinate, yCoordinate),
                                        ., by = 'Plot_Name')
-reg_size_4yr[, reg_sz_cols][reg_size_4yr[is.na(reg_size_4yr[,reg_sz_cols])]] <- 0
 
-colnames(reg_size_4yr) <- c("Plot_Name", "X", "Y", "cycle", 
+reg_size_4yr[, reg_sz_cols][reg_size_4yr[is.na(reg_size_4yr[,reg_sz_cols])]] <- 0
+head(reg_size_4yr)
+
+colnames(reg_size_4yr) <- c("Plot_Name", "X", "Y", "SampleYear", 
                              "s15_30", "s30_100", "s100_150", "s150p", "sap") #abbr. for shapefile
 
 reg_size_4yr$total <- rowSums(reg_size_4yr[,5:ncol(reg_size_4yr)])
@@ -110,7 +111,8 @@ reg_smooth$size_class <- factor(reg_smooth$size_class,
 cycle_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
                "2" = "Cycle 2: 2010 \u2013 2013", 
                "3" = "Cycle 3: 2014 \u2013 2017", 
-               "4" = "Cycle 4: 2018 \u2013 2022")
+               "4" = "Cycle 4: 2018 \u2013 2022",
+               "5" = "Cycle 5: 2023")
 
 reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
@@ -119,10 +121,10 @@ reg_trend_plot <-
   ggplot(reg_smooth, aes(x = size_class, y = estimate, color = size_class,#linetype = sign, 
                          group = size_class))+ theme_FHM()+
   geom_bar(stat = 'identity', aes(fill = size_class, color = 'DimGrey'))+
-  geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, size = 0.5, 
+  geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8)+
   labs(x  = "Cycle", y = bquote(Stems/m^2))+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 4)+
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5)+
   scale_color_manual(values = reg_colors, name = "Size Class",
                      labels = reg_labels)+
   scale_fill_manual(values = reg_colors, name = "Size Class",
@@ -140,7 +142,7 @@ ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by
 #---- Figure 1B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
-tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live') )
+tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live'))
 
 dbh_cols <- c('dens_10_19.9', 'dens_20_29.9', 'dens_30_39.9', 'dens_40_49.9', 
               'dens_50_59.9', 'dens_60_69.9', 'dens_70_79.9', 'dens_80_89.9',
@@ -169,8 +171,20 @@ dbh_labels <- c("10 \u2013 19.9 cm",
                 "90 \u2013 99.9 cm",
                 ">= 100 cm")
 
+dbh_labels <- c("10", 
+                "20", 
+                "30", 
+                "40", 
+                "50", 
+                "60", 
+                "70", 
+                "80", 
+                "90",
+                "100+")
+
 # check flat diameter distribution
 head(tree_dbh_sm)
+
 e <- min(tree_dbh_sm$estimate[tree_dbh_sm$estimate > 0])
 
 tree_dbh_sm <- suppressWarnings(# warning is for 'c', which we're not using
@@ -179,7 +193,7 @@ tree_dbh_sm <- suppressWarnings(# warning is for 'c', which we're not using
   separate(dbh_class2, into = c("a", "b", "c"), sep = "_", remove = FALSE) %>% 
   mutate(class = as.numeric(b)) %>% select(-a, -b, -c, -dbh_class2))
 
-AIC_test <- map_dfr(seq_along(1:4), function(x){
+AIC_test <- map_dfr(seq_along(1:5), function(x){
   df <- tree_dbh_sm %>% filter(cycle == x)
   lin_mod <- lm(estimate ~ class, data = df)
   exp_mod <- lm(log(estimate + e) ~ class, data = df)
@@ -199,16 +213,17 @@ cycle_labs_tr = c("1" = ifelse(AIC_test$best_mod[AIC_test$cycle == 1] == 'linear
                   "3" = ifelse(AIC_test$best_mod[AIC_test$cycle == 3] == 'linear',
                                paste0(cycle_labs[3], "*"), cycle_labs[3]),
                   "4" = ifelse(AIC_test$best_mod[AIC_test$cycle == 4] == 'linear',
-                               paste0(cycle_labs[4], "*"), cycle_labs[4]))
-cycle_labs_tr
+                               paste0(cycle_labs[4], "*"), cycle_labs[4]),
+                  "5" = ifelse(AIC_test$best_mod[AIC_test$cycle == 5] == 'linear',
+                               paste0(cycle_labs[5], "*"), cycle_labs[5]))
 
 dbh_trend_plot <- 
   ggplot(tree_dbh_sm, aes(x = dbh_class, y = estimate))+ theme_FHM()+
   geom_bar(stat = 'identity', fill = "#81B082" , color = 'DimGrey')+
-  geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, size = 0.5, 
+  geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8)+
   labs(x  = "Cycle", y = "Stems/ha")+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 4)+
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 5)+
   scale_color_manual(values = reg_colors, name = "DBH Size Class",
                      labels = reg_labels)+
   scale_fill_manual(values = reg_colors, name = "DBH Size Class",
@@ -221,7 +236,7 @@ dbh_trend_plot <-
 dbh_trend_plot
 
 ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
-       height = 5, width = 7.5, units = 'in')
+       height = 4.6, width = 7.8, units = 'in')
 
 #---- Map 3 Regen by composition ----
 reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m'))
@@ -230,6 +245,11 @@ reg_spp <- do.call(joinRegenData, args = list(park = 'all', from = 2019, to = 20
 
 table(reg_spp$ScientificName, reg_spp$ParkUnit)
 table(reg_all$ScientificName)
+
+dom_regspp <- reg_all %>% group_by(Plot_Name, ScientificName) %>% summarize(reg = sum(regen_den, na.rm = T)) %>% 
+  group_by(ScientificName) %>% summarize(reg = sum(reg, na.rm = T)) %>% arrange(desc(reg))
+
+dom_regspp
 
 Acer <- c('Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer negundo')
 Betula <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
@@ -377,6 +397,9 @@ reg_wide <- if("NONPRE" %in% names(reg_wide)){reg_wide %>% select(-NONPRE)}else{
 reg_wide$total <- rowSums(reg_wide[,4:ncol(reg_wide)])
 reg_wide$logtot <- log(reg_wide$total + 1)
 
+names(sort(desc(colSums(reg_wide[,c(4:(ncol(reg_wide)-2))]))))
+
+
 write_to_shp(reg_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
@@ -386,6 +409,11 @@ trees_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
 #table(joinTreeData(from = 2019, to = 2022)$ScientificName, joinTreeData(from = 2019, to = 2022)$ParkUnit)
 
 table(trees_4yr$ScientificName)
+
+dom_trspp <- trees_4yr %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>% 
+  group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
+
+dom_trspp
 
 if(park == "ROVA"){
 trees_4yr <- trees_4yr %>% 
@@ -615,6 +643,7 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%
                           grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
                                 DisturbanceNote) ~ "HWA",
                           grepl("BBD|beech bark disease|Beech bark disease", DisturbanceNote) ~ "BBD",
+                          grepl("GM|spongy|gypsy", DisturbanceNote) ~ "GM",
                           TRUE ~ NA_character_
   )) %>% filter(!is.na(pest)) %>% 
   select(Plot_Name, pest) %>% unique()
@@ -642,6 +671,7 @@ vnotes <- do.call(joinVisitNotes, args = args_4yr) %>%
                           grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
                                 Notes) ~ "HWA",
                           grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ "BBD",
+                          grepl("GM|spongy|gypsy", Notes) ~ "GM",
                           TRUE ~ NA_character_
   )) %>% filter(!is.na(pest)) %>% 
   select(Plot_Name, pest) %>% unique()
@@ -846,7 +876,11 @@ cwd_wide <- cwd %>% pivot_wider(names_from = cycle,
                                 names_prefix = "cycle_",
                                 values_fill = 0) 
 
+
+apply(cwd_wide[,4:7], 2, mean)
+
 write_to_shp(cwd_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", ".shp"))
 
 }
+
