@@ -183,7 +183,7 @@ flat_dist <- ifelse(aic_check$linear < aic_check$exp, 1, 0)
 #----- Regen Debt Table -----
 debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "Pct Stocked Plots",
                               "Stocking Index", "Deer Browse Impacts", "Flat Tree Diam. Dist.",
-                              "Sapling Composition", "Seedling Composition", 
+                              "Sapling Composition", "Seedling Comp.", 
                               "Sorensen Sapling", "Sorensen Seedling"),
                    Value = c(regsum_natcan$sapden, regsum_natcan$seedden, regsum_natcan$pct_stocked,
                              regsum_natcan$stock, mean_dbi, flat_dist, 
@@ -221,9 +221,9 @@ debt <- debt |> mutate(
               Metric == "Sapling Composition" & Value >= 50 & Value <= 70 ~ "Caution",
               Metric == "Sapling Composition" & Value > 70 ~ "Acceptable",
               
-              Metric == "Seedling Composition" & Value < 50 ~ "Critical",
-              Metric == "Seedling Composition" & Value >= 50 & Value <= 70 ~ "Caution",
-              Metric == "Seedling Composition" & Value > 70 ~ "Acceptable",
+              Metric == "Seedling Comp." & Value < 50 ~ "Critical",
+              Metric == "Seedling Comp." & Value >= 50 & Value <= 70 ~ "Caution",
+              Metric == "Seedling Comp." & Value > 70 ~ "Acceptable",
               
               Metric == "Sorensen Sapling" & Value < 0.2 ~ "Critical",
               Metric == "Sorensen Sapling" & Value >= 0.2 ~ "Acceptable",
@@ -292,22 +292,6 @@ results_plot
 
 path <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
                park, "/", to, '/figures/')
-ggsave(paste0(path, "Figure_X_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+ggsave(paste0(path, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 5.5, units = 'in')
 
-#--- SARA Values ---
-# sapden = 0.0257; Critical
-# seedden = 0.216; Critical
-# stock = 11.5; Critical
-# pct_stocked = 3.12; Critical
-# DBI = 4.22; Critical
-# Sapling comp = 0.219; Critical
-# Seedling comp = 0.333 # Critical
-# Sor Sapling = 0.15 # Critical
-# Sor Seedling = 0.337 # Acceptable
-# Flat Diam Dist = FALSE # Acceptable
-
-# Thresholds are in Table 2 of Miller et al. 2023
-
-
-
-
+# Now open svg and make the Regen Debt Status fill white, "#FFFFFF", and font size 13 instead of 11.
