@@ -136,27 +136,40 @@ trees <- trees %>%
 table(trees$spp_grp)
 table(trees$ScientificName, trees$spp_grp)
 
-plot_spp_yr <- expand.grid(Plot_Name = unique(plot_evs$Plot_Name), 
-                           SampleYear = unique(trees$SampleYear),
-                           spp_grp = unique(trees$spp_grp)) |> 
+plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
+
+# This will create all combination of plot, year, spp, but adds years not sampled by plots.
+# Need to then left join to drop unsampled years.
+plot_spp_yr1 <- expand.grid(Plot_Name = unique(plot_yr$Plot_Name), 
+                            SampleYear = unique(plot_yr$SampleYear),
+                            spp_grp = unique(trees$spp_grp)) |> 
   filter(spp_grp != "None present (NA)") |> 
   mutate(species = word(spp_grp, 1),
          genus = ifelse(is.na(word(spp_grp, 2)), "spp.", word(spp_grp, 2)),
          sppcode = toupper(paste0(substr(species, 1, 3), substr(genus, 1, 3)))) |> 
-  select(Plot_Name, SampleYear, spp_grp, sppcode)
+  select(Plot_Name, SampleYear, ScientificName, spp_grp, sppcode)
 
-plot_spp_yr$sppcode[plot_spp_yr$ScientificName == "Acer saccharum"] <- "ACESAC3"
+#plot_spp_yr1$sppcode[plot_spp_yr1$ScientificName == "Acer saccharum"] <- "ACESAC3"
+
+plot_spp_yr2 <- left_join(plot_spp_yr1, trees |> select(spp_grp, ScientificName) |> unique(), 
+                          by = "spp_grp", relationship = 'many-to-many')
+
+plot_spp_yr <- left_join(plot_yr, plot_spp_yr2, by = c("Plot_Name", "SampleYear"))
+
 plot_spp_yr$sppcode[plot_spp_yr$sppcode == "QUE(RE"] <- "QUESPP"
 plot_spp_yr$sppcode[plot_spp_yr$sppcode == "QUE(WH"] <- "QUESPP"
 plot_spp_yr$sppcode[plot_spp_yr$sppcode == "CRA(HA"] <- "CRASPP"
 
-dup_spp_check <- as.data.frame(table(plot_spp_yr$sppcode))
+dup_spp_check <- as.data.frame(table(plot_spp_yr1$sppcode))
 
 if(length(unique(dup_spp_check$Freq)) > 1)(stop("Not all tree species have the same frequency in expand grid. Check for duplicate species codes."))
 
+head(plot_spp_yr)
+head(trees)
 tree_spp_sum1 <- left_join(plot_spp_yr, 
                            trees |> select(Plot_Name, SampleYear, spp_grp, stems, BA_m2ha), 
-                           by = c("Plot_Name", "SampleYear", "spp_grp")) #|> 
+                           by = c("Plot_Name", "SampleYear", "spp_grp"),
+                           relationship = 'many-to-many') #|> 
 # filter(SampleYear > 2006) #dropped first year b/c only 1 microplot
 
 tree_spp_sum1[,c("stems", "BA_m2ha")][is.na(tree_spp_sum1[,c("stems", "BA_m2ha")])] <- 0
@@ -174,6 +187,7 @@ span = 8/length(unique(tree_spp_sum$SampleYear)) #9
 length(unique(tree_spp_sum$spp_grp))
 table(tree_spp_sum$spp_grp)
 
+#---- Tree Stems
 tree_stem_smooth <- purrr::map_dfr(spp_list, 
                                    function(spp){
                                      df <- tree_spp_sum |> filter(sppcode %in% spp)
@@ -183,18 +197,6 @@ tree_stem_smooth <- purrr::map_dfr(spp_list,
                                        mutate(sppcode = spp)
                                    }
 )
-
-tree_BA_smooth <- purrr::map_dfr(spp_list, 
-                                 function(spp){
-                                   df <- tree_spp_sum |> filter(sppcode %in% spp)
-                                   case_boot_loess(df, x = "SampleYear", y = "BA_m2ha", ID = "Plot_Name",
-                                                   group = "sppcode", 
-                                                   span = span, num_reps = 1000) |>
-                                     mutate(sppcode = spp)
-                                 }
-)
-
-#---- Tree Stems
 # Determine if significant based on whether first and last year CIs overlap
 tree_stem_smooth2 <- 
   left_join(tree_stem_smooth, 
@@ -254,6 +256,7 @@ tree_BA_smooth <- purrr::map_dfr(spp_list,
                                  }
 )
 
+
 tree_BA_smooth2 <- 
   left_join(tree_BA_smooth, 
             tree_BA_smooth |> arrange(SampleYear) |> group_by(sppcode) |> 
@@ -273,6 +276,9 @@ tree_BA_smooth3 <- left_join(tree_BA_smooth2,
                              relationship = 'many-to-many') |> 
   mutate(spp_grp = as.character(spp_grp)) |> 
   arrange(spp_grp)
+
+net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba = sum(estimate))
+net_ba_year # No decline in BA over time
 
 # Plotting trends by species group facet
 tree_BA_trends <- 
@@ -371,7 +377,7 @@ net_stems <-
         legend.key.width = unit(1, 'cm'))
 
 
-svg(paste0(new_path, "figures/", "Figure_3A_", park, "_smoothed_tree_stems_by_species_cycle.svg"),
+svg(paste0(new_path, "figures/", "Figure_4A_", park, "_smoothed_tree_stems_by_species_cycle.svg"),
     height = 4.6, width = 8)
 net_stems
 dev.off()
@@ -445,11 +451,10 @@ net_ba <-
         legend.key.width = unit(1, 'cm')) + 
   guides(color = guide_legend(nrow = 5))
 
-svg(paste0(new_path, "figures/", "Figure_3B_", park, "_smoothed_BA_by_species_cycle.svg"),
+svg(paste0(new_path, "figures/", "Figure_4B_", park, "_smoothed_BA_by_species_cycle.svg"),
     height = 6.15, width = 8)
   net_ba
 dev.off()
-
 
 #----- Similar figures for seedlings and saplings -----
 reg <- do.call(joinRegenData, c(args_all, units = 'sq.m')) |> 
@@ -520,22 +525,31 @@ reg_spp <- reg %>% left_join(., tlu_plants, by = c("TSN", "ScientificName")) %>%
                              TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
 
 head(reg_spp)
+table(reg_spp$spp_grp)
 
-reg_spp$ScientificName[reg_spp$ScientificName %in% c("Quercus (Red group)", "Quercus (White group)")] <- "Quercus"
+#reg_spp$ScientificName[reg_spp$ScientificName %in% c("Quercus (Red group)", "Quercus (White group)")] <- "Quercus"
 
 # Shifting to loess smoother with case bootstrap. Need a matrix of site x species x year
-plot_spp_yr <- expand.grid(Plot_Name = unique(plot_evs$Plot_Name), SampleYear = unique(reg_spp$SampleYear),
-                           spp_grp = unique(reg_spp$spp_grp)) |> 
-               filter(spp_grp != "None present (NA)") |> 
-               mutate(species = word(spp_grp, 1),
-                      genus = ifelse(is.na(word(spp_grp, 2)), "spp.", word(spp_grp, 2)),
-                      sppcode = toupper(paste0(substr(species, 1, 3), substr(genus, 1, 3)))) |> 
-               select(Plot_Name, SampleYear, spp_grp, sppcode)
+plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
 
-plot_spp_yr$sppcode[plot_spp_yr$ScientificName == "Acer saccharum"] <- "ACESAC3"
-plot_spp_yr$sppcode[plot_spp_yr$sppcode == "QUE(RE"] <- "QUESPP"
-plot_spp_yr$sppcode[plot_spp_yr$sppcode == "QUE(WH"] <- "QUESPP"
+# This will create all combination of plot, year, spp, but adds years not sampled by plots.
+# Need to then left join to drop unsampled years.
+plot_spp_yr1 <- expand.grid(Plot_Name = unique(plot_yr$Plot_Name), 
+                            SampleYear = unique(plot_yr$SampleYear),
+                            spp_grp = unique(reg_spp$spp_grp)) |> 
+  filter(spp_grp != "None present (NA)") |> 
+  mutate(species = word(spp_grp, 1),
+         genus = ifelse(is.na(word(spp_grp, 2)), "spp.", word(spp_grp, 2)),
+         sppcode = toupper(paste0(substr(species, 1, 3), substr(genus, 1, 3)))) |> 
+  select(Plot_Name, SampleYear, spp_grp, sppcode)
+
+plot_spp_yr <- left_join(plot_yr, plot_spp_yr1, by = c("Plot_Name", "SampleYear"))
+
+#plot_spp_yr$sppcode[plot_spp_yr$ScientificName == "Acer saccharum"] <- "ACESAC3"
+# plot_spp_yr$sppcode[plot_spp_yr$sppcode == "QUE(RE"] <- "QUESPP"
+# plot_spp_yr$sppcode[plot_spp_yr$sppcode == "QUE(WH"] <- "QUESPP"
 plot_spp_yr$sppcode[plot_spp_yr$sppcode == "CRA(HA"] <- "CRASPP"
+table(plot_spp_yr$sppcode)
 
 dup_spp_check <- as.data.frame(table(plot_spp_yr$sppcode))
 
@@ -550,6 +564,7 @@ reg_spp_smooth[,c("seed_den", "sap_den")][is.na(reg_spp_smooth[,c("seed_den", "s
 spp_list <- sort(unique(reg_spp_smooth$sppcode))
 
 span = 8/length(unique(reg_spp_smooth$SampleYear))
+table(reg_spp_smooth$SampleYear, reg_spp_smooth$Plot_Name)
 
 seed_smooth <- purrr::map_dfr(spp_list, 
                               function(spp){
@@ -735,7 +750,7 @@ net_seeds <-
 
 net_seeds
 
-svg(paste0(new_path, "figures/", "Figure_4B_", park, "_net_seedlings_by_species_cycle.svg"),
+svg(paste0(new_path, "figures/", "Figure_3B_", park, "_net_seedlings_by_species_cycle.svg"),
     height = 6.15, width = 8)
 net_seeds
 dev.off()
@@ -806,8 +821,186 @@ net_saps <-
 
 net_saps
 
-svg(paste0(new_path, "figures/", "Figure_4A_", park, "_net_saplings_by_species_cycle.svg"),
+svg(paste0(new_path, "figures/", "Figure_3A_", park, "_net_saplings_by_species_cycle.svg"),
     height = 4.6, width = 8)
 net_saps
 dev.off()
 
+
+#---- Shrub cover -----
+shrubs <- do.call(joinMicroShrubData, args_vs) |> filter(SampleYear >= 2010)
+
+other_native <- c("Amphicarpaea bracteata", "Aronia melanocarpa", "Gaylussacia baccata",
+                  "Hamamelis virginiana", "Ilex verticillata", "Lyonia ligustrina", "Rosa",
+                  "Spiraea alba", "Vaccinium angustifolium", "Vaccinium pallidum", 
+                  "Vaccinium stamineum", "Zanthoxylum americanum")
+other_exotic <- c("Berberis thunbergii", "Celastrus orbiculatus", "Crataegus", "Viburnum lantana")
+cornus <- c("Cornus", "Cornus amomum", "Cornus racemosa")
+rubus <- c("Rubus", "Rubus allegheniensis", "Rubus idaeus", "Rubus occidentalis", "Rubus odoratus")
+viburnum <- c("Viburnum dentatum", "Viburnum lentago")
+vitis <- c("Vitis", "Vitis aestivalis", "Vitis riparia")
+lonicera <- c("Lonicera", "Lonicera - Exotic", "Lonicera morrowii")
+parth <- c("Parthenocissus", "Parthenocissus quinquefolia")
+natvines <- c(parth, vitis, "Toxicodendron radicans")
+
+table(shrubs$ScientificName)
+
+shrubs <- left_join(shrubs, prepTaxa() |> select(ScientificName, CommonName), by = "ScientificName")
+
+shrubs <- shrubs %>% 
+  mutate(spp_grp = case_when(ScientificName %in% c(other_native, viburnum, parth, natvines) ~ "Other Native spp.",
+                             ScientificName %in% other_exotic ~ "Other Exotic spp.",
+                             ScientificName %in% cornus ~ "Cornus spp. (dogwood)",
+                             ScientificName %in% rubus ~ "Rubus spp. (brambles)",
+                             #ScientificName %in% viburnum ~ "Viburnum spp. (arrowwood)",
+                             ScientificName %in% vitis ~ "Vitis spp. (grape)",
+                             ScientificName %in% lonicera ~ "Lonicera spp. (exotic honeysuckle)",
+                             #ScientificName %in% natvines ~ "Native vine spp.",
+                             TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
+
+shrub_sum <- shrubs |> group_by(Plot_Name, SampleYear, spp_grp) |> 
+  summarize(avg_cov = sum(shrub_avg_cov, na.rm = T), .groups = 'drop')
+
+table(shrub_sum$spp_grp)
+head(shrubs)
+
+# Shifting to loess smoother with case bootstrap. Need a matrix of site x species x year
+plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> filter(SampleYear >= 2010) |> unique()
+
+# This will create all combination of plot, year, spp, but adds years not sampled by plots.
+# Need to then left join to drop unsampled years.
+plot_spp_yr1 <- expand.grid(Plot_Name = unique(plot_yr$Plot_Name), 
+                           SampleYear = unique(plot_yr$SampleYear),
+                           spp_grp = unique(shrub_sum$spp_grp)) |> 
+  filter(spp_grp != "None present (NA)") |> 
+  mutate(species = word(spp_grp, 1),
+         genus = ifelse(is.na(word(spp_grp, 2)), "spp.", word(spp_grp, 2)),
+         sppcode = toupper(paste0(substr(species, 1, 3), substr(genus, 1, 3)))) |> 
+  select(Plot_Name, SampleYear, spp_grp, sppcode)
+
+plot_spp_yr <- left_join(plot_yr, plot_spp_yr1, by = c("Plot_Name", "SampleYear"))
+
+dup_spp_check <- as.data.frame(table(plot_spp_yr$sppcode))
+
+if(length(unique(dup_spp_check$Freq)) > 1)(stop("Not all species have the same frequency in expand grid. Check for duplicate species codes."))
+
+shrub_smooth <- left_join(plot_spp_yr, shrub_sum |> select(Plot_Name, SampleYear, spp_grp, avg_cov), 
+                            by = c("Plot_Name", "SampleYear", "spp_grp")) #|> 
+
+shrub_smooth[,c("avg_cov")][is.na(shrub_smooth[,c("avg_cov")])] <- 0
+table(shrub_smooth$sppcode)
+
+spp_list <- sort(unique(shrub_smooth$sppcode))
+
+span = 8/length(unique(shrub_smooth$SampleYear))
+
+head(shrub_smooth)
+shrub_smooth <- purrr::map_dfr(spp_list, 
+                              function(spp){
+                                df <- shrub_smooth |> filter(sppcode %in% spp)
+                                case_boot_loess(df, x = "SampleYear", y = "avg_cov", ID = "Plot_Name",
+                                                group = "sppcode", 
+                                                span = span, num_reps = 1000) |>
+                                  mutate(sppcode = spp)
+                              }
+)
+
+# Determine if significant based on whether first and last year CIs overlap
+shrub_smooth2 <- 
+  left_join(shrub_smooth, 
+            shrub_smooth |> arrange(SampleYear) |> group_by(sppcode) |> 
+              summarize(up_first = first(upper95), up_last = last(upper95),
+                        lo_first = first(lower95), lo_last = last(lower95),
+                        sign = case_when(up_first < lo_last ~ "signinc",
+                                         lo_first > up_last ~ "signdec",
+                                         is.na(up_first) ~ "notmod",
+                                         TRUE ~ "nonsign")) |> 
+              select(sppcode, sign),
+            by = "sppcode")
+
+# Join full group names back into dataframe
+shrub_smooth3 <- left_join(shrub_smooth2,
+                          plot_spp_yr |> select(spp_grp, sppcode) |> unique(),
+                          by = c('sppcode'), 
+                          relationship = 'many-to-many') |> 
+  mutate(spp_grp = as.character(spp_grp)) |> 
+  arrange(spp_grp)
+
+# Plotting trends by species group facet
+shrub_trends <- 
+  ggplot(shrub_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
+                           color = sign, fill = sign)) +
+  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
+  geom_line(linewidth = 0.5) +
+  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
+                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
+  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
+                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
+  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
+                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
+  facet_wrap(~spp_grp, scales = 'free_y') + 
+  labs(y = "Shrub % Cover", x = "Year") +
+  scale_x_continuous(breaks = c(seq(2010, 2023, by = 3), 2023), 
+                     limits = c(2009, 2024)) +
+  theme_FHM() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
+        legend.position = 'bottom')
+
+shrub_trends
+
+svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_shrub_cover_by_species_cycle.svg"),
+    height = 8, width = 7)
+shrub_trends
+dev.off()
+
+net_shrubs <- 
+  ggplot(shrub_smooth3, 
+         aes(x = SampleYear, y = estimate)) +
+  geom_line(aes(color = spp_grp, linetype = spp_grp), linewidth = 1.5) +
+  labs(x = NULL, y = "Shrub % Cover") +
+  theme_FHM()+
+  scale_color_manual(values = c(
+ #   "Berberis thunbergii (Japanese barberry)" = "#4CE600",
+#    "Celastrus orbiculatus (oriental bittersweet)" = "#FFAA00",
+    "Cornus spp. (dogwood)" = "#95DE34",
+    "Lonicera spp. (exotic honeysuckle)" = "#0070FF",
+    #"Native vine spp." = "#308E33",
+    "Other Exotic spp." = "#F9CF36",
+    "Other Native spp." = "#828282",
+    "Rhamnus cathartica (common buckthorn)" = "#FF7854",
+    "Rosa multiflora (multiflora rose)" = "#BB3636",
+    "Rubus spp. (brambles)" = "#DC91F6"#,
+    #"Toxicodendron radicans (eastern poison ivy)" = "#937648",
+    #"Viburnum spp. (arrowwood)" = "#57A588",
+    #"Vitis spp. (grape)" = "#8C62B4",
+    #"Zanthoxylum americanum (Common pricky-ash)" = "#B9C63A"
+  ), name = NULL) +
+  scale_linetype_manual(values = c(
+ #   "Berberis thunbergii (Japanese barberry)" = "solid",
+ #   "Celastrus orbiculatus (oriental bittersweet)" = "solid",
+    "Cornus spp. (dogwood)" = "dotdash",
+    "Lonicera spp. (exotic honeysuckle)" = "solid",
+    #"Native vine spp." = "dashed",
+    "Other Exotic spp." = "solid",
+    "Other Native spp." = "dotdash",
+ #   "Parthenocissus spp. (Virginia creeper)" = "dotted",
+    "Rhamnus cathartica (common buckthorn)" = "solid",
+    "Rosa multiflora (multiflora rose)" = "solid",
+    "Rubus spp. (brambles)" = "dotdash"#,
+    #"Toxicodendron radicans (eastern poison ivy)" = "dotted",
+    #"Viburnum spp. (arrowwood)" = "dotdash",
+    #"Vitis spp. (grape)" = "dotdash",
+  #  "Zanthoxylum americanum (Common pricky-ash)" = "dotdash"
+  ), name = NULL) +
+  scale_x_continuous(breaks = c(seq(2010, 2023, by = 2), 2023), 
+                     limits = c(2009, 2024)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+        legend.position = 'bottom', 
+        legend.key.width = unit(1, 'cm'))
+
+net_shrubs
+
+svg(paste0(new_path, "figures/", "Figure_5_", park, "_smoothed_shrub_cover_by_species_cycle.svg"),
+    height = 6, width = 8)
+net_shrubs
+dev.off()
