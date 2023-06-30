@@ -57,8 +57,8 @@ write_to_shp(reg_cycle,
 #---- Map 2 regen by size class ----
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
-reg_size <- reg %>% group_by(Plot_Name, SampleYear) %>% 
-                    summarize_at(all_of(reg_sz_cols), sum, na.rm = TRUE) 
+reg_size <- reg %>% group_by(Plot_Name, SampleYear) |> 
+                    summarize_at(vars(reg_sz_cols), mean, na.rm = T)
 
 reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
                              left_join(plotevs_4yr %>% select(Plot_Name, xCoordinate, yCoordinate),
