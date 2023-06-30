@@ -835,6 +835,18 @@ ised_join <- left_join(spp_all, ised_taxon, by = c("TSN", "ScientificName", "Par
 write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_species.csv"),
           row.names = FALSE)
 
+#---- Invasive Detections for MABI/SAGA/ACAD ---- 
+taxa <- prepTaxa()
+
+spp_inv <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive')) |> 
+  select(Plot_Name, SampleYear, quad_avg_cov, ScientificName) |> 
+  filter(!ScientificName %in% "None present")
+
+#++++ ENDED HERE ++++
+spp_inv2 <- left_join(spp_inv, plotevs_4y |> select(Plot_Name, X = xCoordinate, Y = yCoordinate),
+                      by = "Plot_Name")
+
+#---- ED Pests ----
 priority_pests <- c("ALB", "BLD", "EAB", "EHS", "HWA", "RPS", "SLF", "SOD", "SPB", "SW")
 
 pest_eds <- pests_wide %>% select(Plot_Name, X, Y, any_of(priority_pests)) %>% 

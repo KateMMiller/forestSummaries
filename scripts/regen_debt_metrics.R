@@ -6,10 +6,10 @@ importData()
 VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"] <- TRUE
 
 #---- Params -----
-park = "SARA"
+park = "SAGA" # "SARA"
 from = 2022
 to = 2023
-num_plots = 32
+num_plots = 21 #32
 plot_size = 400
 from_prev = 2016
 to_prev = 2019
@@ -21,11 +21,11 @@ plotevs <- joinLocEvent(park = park, from = from, to = to) |> select(Plot_Name, 
 dbi <- joinStandData(park = park, from = from, to = to) |> select(Plot_Name, dbi = Deer_Browse_Index)
 
 mean_dbi <- mean(dbi$dbi)
-mean_dbi # 4.22
+mean_dbi # SARA = 4.22; SAGA 3.47
 
-dbiprev <- joinStandData(park = park, from = from, to = to) |> select(Plot_Name, dbi = Deer_Browse_Index)
+dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index)
 dbi_prev <- mean(dbiprev$dbi)
-dbi_prev # 4.125
+dbi_prev # SARA = 4.125; SAGA = 3.38
 
 # Regen densities
 reg <- joinRegenData(park = park, from = from, to = to, units = 'sq.m') 
@@ -266,7 +266,7 @@ results_plot <-
   ggplot(debt_final, 
          aes(x = 1, y = ordered(label_order, levels = rev(label_order)),
              fill = label_order)) +
-  geom_tile(aes(fill = status_fac), color = 'black', size = 0.5)+
+  geom_tile(aes(fill = status_fac), color = 'black', linewidth = 0.5)+
   geom_text(aes(label = text_label,
                 fontface = ifelse(Metric == "Regen. Debt Status", 2, 1))) +
   scale_fill_manual(values = c('Acceptable' = '#BDEBA7',
