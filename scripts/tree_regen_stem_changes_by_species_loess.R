@@ -993,10 +993,11 @@ net_shrubs <-
   #  "Zanthoxylum americanum (Common pricky-ash)" = "dotdash"
   ), name = NULL) +
   scale_x_continuous(breaks = c(seq(2010, 2023, by = 2), 2023), 
-                     limits = c(2009, 2024)) +
+                     limits = c(2009.9, 2023.1)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom', 
-        legend.key.width = unit(1, 'cm'))
+        legend.key.width = unit(1, 'cm')) + 
+  guides(color = guide_legend(nrow = 3))
 
 net_shrubs
 
