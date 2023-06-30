@@ -83,7 +83,7 @@ reg_vs <- do.call(joinRegenData,
                            canopyForm = 'canopy', units = 'sq.m'))
 
 reg_size_cy <- reg_vs %>% group_by(Plot_Name, cycle) %>% 
-                          summarize_at(all_of(reg_sz_cols), sum, na.rm = TRUE) %>% 
+                          summarize_at(vars(reg_sz_cols), sum, na.rm = TRUE) %>% 
                           left_join(plotevs_vs %>% select(Plot_Name, cycle),
                                     ., by = c("Plot_Name", "cycle")) 
 
@@ -656,9 +656,11 @@ pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "
            "SB", "SLF", "SOD", "SPB", "SW")
 
 treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>% 
-  group_by(Plot_Name) %>% summarize(across(all_of(pests), ~ifelse(sum(.x) > 0, 1, 0))) %>% 
+  #group_by(Plot_Name) %>% summarize(across(all_of(pests), ~ifelse(sum(.x) > 0, 1, 0))) %>% 
+  group_by(Plot_Name) %>% summarize_at(vars(pests), ~ifelse(sum(.x) > 0, 1, 0)) %>% 
+  
   #mutate(detect = rowSums(.[, pests])) %>% 
-  pivot_longer(all_of(pests), names_to = "pest", values_to = 'tree_cond') %>% 
+  pivot_longer(pests, names_to = "pest", values_to = 'tree_cond') %>% 
   filter(tree_cond > 0) %>% 
   arrange(Plot_Name) %>% unique() %>% select(Plot_Name, pest)
 
