@@ -51,6 +51,7 @@ reg_cycle <- reg %>% group_by(Plot_Name, cycle) %>%
                      rename(X = xCoordinate, Y = yCoordinate) #abbr for shapefile
 
 max(reg_cycle[,4:ncol(reg_cycle)])
+
 write_to_shp(reg_cycle, 
              shp_name = paste0(new_path, "shapefiles/", park, "_regen_by_cycle_", to, ".shp" ))
 
@@ -58,7 +59,7 @@ write_to_shp(reg_cycle,
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
 reg_size <- reg %>% group_by(Plot_Name, SampleYear) |> 
-  summarize_at(vars(all_of(reg_sz_cols)), mean, na.rm = T)
+  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T)
 
 reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
                              left_join(plotevs_4yr %>% select(Plot_Name, xCoordinate, yCoordinate),
