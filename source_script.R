@@ -24,8 +24,15 @@ QAQC = FALSE
 locType = 'all'
 cycle_latest = 5
 park_crs = ifelse(park %in% c("ACAD", "MIMA"), 26919, 26918)
-num_plots = 24 #32
-plot_size = 400
+num_plots = case_when(park == "ACAD" ~ 176,
+                      park == "MABI" ~ 24,
+                      park == "MIMA" ~ 20,
+                      park == "MORR" ~ 28,
+                      park == "ROVA" ~ 40,
+                      park == "SAGA" ~ 21,
+                      park == "SARA" ~ 32,
+                      park == "WEFA" ~ 10)
+plot_size = ifelse(park == "ACAD", 225, 400)
 from_prev = 2016
 to_prev = 2019
 
