@@ -6,7 +6,7 @@
 # Write dataframe to shapefile using common settings
 write_to_shp <- function(data, x = "X", y = "Y", shp_name){
   st_write(st_as_sf(data, coords = c(x, y), crs = park_crs),
-           shp_name, delete_layer = FALSE)#TRUE)
+           shp_name, delete_layer = TRUE)#FALSE)
 }
 
 #---- Plot event lists ----
@@ -58,7 +58,7 @@ write_to_shp(reg_cycle,
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
 reg_size <- reg %>% group_by(Plot_Name, SampleYear) |> 
-                    summarize_at(vars(reg_sz_cols), mean, na.rm = T)
+  summarize_at(vars(all_of(reg_sz_cols)), mean, na.rm = T)
 
 reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
                              left_join(plotevs_4yr %>% select(Plot_Name, xCoordinate, yCoordinate),
@@ -83,7 +83,7 @@ reg_vs <- do.call(joinRegenData,
                            canopyForm = 'canopy', units = 'sq.m'))
 
 reg_size_cy <- reg_vs %>% group_by(Plot_Name, cycle) %>% 
-                          summarize_at(vars(reg_sz_cols), sum, na.rm = TRUE) %>% 
+                          summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = TRUE) %>% 
                           left_join(plotevs_vs %>% select(Plot_Name, cycle),
                                     ., by = c("Plot_Name", "cycle")) 
 
@@ -92,7 +92,7 @@ reg_size_cy[reg_sz_cols][reg_size_cy[is.na(reg_sz_cols)]] <- 0
 # Use forestTrends to generate loess-smoothed CIs
 reg_smooth <- map_dfr(reg_sz_cols, 
                       ~case_boot_loess(reg_size_cy, x = 'cycle', y = .x, ID = 'Plot_Name', 
-                                     span = 8/4, num_reps = 1000, chatty = TRUE) %>% 
+                                     span = 8/4, num_reps = 250, chatty = TRUE) %>% 
                       mutate(size_class = .x)
 )
 
@@ -150,7 +150,7 @@ dbh_cols <- c('dens_10_19.9', 'dens_20_29.9', 'dens_30_39.9', 'dens_40_49.9',
 
 tree_dbh_sm <- map_dfr(dbh_cols, 
                     ~case_boot_loess(tree_dd, x = 'cycle', y = .x, ID = 'Plot_Name', 
-                                     span = 8/4, num_reps = 1000, chatty = TRUE) %>% 
+                                     span = 8/4, num_reps = 250, chatty = TRUE) %>% 
                      mutate(dbh_class = .x)
 )
 
@@ -655,14 +655,14 @@ treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live'))
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
            "SB", "SLF", "SOD", "SPB", "SW")
 
+
 treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>% 
   #group_by(Plot_Name) %>% summarize(across(all_of(pests), ~ifelse(sum(.x) > 0, 1, 0))) %>% 
-  group_by(Plot_Name) %>% summarize_at(vars(pests), ~ifelse(sum(.x) > 0, 1, 0)) %>% 
-  
-  #mutate(detect = rowSums(.[, pests])) %>% 
-  pivot_longer(pests, names_to = "pest", values_to = 'tree_cond') %>% 
+  group_by(Plot_Name) %>% summarize_at(vars(all_of(pests)), ~ifelse(sum(.x) > 0, 1, 0)) %>% 
+  pivot_longer(-Plot_Name, names_to = "pest", values_to = 'tree_cond') %>% 
   filter(tree_cond > 0) %>% 
   arrange(Plot_Name) %>% unique() %>% select(Plot_Name, pest)
+
 
 # Compile notes from visit that could contain mentions of pests
 
@@ -842,8 +842,7 @@ spp_inv <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive'))
   select(Plot_Name, SampleYear, quad_avg_cov, ScientificName) |> 
   filter(!ScientificName %in% "None present")
 
-#++++ ENDED HERE ++++
-spp_inv2 <- left_join(spp_inv, plotevs_4y |> select(Plot_Name, X = xCoordinate, Y = yCoordinate),
+spp_inv2 <- left_join(spp_inv, plotevs_4yr |> select(Plot_Name, X = xCoordinate, Y = yCoordinate),
                       by = "Plot_Name")
 
 #---- ED Pests ----
