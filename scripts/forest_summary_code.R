@@ -252,7 +252,7 @@ dom_regspp <- reg_all %>% group_by(Plot_Name, ScientificName) %>% summarize(reg 
 
 dom_regspp
 
-Acer <- c('Acer rubrum', 'Acer saccharum', 'Acer saccharinum', 'Acer negundo')
+Acer <- c('Acer rubrum', 'Acer saccharinum', 'Acer negundo')#, 'Acer saccharum') # Drop Acer saccharum for MABI
 Betula <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
@@ -269,7 +269,7 @@ Ulmus <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
                   'Nyssa sylvatica', 'Tilia americana', 'Picea rubens', 'Platanus occidentalis',
-                  'Salix', 'Unknown Conifer',
+                  'Salix', 'Unknown Conifer', 'Sorbus decora',
                   'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
 
 Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
