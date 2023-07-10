@@ -1,24 +1,17 @@
-library(tidyverse)
-library(forestNETN)
+#-------------------------------------------------------------------
+# Smoothed tree, sapling, seedling changes in abundance over time
+# ++++++++ MUST RUN source_script.R FIRST ++++++++
+#-------------------------------------------------------------------
+
 library(vegan)
 
-importData()
-VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"] <- TRUE
-
 #---- Params -----
-park = "SAGA" # "SARA"
-from = 2022
-to = 2023
-num_plots = 21 #32
-plot_size = 400
-from_prev = 2016
-to_prev = 2019
 
 # Plot list
-plotevs <- joinLocEvent(park = park, from = from, to = to) |> select(Plot_Name, SampleYear)
+plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) |> select(Plot_Name, SampleYear)
 
 # Deer Browse Index
-dbi <- joinStandData(park = park, from = from, to = to) |> select(Plot_Name, dbi = Deer_Browse_Index)
+dbi <- joinStandData(park = park, from = from_4yr, to = to) |> select(Plot_Name, dbi = Deer_Browse_Index)
 
 mean_dbi <- mean(dbi$dbi)
 mean_dbi # SARA = 4.22; SAGA 3.47
@@ -28,7 +21,7 @@ dbi_prev <- mean(dbiprev$dbi)
 dbi_prev # SARA = 4.125; SAGA = 3.38
 
 # Regen densities
-reg <- joinRegenData(park = park, from = from, to = to, units = 'sq.m') 
+reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') 
 
 reg$CanopyExclusion[reg$ScientificName %in% c("Fraxinus americana", "Fraxinus nigra", 
                                                 "Fraxinus pennsylvanica", "Fraxinus")] <- TRUE
@@ -103,7 +96,7 @@ reg_sap <- reg |>
   summarize(sap_den = sum(sap_den, na.rm = T), .groups = 'drop') |> 
   pivot_wider(names_from = sppcode, values_from = sap_den, values_fill = 0)
 
-trees <- joinTreeData(park = park, from = from, to = to, status = 'live') |> 
+trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |> 
   mutate(genus = word(ScientificName, 1),
          species = ifelse(is.na(word(ScientificName, 2)), "SPP", word(ScientificName, 2)),
          sppcode1 = toupper(paste0(substr(genus, 1, 3), substr(species, 1, 3))),
@@ -153,7 +146,7 @@ sor_seed <- comb |> filter(strata %in% c("tree", "seedling")) |>
 sor_seed_mean <- mean(sor_seed$sor_seed, na.rm = T)
 
 # Tree DBH distribution
-tree_dist <- sumTreeDBHDist(park = park, from = from, to = to, status = 'live')
+tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live')
 
 tree_dist2 <- tree_dist |> 
   summarize(dbh_10cm = sum(dens_10_19.9)/num_plots,
