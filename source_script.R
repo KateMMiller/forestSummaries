@@ -16,7 +16,7 @@ VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"]
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE
 
 # Set parameters
-park = 'SARA'
+park = 'MABI'
 from = 2006
 from_4yr = 2022
 to = 2023
@@ -24,6 +24,10 @@ QAQC = FALSE
 locType = 'all'
 cycle_latest = 5
 park_crs = ifelse(park %in% c("ACAD", "MIMA"), 26919, 26918)
+num_plots = 24 #32
+plot_size = 400
+from_prev = 2016
+to_prev = 2019
 
 args_all = list(park = park, from = from, to = to, QAQC = QAQC, locType = locType)
 args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = locType)
@@ -44,3 +48,4 @@ invisible(lapply(folders, function(x) {
 
 # Source files
 source('./scripts/forest_summary_code.R')
+source('./scripts/regen_debt_metrics.R')
