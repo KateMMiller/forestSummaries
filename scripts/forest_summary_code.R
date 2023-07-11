@@ -681,9 +681,9 @@ vnotes <- do.call(joinVisitNotes, args = args_4yr) %>%
 
 # Combine detections to 1 shapefile
 pest_detects <- rbind(treepests, disturb, vnotes) %>% 
-  left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
+  left_join(plotevs_4yr %>% select(Plot_Name, SampleYear, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% 
-  select(Plot_Name, X, Y, everything()) %>% unique() %>%  
+  select(Plot_Name, SampleYear, X, Y, everything()) %>% unique() %>%  
   mutate(pest = replace_na(pest, "None"),
          detect = ifelse(pest == "None", 0, 1))
 
@@ -691,17 +691,22 @@ pests_wide <- pest_detects %>%
   pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
   select(-None)
 
-if(park == "MABI" & to == 2022){
-pests_wide$EAB[pests_wide$Plot_Name == "MABI-013"] <- 0
+if(park == "MABI"){
+pests_wide$EAB[pests_wide$Plot_Name == "MABI-013" & pests_wide$SampleYear == 2022] <- 0
 # Tree note said "No EAB", but was picked up in query for positive EAB detections
 }
 
+if(park == "MABI"){
+  pests_wide$EAB[pests_wide$Plot_Name == "MABI-005" & pests_wide$SampleYear == 2023] <- 0
+  # Tree note said "No sign of EAB", but was picked up in query for positive EAB detections
+}
+
 if(park == "SAGA" & to == 2022){
-  pests_wide$EAB[pests_wide$Plot_Name == "SAGA-017"] <- 0
+  pests_wide$EAB[pests_wide$Plot_Name == "SAGA-017" & pests_wide$SampleYear == 2022] <- 0
   # Tree note said "No EAB", but was picked up in query for positive EAB detections
 }
 
-pests_wide$none <- rowSums(pests_wide[,4:ncol(pests_wide)])
+pests_wide$none <- rowSums(pests_wide[,5:ncol(pests_wide)])
 
 if(park %in% c("MABI", "SAGA")){
   worms <- do.call(joinStandData, args = args_vs) %>% select(Plot_Name, cycle, Earthworms) %>% 
