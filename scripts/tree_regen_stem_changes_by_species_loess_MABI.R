@@ -878,13 +878,12 @@ tlu_plants <- prepTaxa() %>% select(TSN, ScientificName, CommonName, Genus, Fami
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
 head(tlu_plants)
 
-head(quads)
-
 quads <- do.call(joinQuadSpecies, args_all) %>% filter(IsGerminant == FALSE) %>%
   left_join(., tlu_plants, by = c("TSN", "ScientificName")) %>% 
   left_join(., plot_yr, by = c('Plot_Name', 'SampleYear')) %>%
   select(Plot_Name, SampleYear, Family, Genus, ScientificName, CommonName, quad_avg_cov, quad_pct_freq, 
          Tree, TreeShrub, Shrub, Vine, Herbaceous, Graminoid, FernAlly, InvasiveNETN, Exotic) 
+sort(unique(quads$ScientificName))
 
 quad_grps <- quads |> mutate(spp_grp = case_when(InvasiveNETN == TRUE & (Tree == 1 | TreeShrub == 1 | 
                                                                            Shrub == 1 | Vine == 1) ~ "Invasive woody spp.",
@@ -894,19 +893,20 @@ quad_grps <- quads |> mutate(spp_grp = case_when(InvasiveNETN == TRUE & (Tree ==
                                                  Exotic == FALSE & (TreeShrub == 1 | Shrub == 1 | Vine == 1) ~ "Native shrub spp.",
                                                  Genus == "Vinca" ~ "Exotic woody spp.",
                                                  #InvasiveNETN == TRUE & (Herbaceous == TRUE | Graminoid == TRUE) ~ "Invasive forb spp.",
-                                                 ScientificName == "Alliaria petiolata" ~ "Alliaria petiolata (garlic mustard)",
-                                                 InvasiveNETN == FALSE & Exotic == TRUE & 
+                                                 #ScientificName == "Alliaria petiolata" ~ "Alliaria petiolata (garlic mustard)",
+                                                 #InvasiveNETN == FALSE & 
+                                                   Exotic == TRUE & 
                                                    (Herbaceous == TRUE | Graminoid == TRUE) ~ "Exotic herb. spp.",
                                                  #Family == "Poaceae" ~ "Poaceae (grasses)", 
                                                  Exotic == FALSE & Graminoid == TRUE ~ "Native graminoids",
                                                  Genus == "Carex" ~ "Carex spp. (sedges)",
                                                  Family %in% c("Juncaceae", "Cyperaceae") & 
                                                    !Genus %in% "Carex" ~ "Other graminoids",
-                                                 ScientificName == "Ageratina altissima" ~ "Ageratina altissima (white snakeroot)",
+                                                 #ScientificName == "Ageratina altissima" ~ "Ageratina altissima (white snakeroot)",
                                                  Family == "Asteraceae" ~ "Asteraceae (asters and goldenrods)",
                                                  FernAlly == TRUE ~ "Ferns",
-                                                 Genus == "Arisaema" ~ "Arisaema triphyllum (jack in the pulpit)",
-                                                 Genus == "Viola" ~ "Viola spp. (violets)",
+                                                 #Genus == "Arisaema" ~ "Arisaema triphyllum (jack in the pulpit)",
+                                                # Genus == "Viola" ~ "Viola spp. (violets)",
                                                  #Genus == "Galium" ~ "Galium spp. (bedstraw)",
                                                  #ScientificName %in% c("Rubus (dewberry)", "Rubus pubescens") ~ "Rubus (dewberry)",
                                                  #Family == "Saxifragaceae" ~ "Saxifragaceae (saxifrages)",
@@ -916,7 +916,8 @@ quad_grps <- quads |> mutate(spp_grp = case_when(InvasiveNETN == TRUE & (Tree ==
                                                    "Native perennial herb. spp.",
                                                  ScientificName %in% c("Actaea", "Actaea pachypoda", "Actaea rubra",
                                                                        "Anemone canadensis", "Anemone quinquefolia",
-                                                                       "Aralia nudicaulis", "Aralia racemosa", "Cardamine", 
+                                                                       "Aralia nudicaulis", "Aralia racemosa", 
+                                                                       'Arisaema triphyllum', "Cardamine", 
                                                                        "Cardamine pensylvanica", "Caulophyllum thalictroides",
                                                                        "Circaea", "Circaea lutetiana", "Circaea canadensis", 
                                                                        "Geranium maculatum", "Geranium", "Goodyera", "Laportea canadensis",
@@ -924,13 +925,15 @@ quad_grps <- quads |> mutate(spp_grp = case_when(InvasiveNETN == TRUE & (Tree ==
                                                                        "Oxalis montana", "Phryma leptostachya", "Pyrola", "Pyrola elliptica",
                                                                        "Ranunculus abortivus", "Ranunculus hispidus", "Ranunculus recurvatus",
                                                                        "Sanicula", "Sanicula marilandica", "Paronychia canadensis", 
-                                                                       "Mitchella repens", "Rubus (dewberry)", "Rubus pubescens") ~ 
+                                                                       "Mitchella repens", "Rubus (dewberry)", "Rubus pubescens",
+                                                                       'Viola', 'Viola candensis', 'Viola pubescens') ~ 
                                                    "Native perennial herb. spp.",
                                                  Genus %in% c("Asarum", "Claytonia", "Dicentra", "Erythronium") ~ 
                                                    "Native perennial herb. spp.",
                                                  ScientificName %in% c("Allium tricoccum", "Cardamine diphylla") ~ 
                                                    "Native perennial herb. spp.",
-                                                 ScientificName %in% c("Asclepias syriaca", "Chelone glabra", "Epilobium", 
+                                                 ScientificName %in% c("Ageratina altissima", "Asclepias syriaca", 
+                                                                       "Chelone glabra", "Epilobium", 
                                                                        "Fragaria vesca", "Fragaria virginiana", "Geum", 
                                                                        "Impatiens", "Impatiens capensis", "Impatiens pallida",
                                                                        "Oxalis", "Oxalis stricta", "Pilea pumila", "Polygonum achoreum",
@@ -949,7 +952,7 @@ quad_grps <- quads |> mutate(spp_grp = case_when(InvasiveNETN == TRUE & (Tree ==
 
 as.data.frame(table(quad_grps$spp_grp)) |> arrange(desc(Freq))
 
-table(quad_grps$spp_grp)
+quadspp <- as.data.frame(table(quad_grps$spp_grp, quad_grps$ScientificName))
 
 quad_sum <- quad_grps |> group_by(Plot_Name, SampleYear, spp_grp) |> 
   summarize(avg_cov = sum(quad_avg_cov, na.rm = T), .groups = 'drop')
@@ -1015,6 +1018,9 @@ quad_smooth3 <- left_join(quad_smooth2,
   mutate(spp_grp = as.character(spp_grp)) |> 
   arrange(spp_grp)
 
+quad_smooth3$estimate[quad_smooth3$estimate < 0] <- 0
+table(quad_smooth3$spp_grp)
+
 cover_plot <- 
   ggplot(quad_smooth3, 
          aes(x = SampleYear, y = estimate)) +
@@ -1022,18 +1028,18 @@ cover_plot <-
   labs(x = NULL, y = "Quadrat % Cover") +
   theme_FHM()+
   scale_color_manual(values = c(
-    "Alliaria petiolata (garlic mustard)" = "#C2037A",
+    #"Alliaria petiolata (garlic mustard)" = "#C2037A",
     "Exotic herb. spp." = "#F981FF", 
     "Exotic woody spp." = "#B559BA", 
     "Invasive woody spp." = "#FF0000", 
-    "Ageratina altissima (white snakeroot)" = "#F96262",
-    "Arisaema triphyllum (jack in the pulpit)" = "#2FBDFF",
+    #"Ageratina altissima (white snakeroot)" = "#FFF000",
+    #"Arisaema triphyllum (jack in the pulpit)" = "#2FBDFF",
     "Asteraceae (asters and goldenrods)" = "#F6EA42",
     "Ferns" = "#B0CB83",
     "Rubus spp. (brambles)" = "#C500FF",
-    "Viola spp. (violets)" = "#FFBEE8",
+    #"Viola spp. (violets)" = "#FFBEE8",
     #"Liliales (lily superfamily)" = "#0071E1",
-    "Native perennial herb. spp." = "#3AB000",
+    "Native perennial herb. spp." = "#2FBDFF",
     "Native graminoids" = "#995902",
     "Native shrub spp." = "#946DAB",
     "Native tree spp." = "#338A06",
@@ -1041,19 +1047,19 @@ cover_plot <-
     "Fagus grandifolia (American beech)" = "#FFAA00",
     "Fraxinus spp. (ash)" = "#A87000",
     "Ostrya virginiana (eastern hophornbeam)" = "#0071e1",
-    "Native weedy herb. spp." = "#FFD277"
+    "Native weedy herb. spp." = "#F96262"
   ), name = NULL) +
   scale_linetype_manual(values = c(
-    "Alliaria petiolata (garlic mustard)" = "dotdash",
+    #"Alliaria petiolata (garlic mustard)" = "dotdash",
     "Exotic herb. spp." = "dotted", 
-    "Exotic woody spp." = "solid", 
+    "Exotic woody spp." = "dotdash", 
     "Invasive woody spp." = "solid", 
     "Ageratina altissima (white snakeroot)" = "dotted",
-    "Arisaema triphyllum (jack in the pulpit)" = "solid",
+    #"Arisaema triphyllum (jack in the pulpit)" = "solid",
     "Asteraceae (asters and goldenrods)" = "solid",
     "Ferns" = "dotdash",
     "Rubus spp. (brambles)" = "solid",
-    "Viola spp. (violets)" = "dotted",
+    #"Viola spp. (violets)" = "dotted",
     #"Liliales (lily superfamily)" = "#0071E1",
     "Native perennial herb. spp." = "solid",
     "Native graminoids" = "dotdash",
@@ -1063,8 +1069,14 @@ cover_plot <-
     "Fagus grandifolia (American beech)" = "solid",
     "Fraxinus spp. (ash)" = "solid",
     "Ostrya virginiana (eastern hophornbeam)" = "dotdash",
-    "Native weedy herb. spp." = "dotted"
-  ), name = NULL)
+    "Native weedy herb. spp." = "dotdash"
+  ), name = NULL)+
+  scale_x_continuous(breaks = c(seq(2006, 2023, by = 2), 2023), 
+                     limits = c(2005.9, 2023.1)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+        legend.position = 'bottom', 
+        legend.key.width = unit(1, 'cm')) + 
+  guides(color = guide_legend(nrow = 6))
 
 cover_plot
 
