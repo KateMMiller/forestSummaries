@@ -864,3 +864,28 @@ dev.off()
 
 save.image(paste0("./rdata/", park, "_loess_data.RData"))
 
+
+#----- Number of Ash tree stems over time ------
+Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', 'Fraxinus nigra')
+
+frax <- do.call(joinTreeData, c(args_all, status = 'live')) |> filter(ScientificName %in% Fraxinus_spp)
+head(frax)
+frax_sum <- frax |> group_by(Plot_Name, cycle, ScientificName) |> 
+  summarize(num_stems = sum(num_stems), .groups = 'drop') |> 
+  mutate(sppcode = toupper(paste0(substr(word(ScientificName, 1), 1, 3), 
+                                  substr(word(ScientificName, 2), 1, 3)))) |> 
+  pivot_wider(names_from = sppcode, values_from = num_stems, values_fill = 0) |> 
+  mutate(FRAXSPP = FRAPEN + FRAAME + FRANIG) 
+
+fraxspp_wide <- frax_sum |> select(Plot_Name, cycle, FRAXSPP) |> 
+  pivot_wider(names_from = cycle, values_from = FRAXSPP, names_glue = "{'FRAX'}_{cycle}")
+
+plots <- do.call(joinLocEvent, args = args_vs) |> 
+  select(Plot_Name, X = xCoordinate, Y = yCoordinate) |> unique()
+
+fraxspp <- left_join(plots, fraxspp_wide, by = "Plot_Name") |> unique()
+fraxspp[,4:8][is.na(fraxspp[,4:8])] <- 0
+head(fraxspp)
+
+write_to_shp(fraxspp, 
+             shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle_", to, ".shp" ))
