@@ -866,7 +866,7 @@ net_shrubs <-
 net_shrubs
 
 svg(paste0(new_path, "figures/", "Figure_5_", park, "_smoothed_shrub_cover_by_species_cycle.svg"),
-    height = 6, width = 8)
+    height = 7, width = 8.5)
 net_shrubs
 dev.off()
 
@@ -1078,7 +1078,7 @@ cover_plot <-
 cover_plot
 
 svg(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_quad_cover_by_species.svg"),
-    height = 6, width = 8)
+    height = 7, width = 8.5)
 cover_plot
 dev.off()
 
