@@ -2,7 +2,7 @@
 # Smoothed tree, sapling, seedling changes in abundance over time
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
-#load(paste0("./rdata/SAGA_loess_data.RData"))
+#load(paste0("./rdata/MABI_loess_data.RData"))
 
 #---- Tree trends by species ----
 trees1 <- do.call(joinTreeData, args = c(args_vs, status = 'live'))
@@ -298,9 +298,9 @@ net_stems <-
     "Fraxinus spp. (ash)" = "solid",
     "Other Exotic spp." = "dotdash",
     "Other Native spp." = "dotdash",
-    "Picea abies (Norway spruce)" = 'solid',
+    "Picea abies (Norway spruce)" = 'dotdash',
     "Pinus spp. (pine - native)" = "solid", 
-    "Prunus spp. (cherry)" = 'dotdash',
+    "Prunus spp. (cherry)" = 'dotted',
     "Quercus spp. (oak)" = "solid",
     "Subcanopy spp." = "solid",
     "Tsuga canadensis (eastern hemlock)" = "solid"
@@ -351,9 +351,9 @@ net_ba <-
     "Fraxinus spp. (ash)" = "solid",
     "Other Exotic spp." = "dotdash",
     "Other Native spp." = "dotdash",
-    "Picea abies (Norway spruce)" = 'solid',
+    "Picea abies (Norway spruce)" = 'dotdash',
     "Pinus spp. (pine - native)" = "solid", 
-    "Prunus spp. (cherry)" = 'dotdash',
+    "Prunus spp. (cherry)" = 'dotted',
     "Quercus spp. (oak)" = "solid",
     "Subcanopy spp." = "solid",
     "Tsuga canadensis (eastern hemlock)" = "solid"
@@ -616,7 +616,7 @@ net_seeds <-
     "Other Native spp." = "#828282",
     "Picea abies (Norway spruce)" = "#A80000",
     "Pinus spp. (pine - native)" = "#704489", 
-    "Prunus spp. (cherry)" ="#00E6A9", 
+    "Prunus spp. (cherry)" = "#00E6A9", 
     "Quercus spp. (oak)" = "#C500FF",
     "Subcanopy spp." = "#FFBEE8",
     "Tsuga canadensis (eastern hemlock)" = "#005CE6"
@@ -630,9 +630,9 @@ net_seeds <-
       "Fraxinus spp. (ash)" = "solid",
       "Other Exotic spp." = "dotdash",
       "Other Native spp." = "dotdash",
-      "Picea abies (Norway spruce)" = "solid",
+      "Picea abies (Norway spruce)" = "dotdash",
       "Pinus spp. (pine - native)" = "solid", # off for MORR 
-      "Prunus spp. (cherry)" ="dotdash", # off for MORR & MABI 
+      "Prunus spp. (cherry)" = "dotted", # off for MORR & MABI 
       "Quercus spp. (oak)" = "solid",
       "Subcanopy spp." = "solid",
       "Tsuga canadensis (eastern hemlock)" = "solid"#, # MABI/SAGA ROVA only
@@ -682,9 +682,9 @@ net_saps <-
     "Fraxinus spp. (ash)" = "solid",
     "Other Exotic spp." = "dotdash",
     "Other Native spp." = "dotdash",
-    "Picea abies (Norway spruce)" = "solid",
+    "Picea abies (Norway spruce)" = "dotdash",
     "Pinus spp. (pine - native)" = "solid", 
-    "Prunus spp. (cherry)" ="dotdash", 
+    "Prunus spp. (cherry)" ="dotted", 
     "Quercus spp. (oak)" = "solid",
     "Subcanopy spp." = "solid",
     "Tsuga canadensis (eastern hemlock)" = "solid"
@@ -854,7 +854,7 @@ net_shrubs <-
     "Rhamnus cathartica (common buckthorn)" = "dotted",
     "Rubus spp. (brambles)" = "solid",
     "Sambucus spp. (elderberry)" = "dotted",
-    "Vitis spp. (grape)" = "solid"
+    "Vitis spp. (grape)" = "dotdash"
   ), name = NULL) +
   scale_x_continuous(breaks = c(seq(2010, 2023, by = 2), 2023), 
                      limits = c(2009.9, 2023.1)) +
@@ -869,9 +869,6 @@ svg(paste0(new_path, "figures/", "Figure_5_", park, "_smoothed_shrub_cover_by_sp
     height = 6, width = 8)
 net_shrubs
 dev.off()
-
-save.image(paste0("./rdata/", park, "_loess_data.RData"))
-
 
 #----- Understory composition -----
 tlu_plants <- prepTaxa() %>% select(TSN, ScientificName, CommonName, Genus, Family)
@@ -1040,7 +1037,7 @@ cover_plot <-
     #"Viola spp. (violets)" = "#FFBEE8",
     #"Liliales (lily superfamily)" = "#0071E1",
     "Native perennial herb. spp." = "#2FBDFF",
-    "Native graminoids" = "#995902",
+    "Native graminoids" = "#33ff00",
     "Native shrub spp." = "#946DAB",
     "Native tree spp." = "#338A06",
     "Acer saccharum (sugar maple)" = "#94da2f",
@@ -1052,7 +1049,7 @@ cover_plot <-
   scale_linetype_manual(values = c(
     #"Alliaria petiolata (garlic mustard)" = "dotdash",
     "Exotic herb. spp." = "dotted", 
-    "Exotic woody spp." = "dotdash", 
+    "Exotic woody spp." = "dotted", 
     "Invasive woody spp." = "solid", 
     "Ageratina altissima (white snakeroot)" = "dotted",
     #"Arisaema triphyllum (jack in the pulpit)" = "solid",
@@ -1062,7 +1059,7 @@ cover_plot <-
     #"Viola spp. (violets)" = "dotted",
     #"Liliales (lily superfamily)" = "#0071E1",
     "Native perennial herb. spp." = "solid",
-    "Native graminoids" = "dotdash",
+    "Native graminoids" = "dotted",
     "Native shrub spp." = "dotdash",
     "Native tree spp." = "solid",
     "Acer saccharum (sugar maple)" = "solid",
@@ -1080,7 +1077,10 @@ cover_plot <-
 
 cover_plot
 
-svg(paste0(new_path, "figures/sppcomp/", "Figure_6_", park, "_smoothed_quad_cover_by_species.svg"),
+svg(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_quad_cover_by_species.svg"),
     height = 6, width = 8)
 cover_plot
 dev.off()
+
+
+save.image(paste0("./rdata/", park, "_loess_data.RData"))
