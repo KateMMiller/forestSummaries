@@ -898,6 +898,19 @@ cwd_wide <- cwd %>% pivot_wider(names_from = cycle,
 
 apply(cwd_wide[,4:7], 2, mean)
 
+max_cwd <- max(cwd_wide[,c(4:8)])
+
+# Need to fudge b/c splitting across cycles for ArcMap charts to be
+# on the same scale
+if(park == 'MABI' & to == 2023){
+cwd_wide <- 
+rbind(cwd_wide,
+      data.frame(Plot_Name = "MABI-XXX", X = 699991, Y = 4834089,
+                 cycle_1 = max_cwd,  cycle_2 = max_cwd, 
+                 cycle_3 = max_cwd,  cycle_4 = max_cwd,
+                 cycle_5 = max_cwd))
+}
+
 write_to_shp(cwd_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", ".shp"))
 
