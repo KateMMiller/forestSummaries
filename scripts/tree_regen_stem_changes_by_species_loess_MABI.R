@@ -841,7 +841,7 @@ net_shrubs <-
     "Other Native spp." = "#828282",
     "Parthenocissus quinquefolia (Virginia creeper)" = "#4BC940",
     "Rhamnus cathartica (common buckthorn)" = "#FF8282",
-    "Rubus spp. (brambles)" = "#C9069F",
+    "Rubus spp. (brambles)" = "#C500FF",
     "Sambucus spp. (elderberry)" = "#FFE625",
     "Vitis spp. (grape)" = "#DE82FF"
   ), name = NULL) +
@@ -1078,7 +1078,7 @@ cover_plot <-
 cover_plot
 
 svg(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_quad_cover_by_species.svg"),
-    height = 7, width = 8.5)
+    height = 7.5, width = 8.5)
 cover_plot
 dev.off()
 
