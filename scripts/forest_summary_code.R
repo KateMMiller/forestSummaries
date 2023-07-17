@@ -252,12 +252,12 @@ dom_regspp <- reg_all %>% group_by(Plot_Name, ScientificName) %>% summarize(reg 
 
 dom_regspp
 
-Acer <- c('Acer rubrum', 'Acer saccharinum', 'Acer negundo')#, 'Acer saccharum') # Drop Acer saccharum for MABI
-Betula <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
+Acer <- c('Acer rubrum', 'Acer saccharinum', 'Acer negundo', 'Acer saccharum') # Drop Acer saccharum for MABI
+Betula <- c('Betula','Betula alleghaniensis', 'Betula X cearulea ', #'Betula lenta',  #Drop for MIMA
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
 Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', "Fraxinus nigra")
-Pinus <- c("Pinus resinosa", "Pinus strobus", "Pinus")
+Pinus <- c("Pinus resinosa", "Pinus") #, "Pinus strobus") # drop for MIMA
 Populus <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
 Prunus <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')
 Quercus <- c('Quercus', 'Quercus (Red group)', 'Quercus (White group)',
@@ -266,10 +266,10 @@ Quercus <- c('Quercus', 'Quercus (Red group)', 'Quercus (White group)',
              'Quercus velutina')
 Ulmus <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 
-Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
+Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis', "Alnus serrulata", 
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
                   'Nyssa sylvatica', 'Tilia americana', 'Picea rubens', 'Platanus occidentalis',
-                  'Salix', 'Unknown Conifer', 'Sorbus decora',
+                  'Salix', 'Salix discolor', 'Unknown Conifer', 'Sorbus decora',
                   'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
 
 Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
@@ -290,10 +290,10 @@ Exotic_spp <- c('Aesculus hippocastanum', 'Ailanthus altissima',
                 'Rhamnus cathartica', 'Salix alba')
 } else if(park %in% c("MIMA")){ # so Acer platanoides is split
   Exotic_spp <- c('Aesculus hippocastanum', 'Ailanthus altissima', 
-                  "Alnus serrulata", "Cladrastis kentukea", 
+                  "Cladrastis kentukea", 'Catalpa speciosa',
                   'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
                   'Photinia villosa', 'Prunus avium', 'Pyrus',  
-                  'Rhamnus cathartica', 'Salix alba')
+                  'Rhamnus cathartica', 'Robinia pseudoacacia', 'Salix alba')
 } else {
 Exotic_spp <- c('Acer platanoides', 'Aesculus hippocastanum', 'Ailanthus altissima',
                 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
@@ -351,13 +351,14 @@ if(park == "ROVA"){
 } else if(park == "MIMA"){
   reg_all <- reg_all %>% 
     mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               ScientificName %in% Betula ~ "BETSPP",
+                               #ScientificName %in% Betula ~ "BETSPP",
                                ScientificName %in% Carya ~ "CARSPP",
                                ScientificName %in% Fraxinus ~ "FRASPP",
-                               ScientificName %in% Pinus ~ "PINSPP",
+                               #ScientificName %in% Pinus ~ "PINSPP",
                                ScientificName %in% Prunus ~ "PRUSPP",
                                ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Populus) ~ "OTHNAT",
+                               ScientificName %in% c(Other_Native, Populus, Betula, 
+                                                     Pinus) ~ "OTHNAT",
                                ScientificName %in% c(Exotic_spp) ~ "EXOTIC",
                                ScientificName %in% Subcanopy ~ "SUBCAN",
                                ScientificName %in% Ulmus ~ "ULMSPP",
@@ -466,15 +467,16 @@ trees_4yr <- trees_4yr %>%
 } else if(park == "MIMA"){
   trees_4yr <- trees_4yr %>% 
     mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               ScientificName %in% Betula ~ "BETSPP",
+                               #ScientificName %in% Betula ~ "BETSPP",
                                ScientificName %in% Carya ~ "CARSPP",
                                ScientificName %in% Fraxinus ~ "FRASPP",
-                               ScientificName %in% Pinus ~ "PINSPP",
+                               #ScientificName %in% Pinus ~ "PINSPP",
                                ScientificName %in% Prunus ~ "PRUSPP",
                                ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Populus) ~ "OTHNAT",
-                               ScientificName %in% c(Exotic_spp, "Alnus serrulata", 
-                                                     "Catalpa speciosa") ~ "EXOTIC",
+                               ScientificName %in% c(Other_Native, Populus, 
+                                                     'Betula populifolia', 'Pinus rigida', 
+                                                     'Pinus') ~ "OTHNAT",
+                               ScientificName %in% c(Exotic_spp) ~ "EXOTIC",
                                ScientificName %in% Subcanopy ~ "SUBCAN",
                                ScientificName %in% Ulmus ~ "ULMSPP",
                                TRUE ~ toupper(paste0(
@@ -603,7 +605,8 @@ topspp <- invspp1 %>% left_join(plotspp_df, ., by = c('Plot_Name', 'ScientificNa
   group_by(ScientificName) %>% 
   summarize(avg_cov = mean(quad_avg_cov, na.rm = T),
             num_plots = sum(present), .groups = 'drop') %>% 
-  arrange(desc(avg_cov)) %>% slice(1:12) %>% select(ScientificName)
+  arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
+  #arrange(desc(avg_cov)) %>% slice(1:12) %>% select(ScientificName)
 
 # Prep for shapefile
 invspp <- invspp1 %>% 
@@ -916,3 +919,10 @@ write_to_shp(cwd_wide, shp_name =
 
 }
 
+#---- MABI Only: plot harvest history -----
+if(park == "MABI"){
+cut_trees <- do.call(joinTreeData, args_all) |> filter(TreeStatusCode == "DC")
+cut_df <- as.data.frame(table(cut_trees$Plot_Name, cut_trees$SampleYear))
+cut_wide <- cut_df |> pivot_wider(names_from = Var2, values_from = Freq)
+write.csv(cut_wide, paste0(new_path, "tables/", "Table_5_", park, "_harvesting_history.csv"), row.names = F)
+}
