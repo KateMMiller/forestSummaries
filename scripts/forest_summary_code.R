@@ -6,7 +6,7 @@
 # Write dataframe to shapefile using common settings
 write_to_shp <- function(data, x = "X", y = "Y", shp_name){
   st_write(st_as_sf(data, coords = c(x, y), crs = park_crs),
-           shp_name, delete_layer = TRUE)#FALSE)
+           shp_name, delete_layer = FALSE)#FALSE)
 }
 
 #---- Plot event lists ----
@@ -823,9 +823,22 @@ tlu_park2 <- tlu_park %>% select(ID, Unit) %>%
   rename(ParkID = ID) %>% 
   filter(Unit %in% park)
 
+# if(park == "MIMA"){
+#   xref_taxon$IsEarlyDetection[xref_taxon$TaxonID %in% c(517, 986) & 
+#                                 xref_taxon$ParkID %in% c(5, 6)] <
+#   #518 is AMPBRE; 986 is PHAARU; ParkID 5 and 6 are MIMA
+#   }
+
 ised_taxon1 <- xref_taxon %>% select(ParkID, TaxonID, IsEarlyDetection) %>% 
   filter(IsEarlyDetection == 1) %>% 
   unique()
+
+if(park == "MIMA"){
+ised_taxon1 <- rbind(ised_taxon1, 
+                     data.frame(ParkID = c(5, 6), # MIMA 2 units 
+                                TaxonID = c(517, 986), # AMPBRE, PHAARU 
+                                IsEarlyDetection = c(1, 1)))
+}
 
 ised_taxon2 <- inner_join(ised_taxon1, tlu_park2, by = "ParkID") %>% select(-ParkID) %>% unique()
 
@@ -840,6 +853,8 @@ ised_join <- left_join(spp_all, ised_taxon, by = c("TSN", "ScientificName", "Par
   left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% filter(!is.na(ScientificName)) %>% 
   select(Plot_Name, X, Y, ScientificName, quad_avg_cov)
+
+ised_join
 
 write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_species.csv"),
           row.names = FALSE)
@@ -926,3 +941,14 @@ cut_df <- as.data.frame(table(cut_trees$Plot_Name, cut_trees$SampleYear))
 cut_wide <- cut_df |> pivot_wider(names_from = Var2, values_from = Freq)
 write.csv(cut_wide, paste0(new_path, "tables/", "Table_5_", park, "_harvesting_history.csv"), row.names = F)
 }
+
+if(park == "MABI"){
+  ferns <- sumSpeciesList(park = "MABI", from = from_4yr, to = to) |> 
+    filter(ScientificName %in% c("Dennstaedtia punctilobula", "Thelypteris noveboracensis")) |> 
+    select(Plot_Name, ScientificName, quad_avg_cov)
+
+  ferns_sum <- ferns |> group_by(Plot_Name) |> summarize(avg_cov = sum(quad_avg_cov)) |> 
+    filter(avg_cov >= 15)
+  ferns_sum
+  
+  }
