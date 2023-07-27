@@ -823,12 +823,6 @@ tlu_park2 <- tlu_park %>% select(ID, Unit) %>%
   rename(ParkID = ID) %>% 
   filter(Unit %in% park)
 
-# if(park == "MIMA"){
-#   xref_taxon$IsEarlyDetection[xref_taxon$TaxonID %in% c(517, 986) & 
-#                                 xref_taxon$ParkID %in% c(5, 6)] <
-#   #518 is AMPBRE; 986 is PHAARU; ParkID 5 and 6 are MIMA
-#   }
-
 ised_taxon1 <- xref_taxon %>% select(ParkID, TaxonID, IsEarlyDetection) %>% 
   filter(IsEarlyDetection == 1) %>% 
   unique()
@@ -853,8 +847,6 @@ ised_join <- left_join(spp_all, ised_taxon, by = c("TSN", "ScientificName", "Par
   left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% filter(!is.na(ScientificName)) %>% 
   select(Plot_Name, X, Y, ScientificName, quad_avg_cov)
-
-ised_join
 
 write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_species.csv"),
           row.names = FALSE)
