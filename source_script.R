@@ -16,7 +16,7 @@ VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"]
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE
 
 # Set parameters
-park = 'MIMA'
+park = 'ACAD'
 from = 2006
 from_4yr = 2022
 to = 2023
@@ -56,3 +56,5 @@ invisible(lapply(folders, function(x) {
 # Source files
 source('./scripts/forest_summary_code.R')
 source('./scripts/regen_debt_metrics.R')
+
+source("./scripts/forest_summary_code_ACAD.R")
