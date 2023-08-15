@@ -267,15 +267,15 @@ net_stems <-
     "Betula spp. (white birches)" = "dashed",
     "Fagus grandifolia (beech)" = "dashed",
     "Fraxinus spp. (ash)" = "dotdash",
-    "Other conifers" = "solid",
+    "Other conifers" = "dotted",
     "Other hardwoods" = "dotted",
     "Picea rubens (red spruce)" = "solid",
-    "Picea spp. (other spruce)" = "dotdash",
+    "Picea spp. (other spruce)" = "dashed",
     "Pinus strobus (white pine)" = "solid",
-    "Pinus spp. (other pine)" = "dotted", 
-    "Populus spp. (aspen)" = "dotted",
+    "Pinus spp. (other pine)" = "solid", 
+    "Populus spp. (aspen)" = "solid",
     "Quercus rubra (red oak)" = "dotted",
-    "Subcanopy spp." = "dotdash",
+    "Subcanopy spp." = "dotted",
     "Thuja occidentalis (white cedar)" = 'solid'
   ),
   name = NULL) +
@@ -284,10 +284,10 @@ net_stems <-
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom', 
         legend.key.width = unit(1, 'cm')) + 
-  guides(color = guide_legend(nrow = 4))
+  guides(color = guide_legend(nrow = 5))
 
 svg(paste0(new_path, "figures/", "Figure_4A_", park, "_smoothed_tree_stems_by_species_cycle.svg"),
-    height = 4.6, width = 8)
+    height = 6, width = 8)
 net_stems
 dev.off()
 
@@ -323,15 +323,15 @@ net_ba <-
     "Betula spp. (white birches)" = "dashed",
     "Fagus grandifolia (beech)" = "dashed",
     "Fraxinus spp. (ash)" = "dotdash",
-    "Other conifers" = "solid",
+    "Other conifers" = "dotted",
     "Other hardwoods" = "dotted",
     "Picea rubens (red spruce)" = "solid",
-    "Picea spp. (other spruce)" = "dotdash",
+    "Picea spp. (other spruce)" = "dashed",
     "Pinus strobus (white pine)" = "solid",
-    "Pinus spp. (other pine)" = "dotted", 
-    "Populus spp. (aspen)" = "dotted",
+    "Pinus spp. (other pine)" = "solid", 
+    "Populus spp. (aspen)" = "solid",
     "Quercus rubra (red oak)" = "dotted",
-    "Subcanopy spp." = "dotdash",
+    "Subcanopy spp." = "dotted",
     "Thuja occidentalis (white cedar)" = 'solid'
   ),
   name = NULL) +
@@ -344,7 +344,7 @@ net_ba <-
   guides(color = guide_legend(nrow = 4))
 
 svg(paste0(new_path, "figures/", "Figure_4B_", park, "_smoothed_BA_by_species_cycle.svg"),
-    height = 6.15, width = 8)
+    height = 6, width = 8)
   net_ba
 dev.off()
 
@@ -563,15 +563,15 @@ net_seeds <-
     "Betula spp. (white birches)" = "dashed",
     "Fagus grandifolia (beech)" = "dashed",
     "Fraxinus spp. (ash)" = "dotdash",
-    "Other conifers" = "solid",
+    "Other conifers" = "dotted",
     "Other hardwoods" = "dotted",
     "Picea rubens (red spruce)" = "solid",
-    "Picea spp. (other spruce)" = "dotdash",
+    "Picea spp. (other spruce)" = "dashed",
     "Pinus strobus (white pine)" = "solid",
-    "Pinus spp. (other pine)" = "dotted", 
-    "Populus spp. (aspen)" = "dotted",
+    "Pinus spp. (other pine)" = "solid", 
+    "Populus spp. (aspen)" = "solid",
     "Quercus rubra (red oak)" = "dotted",
-    "Subcanopy spp." = "dotdash",
+    "Subcanopy spp." = "dotted",
     "Thuja occidentalis (white cedar)" = 'solid'
   ),
     name = NULL) +
@@ -580,12 +580,12 @@ net_seeds <-
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom', 
         legend.key.width = unit(1, 'cm')) + 
-  guides(color = guide_legend(nrow = 4))
+  guides(color = guide_legend(nrow = 5))
 
 net_seeds
 
 svg(paste0(new_path, "figures/", "Figure_3B_", park, "_net_seedlings_by_species_cycle.svg"),
-    height = 6.15, width = 8)
+    height = 6, width = 8)
 net_seeds
 dev.off()
 
@@ -619,15 +619,15 @@ net_saps <-
     "Betula spp. (white birches)" = "dashed",
     "Fagus grandifolia (beech)" = "dashed",
     "Fraxinus spp. (ash)" = "dotdash",
-    "Other conifers" = "solid",
+    "Other conifers" = "dotted",
     "Other hardwoods" = "dotted",
     "Picea rubens (red spruce)" = "solid",
-    "Picea spp. (other spruce)" = "dotdash",
+    "Picea spp. (other spruce)" = "dashed",
     "Pinus strobus (white pine)" = "solid",
-    "Pinus spp. (other pine)" = "dotted", 
-    "Populus spp. (aspen)" = "dotted",
+    "Pinus spp. (other pine)" = "solid", 
+    "Populus spp. (aspen)" = "solid",
     "Quercus rubra (red oak)" = "dotted",
-    "Subcanopy spp." = "dotdash",
+    "Subcanopy spp." = "dotted",
     "Thuja occidentalis (white cedar)" = 'solid'
   ),
   name = NULL) +
@@ -636,12 +636,12 @@ net_saps <-
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom', 
         legend.key.width = unit(1, 'cm')) + 
-  guides(color = guide_legend(nrow = 4))
+  guides(color = guide_legend(nrow = 5))
 
 net_saps
 
 svg(paste0(new_path, "figures/", "Figure_3A_", park, "_net_saplings_by_species_cycle.svg"),
-    height = 4.6, width = 8)
+    height = 6, width = 8)
 net_saps
 dev.off()
 
@@ -807,12 +807,12 @@ cover_plot <-
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom', 
         legend.key.width = unit(1, 'cm')) + 
-  guides(color = guide_legend(nrow = 3))
+  guides(color = guide_legend(nrow = 4))
 
 cover_plot
 
 svg(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_quad_cover_by_species.svg"),
-    height = 7.5, width = 8.5)
+    height = 6, width = 8)
 cover_plot
 dev.off()
 
