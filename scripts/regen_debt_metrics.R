@@ -8,17 +8,19 @@ library(vegan)
 #---- Params -----
 
 # Plot list
-plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) |> select(Plot_Name, SampleYear)
+plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) #|> filter(IsStuntedWoodland == FALSE) |> 
+  select(Plot_Name, SampleYear)
 
 # Deer Browse Index
-dbi <- joinStandData(park = park, from = from_4yr, to = to) |> select(Plot_Name, dbi = Deer_Browse_Index)
+dbi <- joinStandData(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
+  select(Plot_Name, dbi = Deer_Browse_Index)
 
 mean_dbi <- mean(dbi$dbi)
-mean_dbi # SARA = 4.22; SAGA 3.47
+mean_dbi # SARA = 4.22; SAGA 3.47; 2.6 ACAD
 
 dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index)
 dbi_prev <- mean(dbiprev$dbi)
-dbi_prev # SARA = 4.125; SAGA = 3.38
+dbi_prev # SARA = 4.125; SAGA = 3.38; 2.6 ACAD 
 
 # Regen densities
 reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') 
@@ -58,8 +60,9 @@ reg_natcan <- reg |> filter(NatCan == 1) |>
 reg_comb <- left_join(reg_tot, reg_natcan, by = "Plot_Name") |> 
   mutate(sap_dens_pct = sap_natcan/sap_tot,
          seed_dens_pct = seed_natcan/seed_tot)
-
-if(length(unique(reg_comb$Plot_Name)) < num_plots){warning("Need to left_join with plotevs")} 
+#intersect(names(plotevs), names(reg_comb))
+reg_comb <- left_join(plotevs, reg_comb, by = "Plot_Name")
+#if(length(unique(reg_comb$Plot_Name)) < num_plots){warning("Need to left_join with plotevs")} 
 
 reg_comb[,2:7][is.na(reg_comb[,2:7])] <- 0
 
