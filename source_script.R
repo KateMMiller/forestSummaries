@@ -18,7 +18,7 @@ VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"]
 # Set parameters
 park = 'ACAD'
 from = 2006
-from_4yr = 2022
+from_4yr = 2021
 to = 2023
 QAQC = FALSE
 locType = 'all'
