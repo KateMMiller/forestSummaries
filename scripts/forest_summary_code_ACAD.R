@@ -183,6 +183,61 @@ dbh_labels <- c("10",
                 "90",
                 "100+")
 
+#---- Figure 1C Sapling Diam. dist. trends by size class ----
+sap_dd <- do.call(sumSapDBHDist, args = c(args_vs, status = 'live'))
+head(sap_dd)
+sap_dbh_cols <- c('dens_1_1.9', 'dens_2_2.9', 'dens_3_3.9', 'dens_4_4.9', 
+              'dens_5_5.9', 'dens_6_6.9', 'dens_7_7.9', 'dens_8_8.9',
+              'dens_9_9.9')
+
+sap_dbh_sm <- map_dfr(sap_dbh_cols, 
+                       ~case_boot_loess(sap_dd, x = 'cycle', y = .x, ID = 'Plot_Name', 
+                                        span = 8/4, num_reps = 250, chatty = TRUE) %>% 
+                         mutate(dbh_class = .x)
+)
+
+sap_dbh_sm$estimate[sap_dbh_sm$estimate < 0] <- 0
+
+sap_dbh_sm$dbh_class <- factor(sap_dbh_sm$dbh_class, 
+                                levels = sap_dbh_cols)
+levels(sap_dbh_sm$dbh_class)
+
+sap_dbh_labels <- c("1 \u2013 1.9 cm", 
+                "2 \u2013 2.9 cm", 
+                "3 \u2013 3.9 cm", 
+                "4 \u2013 4.9 cm", 
+                "5 \u2013 5.9 cm", 
+                "6 \u2013 6.9 cm", 
+                "7 \u2013 7.9 cm", 
+                "8 \u2013 8.9 cm", 
+                "9 \u2013 9.9 cm")
+
+sap_dbh_labels <- c("1", "2", "3", "4", "5", 
+                    "6", "7", "8", "9")
+
+#sap_dbh_trend_plot <- 
+  ggplot(sap_dbh_sm, aes(x = dbh_class, y = estimate, fill = as.factor(cycle), color = as.factor(cycle), group = as.factor(cycle))) + 
+    theme_FHM() +
+  #geom_line(linewidth = 0.5) + 
+  
+  # geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
+  #               color = 'DimGrey', alpha = 0.8)+
+  # labs(x  = "Cycle", y = "Stems/ha")+
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 5)+
+  scale_color_manual(values = reg_colors, name = "DBH Size Class",
+                     labels = reg_labels)+
+  scale_fill_manual(values = reg_colors, name = "DBH Size Class",
+                    labels = reg_labels)+
+  scale_x_discrete(name = "DBH Size Class",
+                   labels = dbh_labels)+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
+        legend.position = 'none')
+
+dbh_trend_plot
+
+ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
+       height = 4.6, width = 7.8, units = 'in')
+
 # check flat diameter distribution
 head(tree_dbh_sm)
 
@@ -363,6 +418,41 @@ mean(dbi$DBI) #2.6
 write_to_shp(dbi, shp_name = 
          paste0(new_path, "shapefiles/", park, "_dbi_cycle_", cycle_latest, ".shp"))
 
+#---- DBI bar plot ----
+stand_all <- do.call(joinStandData, args = args_all) |> select(Plot_Name, SampleYear, cycle, dbi = Deer_Browse_Index) |> 
+  filter(SampleYear > 2008)
+
+dbi_sum <- stand_all |> group_by(cycle, dbi) |> summarize(dbi_plots = sum(!is.na(dbi)), .groups = 'drop') |> 
+  pivot_wider(names_from = dbi, values_from = dbi_plots, names_glue = "DBI_{.name}", values_fill = 0) |> 
+  select(cycle, DBI_2, DBI_3, DBI_4) |> 
+  pivot_longer(cols = DBI_2:DBI_4, names_to = "DBI", values_to = 'num_plots')
+
+table(stand_all$dbi, stand_all$SampleYear)
+
+head(dbi_sum)
+
+dbi_bar <- ggplot(dbi_sum, aes(x = cycle, y = num_plots, fill = DBI, color = DBI)) +
+  geom_bar(position = 'fill', stat = 'identity', na.rm = T) + 
+scale_color_manual(values = c("#05e689", "#efdf00", "#f94b24", "#a60808"),
+                   labels = c("Low", "Medium", "High", "Very High"), name = "Deer Browse Impact")+
+  scale_fill_manual(values = c("#05e689", "#efdf00", "#f94b24", "#a60808"),
+                    labels = c("Low", "Medium", "High", "Very High"), name = "Deer Browse Impact")+
+  
+  scale_y_continuous(breaks = c(0, 0.25, 0.50, 0.75, 1.00), labels = c(0, 25, 50, 75, 100))+
+  theme_bw()+
+  theme(axis.text = element_text(size = 11), 
+        axis.title = element_text(size = 12),
+        plot.title = element_text(hjust = 0.5, size = 12, margin = margin(t = 10, b = -15)),
+        panel.background = element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        axis.line = element_blank(), 
+        legend.position = 'bottom') + 
+  labs(x = "Cycle", y = "Proportion of Plots")
+
+dbi_bar
+
+head(stand_all)
 
 #---- Map 7 Invasive % Cover by Cycle ----
 invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive')) %>% 
