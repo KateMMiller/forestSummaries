@@ -55,6 +55,6 @@ invisible(lapply(folders, function(x) {
 
 # Source files
 source('./scripts/forest_summary_code_NETN.R')
-source('./scripts/regen_debt_metrics.R')
+source('./scripts/regen_debt_metrics_NETN.R')
 
 source("./scripts/forest_summary_code_ACAD.R")

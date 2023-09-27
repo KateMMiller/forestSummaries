@@ -25,7 +25,7 @@ reg <- do.call(joinRegenData,
 reg_cycle_table <- reg %>% group_by(Plot_Name, cycle) %>% 
                            summarize(seed_den = round(sum(seed_den, na.rm = TRUE), 2),
                                      sap_den = round(sum(sap_den, na.rm = TRUE), 2),
-                                     stock = round(sum(stock, na.rm = TRUE), 2), 
+                                     stock = round(sum(stock, na.rm = TRUE), 2) * (4 * pi), 
                                      .groups = 'drop') %>% 
                            left_join(plotevs %>% 
                                        select(Plot_Name, cycle, Plot = PlotCode, Panel = PanelCode),
@@ -347,7 +347,7 @@ reg_4yr <- do.call(joinRegenData,
                             canopyForm = 'canopy', units = 'sq.m'))
 
 reg_4yr_stock <- reg_4yr %>% group_by(Plot_Name) %>% 
-                             summarize(stock = sum(stock, na.rm = T)) %>% 
+                             summarize(stock = (sum(stock, na.rm = T)) * (4 * pi)) %>% 
                  left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
                            ., by = "Plot_Name")
 
@@ -447,8 +447,10 @@ invspp <- invspp1 %>%
                        substr(word(ScientificName, 2), 1, 3))))) %>% 
   arrange(sppcode, Plot_Name) %>% 
   select(Plot_Name, X, Y, sppcode, quad_cov) %>% 
-  pivot_wider(names_from = sppcode, values_from = quad_cov, values_fill = 0) %>% 
-  select(-NONPRE)
+  pivot_wider(names_from = sppcode, values_from = quad_cov, values_fill = 0) #%>% 
+  #select(-NONPRE)
+
+if("NONPRE" %in% names(invspp)){invspp <- invspp |> select(-NONPRE)}
 
 invspp$totcov = rowSums(invspp[,4:ncol(invspp)])
 
