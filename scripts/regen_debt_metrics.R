@@ -8,7 +8,7 @@ library(vegan)
 #---- Params -----
 
 # Plot list
-plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) #|> filter(IsStuntedWoodland == FALSE) |> 
+plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
   select(Plot_Name, SampleYear)
 
 # Deer Browse Index
@@ -67,8 +67,8 @@ reg_comb <- left_join(plotevs, reg_comb, by = "Plot_Name")
 reg_comb[,2:7][is.na(reg_comb[,2:7])] <- 0
 
 reg_pct <- reg_comb |> 
-  summarize(sap_pct = mean(sap_dens_pct) * 100,
-            seed_pct = mean(seed_dens_pct) * 100)
+  summarize(sap_pct = mean(sap_dens_pct, na.rm = T) * 100,
+            seed_pct = mean(seed_dens_pct, na.rm = T) * 100)
 
 reg_pct
 regsum_natcan
@@ -81,6 +81,7 @@ reg_seed <- reg |>
          sppcode1 = toupper(paste0(substr(genus, 1, 3), substr(species, 1, 3))),
          sppcode = case_when(ScientificName == "Acer saccharum" ~ "ACESAC3", 
                              ScientificName == "Quercus (Red group)" ~ "QUESPP", 
+                             ScientificName == "Quercus (White group)" ~ "QUESPP",
                              TRUE ~ sppcode1)) |> 
   select(Plot_Name, sppcode, seed_den) |> 
   group_by(Plot_Name, sppcode) |> 
@@ -93,6 +94,7 @@ reg_sap <- reg |>
          sppcode1 = toupper(paste0(substr(genus, 1, 3), substr(species, 1, 3))),
          sppcode = case_when(ScientificName == "Acer saccharum" ~ "ACESAC3", 
                              ScientificName == "Quercus (Red group)" ~ "QUESPP", 
+                             ScientificName == "Quercus (White group)" ~ "QUESPP",
                              TRUE ~ sppcode1)) |> 
   select(Plot_Name, sppcode, sap_den) |> 
   group_by(Plot_Name, sppcode) |> 
