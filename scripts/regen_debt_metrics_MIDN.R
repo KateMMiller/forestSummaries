@@ -22,6 +22,41 @@ dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(
 dbi_prev <- mean(dbiprev$dbi)
 dbi_prev # SARA = 4.125; SAGA = 3.38; 2.6 ACAD 
 
+# DBI distribution plot
+dbi_all <- joinStandData(park = park, from = from, to = to) |> select(Plot_Name, cycle, dbi = Deer_Browse_Index)
+dbi_sum <- dbi_all |> group_by(cycle, dbi) |> 
+  summarize(num_plots = sum(!is.na(dbi)), .groups = 'drop') |>
+  filter(!(is.na(dbi)))
+
+ # pivot_wider(names_from = dbi, values_from = num_plots, names_glue = "DBI_{.name}", values_fill = 0)
+
+# Update to include all DBI values (1 and 2 lumped)
+dbi_grid <- expand.grid(cycle = unique(dbi_sum$cycle), dbi = 2:5)
+dbi_grid$dbi_fac <- factor(dbi_grid$dbi, levels = c(2, 3, 4, 5), labels = c("Low", "Medium", "High", "Very High"))
+
+dbi_sum2 <- left_join(dbi_grid, dbi_sum, by = c("cycle", "dbi"))
+dbi_sum2$num_plots[is.na(dbi_sum2$num_plots)] <- 0
+
+dbi_plot <- 
+ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac)) +
+  geom_bar(position = 'fill', stat = 'identity', na.rm = T) +
+  theme_FVM() +
+  scale_color_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
+                                "High" = "#f94b24", "Very High" = "#a60808"),
+                     labels = c("Low", "Medium", "High", "Very High"), 
+                     name = "Deer Browse Impact") +
+  scale_fill_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
+                               "High" = "#f94b24", "Very High" = "#a60808"),
+                    labels = c("Low", "Medium", "High", "Very High"), 
+                    name = "Deer Browse Impact") +
+  scale_y_continuous(breaks = c(0, 0.25, 0.50, 0.75, 1.00), labels = c(0, 25, 50, 75, 100)) +
+  labs(y = "Proportion of Plots")
+
+svg(paste0(new_path, "figures/", "Figure_6_", park, "_DBI_by_cycle.svg"),
+    height = 6.15, width = 8)
+dbi_plot
+dev.off()
+
 # Regen densities
 reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') 
 
