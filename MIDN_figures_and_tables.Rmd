@@ -1,8 +1,77 @@
-#--------------------------------
-# Source Script for forestMIDN Data Summaries
-# Written by Kate Miller 9/13/2023
-#--------------------------------
+---
+output: 
+  pagedown::html_paged:
+    css: www/styles_MIDN_pages.css
+    toc: false
+    numbered_sections: false
+    number_sections: false
+    includes:
+      in_header: "header_manual.html"
 
+params:
+  park: 'FRSP' #'RICH' #'PETE'
+  from: 2007
+  from_4yr: 2021
+  to: 2023
+  QAQC: FALSE
+  locType: 'VS'
+  cycle_latest: 5
+  from_prev: 2016
+  to_prev: 2019
+---
+```{r echo = F}
+htmltools::includeHTML("header_manual.html")
+htmltools::includeHTML("footer.html")
+
+```
+
+```{r setup, include = FALSE, results = 'hide'}
+knitr::opts_chunk$set(echo = FALSE)
+options(knitr.kable.NA = '')
+
+library(pagedown)
+library(tidyverse)
+library(forestMIDN)
+library(htmltools)
+library(knitr)
+library(kableExtra)
+library(cowplot)
+#devtools::install_github(repo="haozhu233/kableExtra", ref="a6af5c0") # for collapse_rows()
+library(kableExtra)
+#devtools::install_github("katemmiller/forestTrends")
+library(forestTrends)
+library(sf)
+library(vegan)
+```
+
+```{r cache = T, results = 'hide', include = F}
+importData()
+```
+
+```{r}
+park = params$park
+from = as.numeric(params$from)
+from_4yr = as.numeric(params$from_4yr)
+to = as.numeric(params$to)
+QAQC = params$QAQC
+locType = params$locType
+cycle_latest = as.numeric(params$cycle_latest)
+from_prev = as.numeric(params$from_prev)
+to_prev = as.numeric(params$to_prev)
+
+# park = 'FRSP' #'RICH' #'PETE'
+# from = 2007
+# from_4yr = 2021
+# to = 2023
+# QAQC = FALSE
+# locType = 'VS'
+# cycle_latest = 5
+# from_prev = 2016
+# to_prev = 2019
+
+```
+
+```{r results = 'hide', include = F}
 # Note that the stocking index calculated in both the summary code and regen debt code is on the 
 # McWilliams 100 point scale, not the 1m2 scale that MIDN used to use.
 
@@ -22,33 +91,6 @@ VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"]
 # Params GEWA, THST: from = 2008; from_4yr = 2021; cycle_latest = 4; from_prev = 2016; to_prev = 2019;
 # Params COLO: from = 2011; from_4yr = 2019; cycle_latest = 3; from_prev = 2015; to_prev = 2018;
 # Params SAHI: from = 2009; from_4yr = 2023; cycle_latest = 4; from_prev = 2017; to_prev = 2017;
-
-# Set parameters
-#-----MIDN1----
-# park = 'FRSP' #'RICH' #'PETE'
-# from = 2007
-# from_4yr = 2021
-# to = 2023
-# QAQC = FALSE
-# locType = 'VS'
-# cycle_latest = 5
-# from_prev = 2016
-# to_prev = 2019
-
-#-----MIDN2-----
-# park = 'BOWA' #'APCO'#'GETT' #'HOFU' #'VAFO'
-# from = 2007
-# from_4yr = 2019
-# to = 2023
-# QAQC = FALSE
-# locType = 'VS'
-# cycle_latest = 4
-# from_prev = 2015
-# to_prev = 2018
-
-# table(VIEWS_MIDN$Plots_MIDN$ParkUnit, VIEWS_MIDN$Plots_MIDN$ZoneCode)
-# locs <- joinLocEvent(park = 'all', from = 2019, to = 2023) |> select(ParkUnit, Plot_Name) |> unique()
-# table(locs$ParkUnit)
 
 park_crs = ifelse(park %in% c("APCO", "BOWA"), 26917, 26918)
 
@@ -96,8 +138,16 @@ invisible(lapply(folders, function(x) {
 
 # Read in tree species groups for regen and tree pie charts
 trspp_grps <- read.csv("NPS_tree_species_groups.csv")
-
+```
+```{r results = 'hide', include = F}
 # Source files
 source('./scripts/forest_summary_code_MIDN.R')
+```
+```{r results = 'hide', include = F}
 source('./scripts/regen_debt_metrics_MIDN.R')
+```
+```{r results = 'hide', include = F}
 source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R')
+```
+
+Forest Summary Report for: <span style="font-weight:bold;">`r params$park` `r params$year` </span>

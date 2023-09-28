@@ -1,4 +1,4 @@
-Species,Group,Group_MIDN,Group_Code,Canopy_Tree,Native,New
+Species,Group,spp_grp,sppcode,Canopy_Tree,Native,New
 Acer rubrum,Acer rubrum,Acer rubrum (red maple),ACERUB,1,1,NA
 Acer,Acer sp.,Acer spp. (maple),ACESPP,1,1,NA
 Acer floridanum,Other Native,Acer spp. (maple),ACESPP,1,1,NA

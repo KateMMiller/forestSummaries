@@ -58,11 +58,14 @@ dbi_plot
 dev.off()
 
 # Regen densities
+# reg is all spp. reg$NatCan is used for metrics that only include native canopy forming spp.
 reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') 
 
 reg$CanopyExclusion[reg$ScientificName %in% c("Fraxinus americana", "Fraxinus nigra", 
                                                 "Fraxinus pennsylvanica", "Fraxinus")] <- TRUE
 reg$NatCan <- ifelse(reg$CanopyExclusion == FALSE & reg$Exotic == FALSE, 1, 0)
+
+table(reg$ScientificName, reg$NatCan) # only native canopy forming included
 
 DBI_threshold <- ifelse(mean_dbi <= 3, 50, 100)
 
@@ -85,7 +88,10 @@ reg_tot <- reg |> group_by(Plot_Name) |>
     seed_tot = sum(seed_den, na.rm = T)
   )
 
-length(unique(reg_tot$Plot_Name))
+if(length(unique(reg_tot$Plot_Name)) < num_plots){
+  warning(paste0("Regen debt metrics don't include the total number of plots for", park, 
+                 ". Compare total number of plots = ", num_plots, " regen debt plot tally = ", 
+                 length(unique(reg_tot$Plot_Name))))}
 
 reg_natcan <- reg |> filter(NatCan == 1) |> 
   group_by(Plot_Name) |> 
@@ -98,8 +104,11 @@ reg_comb <- left_join(reg_tot, reg_natcan, by = "Plot_Name") |>
 #intersect(names(plotevs), names(reg_comb))
 reg_comb <- left_join(plotevs, reg_comb, by = "Plot_Name")
 #if(length(unique(reg_comb$Plot_Name)) < num_plots){warning("Need to left_join with plotevs")} 
+head(reg_comb)
 
 reg_comb[,2:7][is.na(reg_comb[,2:7])] <- 0
+reg_comb$sap_dens_pct[is.nan(reg_comb$sap_dens_pct)] <- 0
+reg_comb$seed_dens_pct[is.nan(reg_comb$seed_dens_pct)] <- 0
 
 reg_pct <- reg_comb |> 
   summarize(sap_pct = mean(sap_dens_pct, na.rm = T) * 100,

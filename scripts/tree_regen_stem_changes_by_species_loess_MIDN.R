@@ -5,7 +5,7 @@
 
 if(!exists('trspp_grps')){stop("Must run source_script_MIDN.R before this script will work.")}
 head(trspp_grps)
-trspp_grps <- trspp_grps |> rename(sppcode = Group_Code, spp_grp = Group_MIDN) |> select(-Group)
+#trspp_grps <- trspp_grps |> rename(sppcode = Group_Code, spp_grp = Group_MIDN) |> select(-Group)
 
 #---- Tree trends by species ----
 trees1 <- do.call(joinTreeData, args = c(args_vs, status = 'live'))

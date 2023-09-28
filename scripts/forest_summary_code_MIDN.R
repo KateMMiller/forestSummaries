@@ -297,15 +297,15 @@ head(trspp_grps) # loaded in source_script_MIDN.R. Use as a first cut for groupi
 
 reg_grps <- left_join(reg_all, trspp_grps, by = c("ScientificName" = "Species"))
 
-if(nrow(reg_grps[which(is.na(reg_grps$Group_MIDN)),]) > 0){
-  warning("There's at least 1 NA in reg_spp_grps$Group_MIDN, meaning at least one species is missing a group.")} #check if any spp. is missing a group
+if(nrow(reg_grps[which(is.na(reg_grps$spp_grp)),]) > 0){
+  warning("There's at least 1 NA in reg_spp_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 head(reg_grps)
 
-reg_wide <- reg_grps %>% group_by(Plot_Name, Group_Code) %>% 
+reg_wide <- reg_grps %>% group_by(Plot_Name, sppcode) %>% 
   summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
-            ., by = "Plot_Name") %>% arrange(Group_Code) %>% 
-  pivot_wider(names_from = Group_Code, values_from = regen_den, values_fill = 0) %>% 
+            ., by = "Plot_Name") %>% arrange(sppcode) %>% 
+  pivot_wider(names_from = sppcode, values_from = regen_den, values_fill = 0) %>% 
   arrange(Plot_Name)
 
 reg_wide <- if("NONPRE" %in% names(reg_wide)){reg_wide %>% select(-NONPRE)}else{reg_wide} 
@@ -324,15 +324,15 @@ tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
 
 tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species"))
 
-if(nrow(tree_grps[which(is.na(tree_grps$Group_MIDN)),]) > 0){
-  warning("There's at least 1 NA in reg_spp_grps$Group_MIDN, meaning at least one species is missing a group.")} #check if any spp. is missing a group
+if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
+  warning("There's at least 1 NA in reg_spp_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 head(tree_grps)
 
-tree_wide <- tree_grps %>% group_by(Plot_Name, Group_Code) %>% 
+tree_wide <- tree_grps %>% group_by(Plot_Name, sppcode) %>% 
   summarize(BAm2ha = sum(BA_cm2, na.rm = TRUE)/400, .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
-            ., by = "Plot_Name") %>% arrange(Group_Code) %>% 
-  pivot_wider(names_from = Group_Code, values_from = BAm2ha, values_fill = 0) 
+            ., by = "Plot_Name") %>% arrange(sppcode) %>% 
+  pivot_wider(names_from = sppcode, values_from = BAm2ha, values_fill = 0) 
 
 tree_wide$total <- rowSums(tree_wide[,4:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
