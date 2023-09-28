@@ -24,15 +24,27 @@ VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"]
 # Params SAHI: from = 2009; from_4yr = 2023; cycle_latest = 4; from_prev = 2017; to_prev = 2017;
 
 # Set parameters
-park = 'VAFO'
+#-----MIDN1----
+park = 'FRSP' #'RICH' #'PETE'
 from = 2007
-from_4yr = 2019
+from_4yr = 2021
 to = 2023
 QAQC = FALSE
 locType = 'VS'
-cycle_latest = 4
+cycle_latest = 5
 from_prev = 2016
 to_prev = 2019
+
+#-----MIDN2-----
+# park = 'BOWA' #'APCO'#'GETT' #'HOFU' #'VAFO'
+# from = 2007
+# from_4yr = 2019
+# to = 2023
+# QAQC = FALSE
+# locType = 'VS'
+# cycle_latest = 4
+# from_prev = 2015
+# to_prev = 2018
 
 # table(VIEWS_MIDN$Plots_MIDN$ParkUnit, VIEWS_MIDN$Plots_MIDN$ZoneCode)
 # locs <- joinLocEvent(park = 'all', from = 2019, to = 2023) |> select(ParkUnit, Plot_Name) |> unique()
