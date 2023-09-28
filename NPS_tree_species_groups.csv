@@ -28,10 +28,10 @@ Carya ovata,Carya sp.,Carya spp. (hickory),CARSPP,1,1,NA
 Carya sp.,Carya sp.,Carya spp. (hickory),CARSPP,1,1,NA
 Carya spp.,Carya sp.,Carya spp. (hickory),CARSPP,1,1,NA
 Carya tomentosa,Carya sp.,Carya spp. (hickory),CARSPP,1,1,NA
-Celtis laevigata,Other Native,Celtis spp. (hackberry),CELSPP,1,1,NA
-Celtis occidentalis,Celtis sp.,Celtis spp. (hackberry),CELSPP,1,1,NA
-Celtis sp.,Celtis sp.,Celtis spp. (hackberry),CELSPP,1,1,NA
-Diospyros virginiana,Diospyros virginiana,Diospyros virginiana (common persimmon),DIOVIR,1,1,NA
+Celtis laevigata,Other Native,Other Native,OTHNAT,1,1,NA
+Celtis occidentalis,Celtis sp.,Other Native,OTHNAT,1,1,NA
+Celtis sp.,Celtis sp.,Other Native,OTHNAT,1,1,NA
+Diospyros virginiana,Diospyros virginiana,Other Native,OTHNAT,1,1,NA
 Fagus grandifolia,Fagus grandifolia,Fagus grandifolia (American beech),FAGGRA,1,1,NA
 Fraxinus,Fraxinus sp.,Fraxinus spp. (ash),FRASPP,0,1,NA
 Fraxinus americana,Fraxinus americana,Fraxinus spp. (ash),FRASPP,0,1,NA
@@ -41,25 +41,25 @@ Fraxinus profunda,Fraxinus sp.,Fraxinus spp. (ash),FRASPP,0,1,NA
 Fraxinus sp.,Fraxinus sp.,Fraxinus spp. (ash),FRASPP,0,1,NA
 Fraxinus spp.,Fraxinus sp.,Fraxinus spp. (ash),FRASPP,0,1,NA
 Ilex opaca,Ilex opaca,Ilex opaca (American holly),ILEOPA,0,1,NA
-Juglans,Juglans sp.,Juglans spp. (walnut),JUGSPP,1,1,NA
-Juglans cinerea,Juglans sp.,Juglans spp. (walnut),JUGSPP,1,1,NA
-Juglans nigra,Juglans sp.,Juglans spp. (walnut),JUGSPP,1,1,NA
-Juglans sp.,Juglans sp.,Juglans spp. (walnut),JUGSPP,1,1,NA
+Juglans,Juglans sp.,Other Native,OTHNAT,1,1,NA
+Juglans cinerea,Juglans sp.,Other Native,OTHNAT,1,1,NA
+Juglans nigra,Juglans sp.,Other Native,OTHNAT,1,1,NA
+Juglans sp.,Juglans sp.,Other Native,OTHNAT,1,1,NA
 Juniperus virginiana,Juniperus virginiana,Juniperus virginiana (eastern redcedar),JUNVIR,0,1,NA
 Liquidambar styraciflua,Liquidambar styraciflua,Liquidambar styraciflua (sweetgum),LIQSTY,1,1,NA
 Liriodendron tulipifera,Liriodendron tulipifera,Liriodendron tulipifera (tulip poplar),LIRTUL,1,1,NA
-Magnolia acuminata,Magnolia sp.,Magnolia spp. (magnolia),MAGSPP,1,1,NA
-Magnolia fraseri,Magnolia sp.,Magnolia spp. (magnolia),MAGSPP,1,1,NA
-Magnolia grandiflora,Magnolia sp.,Magnolia spp. (magnolia),MAGSPP,1,1,NA
-Magnolia tripetala,Magnolia sp.,Magnolia spp. (magnolia),MAGSPP,1,1,NA
-Magnolia virginiana,Magnolia sp.,Magnolia spp. (magnolia),MAGSPP,1,1,NA
-Abies balsamea,Northern Conifer,Northern Conifer,NORCON,1,1,NA
-Larix laricina,Northern Conifer,Northern Conifer,NORCON,1,1,NA
-Picea,Northern Conifer,Northern Conifer,NORCON,1,1,NA
-Picea glauca,Northern Conifer,Northern Conifer,NORCON,1,1,NA
-Picea mariana,Northern Conifer,Northern Conifer,NORCON,1,1,NA
-Picea rubens,Northern Conifer,Northern Conifer,NORCON,1,1,NA
-Thuja occidentalis,Other Native,Northern Conifer,NORCON,1,1,NA
+Magnolia acuminata,Magnolia sp.,Other Native,OTHNAT,1,1,NA
+Magnolia fraseri,Magnolia sp.,Other Native,OTHNAT,1,1,NA
+Magnolia grandiflora,Magnolia sp.,Other Native,OTHNAT,1,1,NA
+Magnolia tripetala,Magnolia sp.,Other Native,OTHNAT,1,1,NA
+Magnolia virginiana,Magnolia sp.,Other Native,OTHNAT,1,1,NA
+Abies balsamea,Northern Conifer,Other Native,OTHNAT,1,1,NA
+Larix laricina,Northern Conifer,Other Native,OTHNAT,1,1,NA
+Picea,Northern Conifer,Other Native,OTHNAT,1,1,NA
+Picea glauca,Northern Conifer,Other Native,OTHNAT,1,1,NA
+Picea mariana,Northern Conifer,Other Native,OTHNAT,1,1,NA
+Picea rubens,Northern Conifer,Other Native,OTHNAT,1,1,NA
+Thuja occidentalis,Other Native,Other Native,OTHNAT,1,1,NA
 Nyssa sylvatica,Nyssa sylvatica,Nyssa sylvatica (black gum),NYSSYL,1,1,NA
 Acer palmatum,Exotic,Other Exotic,OTHEXO,0,0,NA
 Acer platanoides,Exotic,Other Exotic,OTHEXO,0,0,NA
@@ -142,14 +142,14 @@ Pinus pungens,Pinus sp.,Pinus spp. (pine),PINSPP,1,1,NA
 Pinus resinosa,Pinus sp.,Pinus spp. (pine),PINSPP,1,1,NA
 Pinus rigida,Pinus sp.,Pinus spp. (pine),PINSPP,1,1,NA
 Pinus sp.,Pinus sp.,Pinus spp. (pine),PINSPP,1,1,NA
-Pinus strobus,Pinus strobus,Pinus strobus (eastern white pine),PINSTR,1,1,NA
-Pinus taeda,Pinus sp.,Pinus taeda (loblolly pine),PINTAE,1,1,NA
-Pinus virginiana,Pinus virginiana,Pinus virginiana (Virginia pine),PINVIR,1,1,NA
-Populus,Populus sp.,Populus spp. (Poplar),POPSPP,1,1,NA
-Populus deltoides,Populus sp.,Populus spp. (Poplar),POPSPP,1,1,NA
-Populus grandidentata,Populus sp.,Populus spp. (Poplar),POPSPP,1,1,NA
-Populus sp.,Other Native,Populus spp. (Poplar),POPSPP,1,1,NA
-Populus tremuloides,Populus sp.,Populus spp. (Poplar),POPSPP,1,1,NA
+Pinus strobus,Pinus strobus,Pinus spp. (pine),PINSPP,1,1,NA
+Pinus taeda,Pinus sp.,Pinus spp. (pine),PINSPP,1,1,NA
+Pinus virginiana,Pinus virginiana,Pinus spp. (pine),PINSPP,1,1,NA
+Populus,Populus sp.,Other Native,OTHNAT,1,1,NA
+Populus deltoides,Populus sp.,Other Native,OTHNAT,1,1,NA
+Populus grandidentata,Populus sp.,Other Native,OTHNAT,1,1,NA
+Populus sp.,Other Native,Other Native,OTHNAT,1,1,NA
+Populus tremuloides,Populus sp.,Other Native,OTHNAT,1,1,NA
 Prunus,Prunus sp.,Prunus spp. (native cherry),PRUSPP,1,1,NA
 Prunus americana,Prunus sp.,Prunus spp. (native cherry),PRUSPP,1,1,NA
 Prunus pensylvanica,Prunus sp.,Prunus spp. (native cherry),PRUSPP,1,1,NA
@@ -157,7 +157,7 @@ Prunus serotina,Prunus serotina,Prunus spp. (native cherry),PRUSPP,1,1,NA
 Prunus sp.,Prunus sp.,Prunus spp. (native cherry),PRUSPP,1,1,NA
 Prunus spp.,Prunus sp.,Prunus spp. (native cherry),PRUSPP,1,1,NA
 Prunus virginiana,Prunus sp.,Prunus spp. (native cherry),PRUSPP,1,1,NA
-Pyrus calleryana,Exotic,Pyrus calleryana (Bradford pear),PYRCAL,0,0,NA
+Pyrus calleryana,Exotic,Other Exotic,OTHEXO,0,0,NA
 Quercus,Quercus sp.,Quercus spp. (oak),QUESPP,1,1,NA
 Quercus (Red group),Quercus sp.,Quercus spp. (oak),QUESPP,1,1,NA
 Quercus (White group),Quercus sp.,Quercus spp. (oak),QUESPP,1,1,NA
