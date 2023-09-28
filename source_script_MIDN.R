@@ -100,4 +100,4 @@ trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 # Source files
 source('./scripts/forest_summary_code_MIDN.R')
 source('./scripts/regen_debt_metrics_MIDN.R')
-
+source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R')
