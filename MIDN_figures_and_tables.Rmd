@@ -9,11 +9,11 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'PETE' 
+  park: 'APCO' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
-knitr::opts_chunk$set(echo = FALSE, fig.align = 'left')
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
 options(knitr.kable.NA = '')
 
 library(pagedown)
@@ -109,12 +109,10 @@ include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by
 
 
 ```{r results = 'asis'}
-cat("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, ").",
+cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, ").",
     paste(cycle_labs, collapse = "; "), ". ", 
     ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""),
-    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at
-breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals. An
-asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = "")
+    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
 ```
 
 ### {.page-break-before}
@@ -211,4 +209,58 @@ include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive
 cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover by guild and sample year in ", 
     park_long, ". Specified loess span approximated a linear trend between consecutive sample events per panel.</p>", 
     sep = "")
+```
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+```{r include = F}
+reg_cycle_tab <- reg_cycle_wide |> arrange(Plot) |> select(-Plot_Name)
+tab1_cols <- names(reg_cycle_tab)
+tab1_row2 <- gsub("seed_den_|sap_den_|stock_", "Cycle ", tab1_cols)
+border_cols <- c(2 + cycle_latest, 2 + cycle_latest*2, 2 + cycle_latest*3)
+
+reg_pass <- "#BFDFC7"
+
+# Have to use %>% pipe to use the '.' in the reduce.
+tab1 <- 
+  kable(reg_cycle_tab, col.names = tab1_row2, digits = 2, align = 'c', format = 'html', 
+        table.attr = "style='width:85%;'") %>%
+  add_header_above(c(" " = 1, " " = 1, "Seedlings per sq.m" = cycle_latest, 
+                     "Saplings per sq.m" = cycle_latest, 
+                     "Stocking Index" = cycle_latest)) %>%
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = FALSE, position = 'left', font_size = 10) %>%
+  column_spec(c(1, 2), border_left = T, border_right = T) %>%
+  column_spec(border_cols, border_right = T) %>%
+  purrr::reduce(3:border_cols[1], function(x, y){
+    col <- reg_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(col >= 0.25, reg_pass, "#FFFFFF"))}, .init = .) %>%
+  purrr::reduce((border_cols[1] + 1): border_cols[2], function(x, y){
+    col <- reg_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(col >= 0.14, reg_pass, "#FFFFFF"))}, .init = .) %>%
+  purrr::reduce((border_cols[2] + 1): border_cols[3], function(x, y){
+    col <- reg_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(col >= 100, reg_pass, "#FFFFFF"))}, .init = .) %>%
+  row_spec(1, extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(nrow(reg_cycle_tab), extra_css = "border-top: 1px solid #000000;") %>%
+  save_kable(file = "table1.html", self_contained = T) # save as html b/c pagedown was having issues
+
+```
+
+```{r results = 'asis'}
+cat(paste0("Table 1. Average plot-level seedling and sapling stem densities, converted to stems per sq.m, and stocking index by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species.", cycle_labs, "Plots are sampled in 4-year rotataions, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m2 and 0.14 saplings/m2 or have a stocking index >100.", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", "")), sep = "")
+```
+
+```{r echo = F}
+htmltools::includeHTML("table1.html")
+```
+
+
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
 ```

@@ -23,13 +23,13 @@ render_MIDN_reports <- function(park){
            output_dir = outpath,
            output_options = list(self_contained = TRUE))#,
   #encoding = "UTF-8")
-    cat(park)
-  }
+   }
 
-render_MIDN_reports(park = "PETE")
-
+#render_MIDN_reports(park = "APCO")
 
 midn_parks <- sort(unique(midn_params$park))
 
 purrr::walk(midn_parks, ~render_MIDN_reports(park = .))
             
+purrr::walk(midn_parks[2:11], ~render_MIDN_reports(park = .))
+# Failed on COLO in regen_debt_metrics_MIDN.R 221

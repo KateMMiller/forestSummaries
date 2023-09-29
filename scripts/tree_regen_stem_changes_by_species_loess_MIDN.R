@@ -184,7 +184,7 @@ lines = c(
   "Juniperus virginiana (eastern redcedar)" = "dotdash",
   "Liquidambar styraciflua (sweetgum)" = "solid",
   "Liriodendron tulipifera (tulip poplar)" = "solid",
-  "Nyssa sylvatica (black gum)" = "dotdash",
+  "Nyssa sylvatica (black gum)" = "dashed",
   "Other Exotic" = "dashed",
   "Other Native" = "solid",
   "Pinus spp. (pine)" = "dashed",
@@ -438,20 +438,16 @@ Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica',
 frax <- do.call(joinTreeData, c(args_vs, status = 'live')) |> filter(ScientificName %in% Fraxinus_spp)
 head(frax)
 
-frax_sum <- frax |> group_by(Plot_Name, cycle, ScientificName) |> 
-  summarize(num_stems = sum(num_stems), .groups = 'drop') |> 
-  mutate(sppcode = toupper(paste0(substr(word(ScientificName, 1), 1, 3), 
-                                  substr(word(ScientificName, 2), 1, 3)))) |> 
-  pivot_wider(names_from = sppcode, values_from = num_stems, values_fill = 0) #|> 
-  #mutate(FRAXSPP = FRAPEN + FRAAME + FRANIG) 
+frax_sum <- frax |> group_by(Plot_Name, cycle) |> 
+  summarize(num_stems = sum(num_stems), 
+            sppcode = "FRAXSPP",
+            .groups = 'drop')
+
 head(frax_sum)
 
-frax_spp <- names(frax_sum[,grepl("FRA", names(frax_sum))])
-
-frax_sum$FRAXSPP = rowSums(frax_sum[,frax_spp])
-
-fraxspp_wide <- frax_sum |> select(Plot_Name, cycle, FRAXSPP) |> 
-  pivot_wider(names_from = cycle, values_from = FRAXSPP, names_glue = "{'FRAX'}_{cycle}")
+fraxspp_wide <- frax_sum |> 
+  pivot_wider(names_from = cycle, values_from = num_stems, names_glue = "{'FRAX'}_{cycle}",
+              values_fill = 0)
 
 plots <- do.call(joinLocEvent, args = args_vs) |> 
   select(Plot_Name, X = xCoordinate, Y = yCoordinate) |> unique()
