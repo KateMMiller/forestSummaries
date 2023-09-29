@@ -104,31 +104,6 @@ tree_stem_smooth3 <- left_join(tree_stem_smooth2,
   mutate(spp_grp = as.character(spp_grp)) |> 
   arrange(spp_grp)
 
-# Plotting trends by species group facet
-tree_stem_trends <- 
-  ggplot(tree_stem_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-                                color = sign, fill = sign)) +
-  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-  geom_line(linewidth = 0.5) +
-  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-  facet_wrap(~spp_grp, scales = 'free_y') + 
-  labs(y = "Trees (stems/ha)", x = "Year") +
-  scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-                     limits = c(2005, 2024)) +
-  theme_FVM() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-        legend.position = 'bottom')
-
-tree_stem_trends
-
-ggsave(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_Tree_stems_by_species_cycle.svg"),
-       height = 5.5, width = 7.5, units = 'in')
-
 #--- Tree BA
 tree_BA_smooth <- purrr::map_dfr(spp_list, 
                                  function(spp){
@@ -163,31 +138,6 @@ tree_BA_smooth3 <- left_join(tree_BA_smooth2,
 
 net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba = sum(estimate))
 net_ba_year # No decline in BA over time
-
-# Plotting trends by species group facet
-tree_BA_trends <- 
-  ggplot(tree_BA_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-                                color = sign, fill = sign)) +
-  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-  geom_line(linewidth = 0.5) +
-  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-  facet_wrap(~spp_grp, scales = 'free_y') + 
-  labs(y = "Tree Basal Area (sq.m/ha)", x = "Year") +
-  scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-                     limits = c(2005, 2024)) +
-  theme_FVM() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-        legend.position = 'bottom')
-
-tree_BA_trends
-
-ggsave(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_Tree_BA_by_species_cycle.svg"),
-    height = 8, width = 7)
 
 
 table(tree_stem_smooth3$spp_grp)
@@ -237,7 +187,7 @@ lines = c(
   "Nyssa sylvatica (black gum)" = "dotdash",
   "Other Exotic" = "dashed",
   "Other Native" = "solid",
-  "Pinus spp. (pine)" = "solid",
+  "Pinus spp. (pine)" = "dashed",
   "Prunus spp. (native cherry)" = "dashed", 
   "Pyrus calleryana (Bradford pear)" = "dotted",
   "Quercus spp. (oak)" = "solid",
@@ -381,31 +331,6 @@ seed_smooth3 <- left_join(seed_smooth2,
                 mutate(spp_grp = as.character(spp_grp)) |> 
                 arrange(spp_grp)
 
-# Plotting trends by species group facet
-seed_trends <- 
-  ggplot(seed_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-                           color = sign, fill = sign)) +
-  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-  geom_line(linewidth = 0.5) +
-  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-  facet_wrap(~spp_grp, scales = 'free_y') + 
-  labs(y = "Seedlings (stems/sq.m)", x = "Year") +
-  scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-                     limits = c(2005, 2024)) +
-  theme_FVM() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-        legend.position = 'bottom')
-
-seed_trends
-
-ggsave(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_seedlings_by_species_cycle.svg"),
-    height = 8, width = 7)
-
 # Saplings
 sap_smooth2 <- 
   left_join(sap_smooth, 
@@ -428,30 +353,6 @@ sap_smooth3 <- left_join(sap_smooth2,
   filter(drop == "keep") |> select(-drop) |>  
   arrange(spp_grp)
 
-
-sap_trends <- 
-  ggplot(sap_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-                           color = sign, fill = sign)) +
-  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-  geom_line(linewidth = 0.5) +
-  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-  facet_wrap(~spp_grp, scales = 'free_y') + 
-  labs(y = "Saplings (stems/sq.m)", x = "Year") +
-  scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-                     limits = c(2005, 2024)) +
-  theme_FVM() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = 'bottom')
-
-sap_trends
-
-ggsave(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_saplings_by_species_cycle.svg"),
-    height = 8, width = 7)
 
 net_seeds <- 
   ggplot(seed_smooth3, 
