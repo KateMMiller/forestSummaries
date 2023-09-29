@@ -126,10 +126,8 @@ tree_stem_trends <-
 
 tree_stem_trends
 
-svg(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_Tree_stems_by_species_cycle.svg"),
-    height = 8, width = 7)
-tree_stem_trends
-dev.off()
+ggsave(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_Tree_stems_by_species_cycle.svg"),
+       height = 5.5, width = 7.5, units = 'in')
 
 #--- Tree BA
 tree_BA_smooth <- purrr::map_dfr(spp_list, 
@@ -188,10 +186,8 @@ tree_BA_trends <-
 
 tree_BA_trends
 
-svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_Tree_BA_by_species_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_Tree_BA_by_species_cycle.svg"),
     height = 8, width = 7)
-tree_BA_trends
-dev.off()
 
 
 table(tree_stem_smooth3$spp_grp)
@@ -269,10 +265,8 @@ net_stems <-
         legend.key.width = unit(1, 'cm'))
 
 net_stems
-svg(paste0(new_path, "figures/", "Figure_4A_", park, "_smoothed_tree_stems_by_species_cycle.svg"),
-    height = 4.6, width = 8)
-net_stems
-dev.off()
+ggsave(paste0(new_path, "figures/", "Figure_5A_", park, "_smoothed_tree_stems_by_species_cycle.svg"),
+       height = 4.6, width = 8, units = 'in')
 
 net_ba <- 
   ggplot(tree_BA_smooth3, aes(x = SampleYear, y = estimate)) +
@@ -291,10 +285,10 @@ net_ba <-
         legend.key.width = unit(1, 'cm')) + 
   guides(color = guide_legend(nrow = 5))
 
-svg(paste0(new_path, "figures/", "Figure_4B_", park, "_smoothed_BA_by_species_cycle.svg"),
+net_ba
+ggsave(paste0(new_path, "figures/", "Figure_5B_", park, "_smoothed_BA_by_species_cycle.svg"),
     height = 6.15, width = 8)
-  net_ba
-dev.off()
+
 
 #----- Similar figures for seedlings and saplings -----
 reg1 <- do.call(joinRegenData, c(args_all, units = 'sq.m')) |> 
@@ -409,10 +403,8 @@ seed_trends <-
 
 seed_trends
 
-svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_seedlings_by_species_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_seedlings_by_species_cycle.svg"),
     height = 8, width = 7)
-seed_trends
-dev.off()
 
 # Saplings
 sap_smooth2 <- 
@@ -458,11 +450,9 @@ sap_trends <-
 
 sap_trends
 
-svg(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_saplings_by_species_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_saplings_by_species_cycle.svg"),
     height = 8, width = 7)
-sap_trends
-dev.off()
-  
+
 net_seeds <- 
   ggplot(seed_smooth3, 
          aes(x = SampleYear, y = estimate)) +
@@ -474,16 +464,15 @@ net_seeds <-
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = 'bottom', 
-        legend.key.width = unit(1, 'cm')) + 
-  guides(color = guide_legend(nrow = 4))
+        legend.position = 'none', 
+        legend.key.width = unit(1, 'cm'))# + 
+  #guides(color = guide_legend(nrow = 5))
 
 net_seeds
 
-svg(paste0(new_path, "figures/", "Figure_3B_", park, "_net_seedlings_by_species_cycle.svg"),
-    height = 6.15, width = 8)
-net_seeds
-dev.off()
+ggsave(paste0(new_path, "figures/", "Figure_4A_", park, "_net_seedlings_by_species_cycle.svg"),
+    height = 4.6, width = 8)
+
 
 net_saps <- 
   ggplot(sap_smooth3, 
@@ -496,15 +485,14 @@ net_saps <-
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = 'none', 
-        legend.key.width = unit(1, 'cm'))
+        legend.position = 'bottom', 
+        legend.key.width = unit(1, 'cm')) +
+  guides(color = guide_legend(nrow = 5))
 
 net_saps
 
-svg(paste0(new_path, "figures/", "Figure_3A_", park, "_net_saplings_by_species_cycle.svg"),
-    height = 4.6, width = 8)
-net_saps
-dev.off()
+ggsave(paste0(new_path, "figures/", "Figure_4B_", park, "_net_saplings_by_species_cycle.svg"),
+    height = 6.15, width = 8)
 
 #----- Trends in invasive guilds over time -----
 guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
@@ -538,10 +526,9 @@ guild_plot <-
         legend.position = 'bottom',  
         legend.key.width = unit(1, 'cm'))
 
-svg(paste0(new_path, "figures/", "Figure_5A_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
     height = 4.6, width = 8)
-guild_plot
-dev.off()
+
 
 #----- Number of Ash tree stems over time ------
 Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', 

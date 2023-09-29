@@ -12,43 +12,11 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
-#importData()
+importData()
 
 # Downgrade Fraxinus to subcanopy species
 VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"] <- TRUE
 
-# Params FRSP, RICH, PETE; from = 2007: from_4yr = 2021; cycle_latest = 5; from_prev = 2016; to_prev = 2019; 
-# Params VAFO, HOFU, GETT, APCO, BOWA: from = 2007; from_4yr = 2019; cycle_latest = 4; from_prev = 2015; to_prev = 2018;
-# Params GEWA, THST: from = 2008; from_4yr = 2021; cycle_latest = 4; from_prev = 2016; to_prev = 2019;
-# Params COLO: from = 2011; from_4yr = 2019; cycle_latest = 3; from_prev = 2015; to_prev = 2018;
-# Params SAHI: from = 2009; from_4yr = 2023; cycle_latest = 4; from_prev = 2017; to_prev = 2017;
-
-# Set parameters
-#-----MIDN1----
-# park = 'FRSP' #'RICH' #'PETE'
-# from = 2007
-# from_4yr = 2021
-# to = 2023
-# QAQC = FALSE
-# locType = 'VS'
-# cycle_latest = 5
-# from_prev = 2016
-# to_prev = 2019
-
-#-----MIDN2-----
-# park = 'BOWA' #'APCO'#'GETT' #'HOFU' #'VAFO'
-# from = 2007
-# from_4yr = 2019
-# to = 2023
-# QAQC = FALSE
-# locType = 'VS'
-# cycle_latest = 4
-# from_prev = 2015
-# to_prev = 2018
-
-# table(VIEWS_MIDN$Plots_MIDN$ParkUnit, VIEWS_MIDN$Plots_MIDN$ZoneCode)
-# locs <- joinLocEvent(park = 'all', from = 2019, to = 2023) |> select(ParkUnit, Plot_Name) |> unique()
-# table(locs$ParkUnit)
 
 park_crs = ifelse(park %in% c("APCO", "BOWA"), 26917, 26918)
 
@@ -98,6 +66,6 @@ invisible(lapply(folders, function(x) {
 trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 
 # Source files
-source('./scripts/forest_summary_code_MIDN.R')
-source('./scripts/regen_debt_metrics_MIDN.R')
-source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R')
+# source('./scripts/forest_summary_code_MIDN.R')
+# source('./scripts/regen_debt_metrics_MIDN.R')
+# source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R')

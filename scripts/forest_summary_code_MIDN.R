@@ -186,7 +186,7 @@ reg_trend_plot <-
 reg_trend_plot
   
 ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"),
-       height = 5, width = 7.5, units = 'in')
+       height = 5.5, width = 7.5, units = 'in')
 
 #---- Figure 1B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
@@ -288,7 +288,7 @@ dbh_trend_plot <-
 dbh_trend_plot
 
 ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
-       height = 4.6, width = 7.8, units = 'in')
+       height = 5, width = 7.5, units = 'in')
 
 #---- Map 3 Regen by composition ----
 reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m')) |> filter(!ScientificName %in% 'None present')
@@ -517,9 +517,9 @@ pests_wide <- pest_detects %>%
 # pests_wide$EAB[pests_wide$Plot_Name == "MABI-013" & pests_wide$SampleYear == 2022] <- 0
 # # Tree note said "No EAB", but was picked up in query for positive EAB detections
 # }
-
+if(ncol(pests_wide) > 4){
 pests_wide$none <- rowSums(pests_wide[,5:ncol(pests_wide)])
-
+} else {pests_wide$none <- 0}
 write_to_shp(pests_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
 

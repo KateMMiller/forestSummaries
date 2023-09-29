@@ -5,28 +5,15 @@ output:
     toc: false
     numbered_sections: false
     number_sections: false
-    includes:
-      in_header: "header_manual.html"
-
+    #includes:
+      #in_header: "header_MIDN.html"
+      #after_body: "footer.html"
 params:
-  park: 'FRSP' #'RICH' #'PETE'
-  from: 2007
-  from_4yr: 2021
-  to: 2023
-  QAQC: FALSE
-  locType: 'VS'
-  cycle_latest: 5
-  from_prev: 2016
-  to_prev: 2019
+  park: 'PETE' 
+
 ---
-```{r echo = F}
-htmltools::includeHTML("header_manual.html")
-htmltools::includeHTML("footer.html")
-
-```
-
 ```{r setup, include = FALSE, results = 'hide'}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'left')
 options(knitr.kable.NA = '')
 
 library(pagedown)
@@ -44,110 +31,184 @@ library(sf)
 library(vegan)
 ```
 
-```{r cache = T, results = 'hide', include = F}
-importData()
-```
-
 ```{r}
-park = params$park
-from = as.numeric(params$from)
-from_4yr = as.numeric(params$from_4yr)
-to = as.numeric(params$to)
-QAQC = params$QAQC
-locType = params$locType
-cycle_latest = as.numeric(params$cycle_latest)
-from_prev = as.numeric(params$from_prev)
-to_prev = as.numeric(params$to_prev)
+# assign params to global env. for source files to find. Makes iterating easier.
+midn_names <- read.csv("MIDN_MetaData.csv")
+midn_params <- read.csv("MIDN_params.csv")
+park <<- params$park
+park <<- park
+from <<- as.numeric(midn_params$from[midn_params$park == park])
+from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
+to <<- as.numeric(midn_params$to[midn_params$park == park])
+cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
+from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
+to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
+QAQC <<- FALSE
+locType <<- 'VS'
 
 # park = 'FRSP' #'RICH' #'PETE'
 # from = 2007
 # from_4yr = 2021
 # to = 2023
-# QAQC = FALSE
-# locType = 'VS'
 # cycle_latest = 5
 # from_prev = 2016
 # to_prev = 2019
 
+park_long <- midn_names$LongName[midn_names$ParkCode == park]
+park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 ```
-
-```{r results = 'hide', include = F}
-# Note that the stocking index calculated in both the summary code and regen debt code is on the 
-# McWilliams 100 point scale, not the 1m2 scale that MIDN used to use.
-
-# Imports/Libraries
-library(forestMIDN)
-library(forestTrends)
-library(tidyverse)
-library(sf)
-
-#importData()
-
-# Downgrade Fraxinus to subcanopy species
-VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"] <- TRUE
-
-# Params FRSP, RICH, PETE; from = 2007: from_4yr = 2021; cycle_latest = 5; from_prev = 2016; to_prev = 2019; 
-# Params VAFO, HOFU, GETT, APCO, BOWA: from = 2007; from_4yr = 2019; cycle_latest = 4; from_prev = 2015; to_prev = 2018;
-# Params GEWA, THST: from = 2008; from_4yr = 2021; cycle_latest = 4; from_prev = 2016; to_prev = 2019;
-# Params COLO: from = 2011; from_4yr = 2019; cycle_latest = 3; from_prev = 2015; to_prev = 2018;
-# Params SAHI: from = 2009; from_4yr = 2023; cycle_latest = 4; from_prev = 2017; to_prev = 2017;
-
-park_crs = ifelse(park %in% c("APCO", "BOWA"), 26917, 26918)
-
-num_plots = case_when(park == "APCO" ~ 28,
-                      park == "ASIS" ~ 12, # Will be 24
-                      park == "BOWA" ~ 8,
-                      park == "COLO" ~ 48,
-                      park == "FRSP" ~ 104,
-                      park == "GETT" ~ 33,
-                      park == "GEWA" ~ 8,
-                      park == "HOFU" ~ 16,
-                      park == "PETE" ~ 52,
-                      park == "RICH" ~ 31,
-                      park == "SAHI" ~ 4,
-                      park == "THST" ~ 8,
-                      park == "VAFO" ~ 28
-                      )
-plot_size = 400
-
-args_all = list(park = park, from = from, to = to, QAQC = QAQC, locType = locType)
-args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = locType)
-args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
-
-# Set up file structure
-path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
-
-parks <- c("APCO", "ASIS", "BOWA", "COLO", "FRSP", "GETT", "GEWA", 
-           "HOFU", "PETE", "RICH", "SAHI", "THST", "VAFO")
-
-invisible(lapply(parks, function(x) {
-  if(!dir.exists(paste0(path, x))){dir.create(paste0(path, x))}
-})
-)
-
-new_path = paste0(path, park, "/", as.character(to), "/")
-
-if(!dir.exists(new_path)){dir.create(new_path)}
-
-folders <- c("GIS_projects", "figures", "map_exports", "shapefiles", "tables")
-
-invisible(lapply(folders, function(x) {
-  if(!dir.exists(paste0(new_path, x))){dir.create(paste0(new_path, x))}
-})
-)
-
-# Read in tree species groups for regen and tree pie charts
-trspp_grps <- read.csv("NPS_tree_species_groups.csv")
+```{r include = F, cache = F}
+source('source_script_MIDN.R') # Runs all the other scripts behind the scenes. If you run into problems,
+# go directly to this script and try running with the parameters set in this report. 
 ```
-```{r results = 'hide', include = F}
-# Source files
+```{r include = F, cache = F}
 source('./scripts/forest_summary_code_MIDN.R')
 ```
-```{r results = 'hide', include = F}
+```{r include = F, cache = F}
 source('./scripts/regen_debt_metrics_MIDN.R')
 ```
-```{r results = 'hide', include = F}
+```{r include = F, cache = F}
 source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R')
 ```
 
-Forest Summary Report for: <span style="font-weight:bold;">`r params$park` `r params$year` </span>
+```{r results = 'asis', include = F}
+html_header <- HTML('
+<div class="banner">
+  <div class="header">
+    <div id="col-left-header">
+        <h5> Mid-Atlantic Network </h5>
+        <h5> Inventory & Monitoring Division </h5>
+        <br>
+        <h5> Forest Monitoring Data Summary </h5></div>
+    <div id="col-right-header">
+        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead"></div>
+    <div id="col-middle-header">
+        <h5> National Park Service </h5>
+        <h5> U.S. Department of the Interior </h5>
+        <br>
+        <h5>', park_title, '</h5><br></div></div></div><br>')
+
+save_html(html_header, "html_header.html")
+```
+
+
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "94%"}
+include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
+```
+
+
+|       B. 
+```{r out.width = "94%"}
+include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
+```
+
+
+```{r results = 'asis'}
+cat("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, ").",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""),
+    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at
+breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals. An
+asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = "")
+```
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+<br>
+<br>
+```{r out.width = "50%"}
+include_graphics(paste0(new_path, "figures/Figure_2_Regen_Debt_table.svg"))
+```
+
+
+```{r results = 'asis'}
+cat("<p><b>Figure 2.</b> Regeneration Debt metrics and status for the most recent 4-year census (",
+    from_4yr, " \U2013 ", to, ") in", park_long, ". Flat Tree Diam. Dist. stands for Flat
+Tree Diameter Distribution. If TRUE, the density of small trees is lower than expected due to
+chronic regeneration failure. See <a href ='https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.2837'>Miller et al. 2023</a> for more details on metric calculations, thresholds, and assessment of status.</p>", sep = "")
+```
+
+
+```{r out.width = "80%"}
+include_graphics(paste0(new_path, "figures/", "Figure_3_", park, "_DBI_by_cycle.svg"))
+```
+
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 3.</b> Deer browse impacts by cycle in ", park_long, " (", park, "). ",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), 
+    sep = ""))
+
+```
+
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+
+|       A. 
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_4A_", park, "_net_seedlings_by_species_cycle.svg"))
+```
+
+
+|       B. 
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_4B_", park, "_net_saplings_by_species_cycle.svg"))
+```
+
+
+```{r results = 'asis'}
+cat("<p><b>Figure 4.</b> Loess smoothed changes in stem density for seedlings (A) and saplings (B) by
+species group and sample year in ", park_long, ". Specified loess span
+approximated a linear trend between consecutive sample events per panel.</p>", sep = "")
+```
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_5A_", park, "_smoothed_tree_stems_by_species_cycle.svg"))
+```
+
+
+|       B. 
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_5B_", park, "_smoothed_BA_by_species_cycle.svg"))
+```
+
+
+```{r results = 'asis'}
+cat("<p><b>Figure 5.</b> Loess smoothed changes in tree stem density (A) and basal area (B) by
+species group and sample year in ", park_long, ". Specified loess span
+approximated a linear trend between consecutive sample events per panel.</p>", sep = "")
+```
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"))
+```
+
+
+```{r results = 'asis'}
+cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover by guild and sample year in ", 
+    park_long, ". Specified loess span approximated a linear trend between consecutive sample events per panel.</p>", 
+    sep = "")
+```

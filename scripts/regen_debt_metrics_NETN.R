@@ -4,7 +4,6 @@
 #-------------------------------------------------------------------
 
 library(vegan)
-
 #---- Params -----
 
 # Plot list
@@ -270,6 +269,7 @@ results_plot <-
   scale_fill_manual(values = c('Acceptable' = '#BDEBA7',
                                'Caution' = "#FFFF79",
                                'Critical' = "#FF5B5B"),
+                    na.value = "white",
                     labels = c("Acceptable",
                                "Caution",
                                "Critical"),

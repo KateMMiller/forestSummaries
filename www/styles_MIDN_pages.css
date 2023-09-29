@@ -7,16 +7,16 @@
 
 /* Body and headers */
 .main-container{
-  max-width:1800px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width:624px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 body {
   font-family: "Arial", sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   color: black;
-  margin:0 auto;
+  margin:0 0 0 5px;
   /*width:1200px;*/
   position:relative;  
 }
@@ -31,7 +31,7 @@ img {
 
 p {
   font-family: "Arial", Arial, sans-serif;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .indent {
@@ -78,6 +78,7 @@ h4 {
 /* Header font */
 h5 {
   font-family: "Arial",Arial,sans-serif;
+  text-align:left;
   font-size:10px;
   padding:0;
   margin:0;
@@ -89,7 +90,7 @@ h5 {
   height: 85px;
   position:relative;
   /*width: auto;*/
-  max-width: 612px;
+  max-width: 624px;
   padding: 2px 2px 2px 2px;
   /*margin-left: auto;
   margin-right: auto;*/
@@ -99,7 +100,7 @@ h5 {
 
 .header{
  height: 80px;
- width: 612px;
+ width: 624px;
  margin-left:auto;
  margin-right:auto;
  text-align: left;
@@ -113,21 +114,33 @@ h5 {
 
 #col-left-header{
   float:left;
-  width: 60%;
-  padding: 5px 0;
+  text-align:left;
+  width: 63%;
+  padding: 5px 5px;
 }
 
 #col-right-header{
   float:right;
-  width: 11%;
-  padding: 5px 5px;
+  text-align:left;
+  margin-left:0;
+  width: 10%;
+  padding: 5px 5px 5px 0;
 }
 
 #col-middle-header{
   float:right;
   text-align:left;
-  width: 29%;
-  padding: 5px 5px;
+  margin-right:0;
+  width: 27%;
+  padding:5px 0;
+  /*padding: 5px 0px 5px 5px;*/
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
 }
 
 .column_1 {
@@ -145,13 +158,13 @@ h5 {
   height: 70px;
   position: relative;
 }
- 
+
 .header h5 {
-  position: relative;
+  /*position: relative;*/
   text-align: left;
   color: white;
   font-size: 10px;
-  padding: 2px 5px 5px 5px;
+  padding: 0 0 5px 0;
   /*margin:4px 5px; */
   font-family: "Arial",Arial,sans-serif;
 }
@@ -215,6 +228,15 @@ table td{
 }*/
 
 @page {
+  border-bottom: 1px solid black;
+  padding: 0;
+  margin-top: 2px;
+  margin-bottom: 12px;
+/*  margin-right: 4px;
+  margin-left: 4px; */
+  @bottom-left{
+    content: "September 2023"
+  }
   @bottom-right{
     content: "Page " counter(page) ' of ' counter(pages);
   }
@@ -229,7 +251,7 @@ table td{
 @page{
    @top-left { 
      content: element(runningTitle); 
-     width: 608px; 
+     width: 624px; 
      font-family: "Arial",Arial,sans-serif;
      font-size:10px;
      font-weight: bold;

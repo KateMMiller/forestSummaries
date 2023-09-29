@@ -39,12 +39,12 @@ dbi_sum2$num_plots[is.na(dbi_sum2$num_plots)] <- 0
 
 dbi_plot <- 
 ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac)) +
-  geom_bar(position = 'fill', stat = 'identity', na.rm = T) +
+  geom_bar(position = 'fill', stat = 'identity', na.rm = T, color = '#696969') +
   theme_FVM() +
-  scale_color_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
-                                "High" = "#f94b24", "Very High" = "#a60808"),
-                     labels = c("Low", "Medium", "High", "Very High"), 
-                     name = "Deer Browse Impact") +
+  # scale_color_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
+  #                               "High" = "#f94b24", "Very High" = "#a60808"),
+  #                    labels = c("Low", "Medium", "High", "Very High"), 
+  #                    name = "Deer Browse Impact") +
   scale_fill_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
                                "High" = "#f94b24", "Very High" = "#a60808"),
                     labels = c("Low", "Medium", "High", "Very High"), 
@@ -52,10 +52,15 @@ ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac))
   scale_y_continuous(breaks = c(0, 0.25, 0.50, 0.75, 1.00), labels = c(0, 25, 50, 75, 100)) +
   labs(y = "Proportion of Plots")
 
-svg(paste0(new_path, "figures/", "Figure_6_", park, "_DBI_by_cycle.svg"),
-    height = 6.15, width = 8)
-dbi_plot
-dev.off()
+# svg(paste0(new_path, "figures/", "Figure_6_", park, "_DBI_by_cycle.svg"),
+#     height = 6.15, width = 8)
+# dbi_plot
+# dev.off()
+
+figpath <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
+               park, "/", to, '/figures/')
+ggsave(paste0(figpath, "Figure_3_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
+
 
 # Regen densities
 # reg is all spp. reg$NatCan is used for metrics that only include native canopy forming spp.
@@ -311,9 +316,9 @@ results_plot <-
   geom_tile(aes(fill = status_fac), color = 'black', linewidth = 0.5)+
   geom_text(aes(label = text_label,
                 fontface = ifelse(Metric == "Regen. Debt Status", 2, 1))) +
-  scale_fill_manual(values = c('Acceptable' = '#BDEBA7',
+  scale_fill_manual(values = c('Acceptable' = "#BDEBA7", 
                                'Caution' = "#FFFF79",
-                               'Critical' = "#FF5B5B"),
+                               'Critical' = "#FF5B5B"), na.value = "white",
                     labels = c("Acceptable",
                                "Caution",
                                "Critical"),
@@ -334,6 +339,6 @@ results_plot
 
 path <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
                park, "/", to, '/figures/')
-ggsave(paste0(path, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 5.5, units = 'in')
+ggsave(paste0(path, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
 
 # Now open svg and make the Regen Debt Status fill white, "#FFFFFF", and font size 13 instead of 11.
