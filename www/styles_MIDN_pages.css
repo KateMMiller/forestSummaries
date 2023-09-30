@@ -38,6 +38,12 @@ p {
   text-indent: 20px;
 }
 
+h4, .h4, h5, .h5, h6, .h6 {
+margin-top: 0; 
+margin-bottom: 0;
+}
+
+
 
 h1 {
   font-family: "Arial", Arial,sans-serif;

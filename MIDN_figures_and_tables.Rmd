@@ -36,7 +36,7 @@ library(vegan)
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv")
 park <<- params$park
-park <<- park
+#park <<- park
 from <<- as.numeric(midn_params$from[midn_params$park == park])
 from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
 to <<- as.numeric(midn_params$to[midn_params$park == park])
@@ -58,17 +58,16 @@ park_long <- midn_names$LongName[midn_names$ParkCode == park]
 park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 ```
 ```{r include = F, cache = F}
-source('source_script_MIDN.R') # Runs all the other scripts behind the scenes. If you run into problems,
-# go directly to this script and try running with the parameters set in this report. 
+source('source_script_MIDN.R') # sets up parameters. Can also run all the scripts below, but turned off to help troubleshoot.
 ```
 ```{r include = F, cache = F}
-source('./scripts/forest_summary_code_MIDN.R')
+source('./scripts/forest_summary_code_MIDN.R') # main figures and tables
 ```
 ```{r include = F, cache = F}
-source('./scripts/regen_debt_metrics_MIDN.R')
+source('./scripts/regen_debt_metrics_MIDN.R') # regen debt table and DBI figure
 ```
 ```{r include = F, cache = F}
-source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R')
+source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R') # smoothed composition plots
 ```
 
 ```{r results = 'asis', include = F}
@@ -89,6 +88,7 @@ html_header <- HTML('
         <h5>', park_title, '</h5><br></div></div></div><br>')
 
 save_html(html_header, "html_header.html")
+# change style so no padding under last h5
 ```
 
 
@@ -216,7 +216,7 @@ cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover 
 includeHTML("html_header.html")
 ```
 
-```{r include = F}
+```{r include = F, eval = T}
 reg_cycle_tab <- reg_cycle_wide |> arrange(Plot) |> select(-Plot_Name)
 tab1_cols <- names(reg_cycle_tab)
 tab1_row2 <- gsub("seed_den_|sap_den_|stock_", "Cycle ", tab1_cols)
@@ -245,20 +245,31 @@ tab1 <-
     col <- reg_cycle_tab[, y]
     column_spec(x, y, background = ifelse(col >= 100, reg_pass, "#FFFFFF"))}, .init = .) %>%
   row_spec(1, extra_css = "border-top: 1px solid #000000;") %>%
-  row_spec(nrow(reg_cycle_tab), extra_css = "border-top: 1px solid #000000;") %>%
-  save_kable(file = "table1.html", self_contained = T) # save as html b/c pagedown was having issues
-
+  row_spec(nrow(reg_cycle_tab), extra_css = "border-bottom: 1px solid #000000;") %>%
+  save_kable(file = "table1.html", self_contained = F) # save as html b/c pagedown was having issues
 ```
 
 ```{r results = 'asis'}
-cat("Table 1. Average plot-level seedling and sapling stem densities, converted to stems per sq.m, and stocking index by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotataions, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m2 and 0.14 saplings/m2 or have a stocking index >100.", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), sep = "")
+cat("Table 1. Average plot-level seedling and sapling stem densities (stems per sq.m) and stocking index (per 2m radius microplot) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotataions, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m2 and 0.14 saplings/m2 or have a stocking index >100.", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), sep = "")
 ```
 
-```{r echo = F}
-htmltools::includeHTML("table1.html")
+<br>
+```{r echo = F, eval = T}
+includeHTML("table1.html")
 ```
+<br>
 
 
+```{r results = 'asis'}
+HTML(
+"<style>
+h4, .h4, h5, .h5, h6, .h6 {
+margin-top: 0; 
+margin-bottom: 0;
+}
+</style>"
+)
+```
 
 ### {.page-break-before}
 ```{r results = 'asis'}
