@@ -9,7 +9,7 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'BOWA' 
+  park: 'VAFO' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
@@ -34,10 +34,10 @@ library(vegan)
 
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
-#park <- "APCO"
+# park <- "VAFO"
+park <<- params$park
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv")
-park <<- params$park
 #park <<- park
 from <<- as.numeric(midn_params$from[midn_params$park == park])
 from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
@@ -133,15 +133,16 @@ tab2 <-
 ```
 ```{r include = F, eval = T, results = 'hide'}
 # Table 3 setup
-tab3_cols <- c("Latin Name", "Common Name", gsub("cycle_", "Cycle ", names(inv_spp[,3:ncol(inv_spp)])))
+tab3_cols <- c("Latin Name", "Common Name", gsub("cycle_", "Cycle ", 
+                                                 names(inv_spp_final[,3:ncol(inv_spp_final)])))
 
-inv_spp <- inv_spp |> filter(!ScientificName %in% "None present")
+inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
 
 tab3 <- 
   kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
         table.attr = "style='width:95%;height:95%;'") %>% #, caption = cap_t3, title = NULL) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
-                full_width = FALSE, position = 'center', font_size = 9) %>%
+                full_width = TRUE, position = 'center', font_size = 9) %>%
   column_spec(1, italic = TRUE) %>%
   column_spec(c(1, 2), border_left = T, border_right = T) %>%
   column_spec(ncol(inv_spp), border_right = T) %>%
@@ -269,8 +270,8 @@ cat(paste0("<p><b>Figure 3.</b> Deer browse impacts by cycle in ", park_long, " 
 includeHTML("html_header.html")
 ```
 
-```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_4", park, "_smoothed_regen_by_species_cycle.svg"))
+```{r out.width = "98%"}
+include_graphics(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.svg"))
 ```
 
 ```{r results = 'asis'}
@@ -287,7 +288,7 @@ approximated a linear trend between consecutive sample events per panel.</p>", s
 includeHTML("html_header.html")
 ```
 
-```{r out.width = "85%"}
+```{r out.width = "98%"}
 include_graphics(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.svg"))
 ```
 

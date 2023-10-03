@@ -92,7 +92,7 @@ h5 {
 
 /* Banner */
 .banner{
-  background: black;
+  background: black !important; 
   height: 85px;
   position:relative;
   /*width: auto;*/
@@ -121,7 +121,7 @@ h5 {
 #col-left-header{
   float:left;
   text-align:left;
-  width: 63%;
+  width: 60%;
   padding: 0 5px 0 5px;
 }
 
@@ -137,7 +137,7 @@ h5 {
   float:right;
   text-align:left;
   margin-right:0;
-  width: 27%;
+  width: 30%;
   /*padding:5px 0; */
   padding: 0px 5px 0px 5px;
 }
@@ -158,7 +158,7 @@ h5 {
 .header h5 {
   /*position: relative;*/
   text-align: left;
-  color: white;
+  color: white !important;
   font-size: 10px;
   padding: 0 0 0 0;
   margin: 5px 5px 0 5px; 
@@ -253,6 +253,10 @@ table td{
  .shorttitle { 
    position: running(runningTitle);
  } 
+  
+@media print {
+body {-webkit-print-color-adjust: exact;}
+}  
   
 /* @page :left { */
 /*@page{

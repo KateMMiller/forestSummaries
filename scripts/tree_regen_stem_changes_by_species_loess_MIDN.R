@@ -216,7 +216,7 @@ net_stems <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', # b/c shares page with 4B 
-        legend.key.width = unit(1, 'cm'),
+        legend.key.width = unit(1.5, 'cm'),
         plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) #+ 
   #guides(color = guide_legend(nrow = spp_rows))
 
@@ -239,7 +239,7 @@ net_ba <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
-        legend.key.width = unit(1, 'cm'),
+        legend.key.width = unit(1.5, 'cm'),
         plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) #+ 
  # guides(color = guide_legend(nrow = spp_rows))
 
@@ -376,7 +376,7 @@ net_seeds <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
-        legend.key.width = unit(1, 'cm'),
+        legend.key.width = unit(1.5, 'cm'),
         plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm'))# + 
   #guides(color = guide_legend(nrow = 5))
 
@@ -398,9 +398,9 @@ net_saps <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
-        legend.key.width = unit(1, 'cm'),
-        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) +
-  guides(color = guide_legend(nrow = spp_rows))
+        legend.key.width = unit(1.5, 'cm'),
+        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) #+
+  #guides(color = guide_legend(nrow = spp_rows))
 
 net_saps
 
@@ -442,7 +442,7 @@ guild_plot <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom',  
-        legend.key.width = unit(1, 'cm'))
+        legend.key.width = unit(1.5, 'cm'))
 
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
     height = 4.6, width = 8)
