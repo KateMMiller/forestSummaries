@@ -12,14 +12,14 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 }
 
 #---- Plot event lists ----
-plotevs <- do.call(joinLocEvent, args_all)
-plotevs_vs <- do.call(joinLocEvent, args_vs)
-plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to))
+plotevs <- do.call(joinLocEvent, args_all) |> filter(!Plot_Name %in% "COLO-380") 
+plotevs_vs <- do.call(joinLocEvent, args_vs) |> filter(!Plot_Name %in% "COLO-380") 
+plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) |> filter(!Plot_Name %in% "COLO-380") 
 
 #---- Table 1. Regen densities by plot and year ----
 reg <- do.call(joinRegenData, 
                args = c(args_all, speciesType = 'native', 
-                        canopyForm = 'canopy', units = 'sq.m'))
+                        canopyForm = 'canopy', units = 'sq.m')) |> filter(!Plot_Name %in% "COLO-380") 
 
 
 reg_cycle_table <- reg %>% group_by(Plot_Name, cycle) %>% 
@@ -84,7 +84,7 @@ write_to_shp(reg_size_4yr,
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
-                           canopyForm = 'canopy', units = 'sq.m'))
+                           canopyForm = 'canopy', units = 'sq.m')) |> filter(!Plot_Name %in% "COLO-380") 
 
 reg_size_cy <- reg_vs %>% group_by(Plot_Name, cycle) %>% 
                           summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = TRUE) %>% 
@@ -191,7 +191,7 @@ ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by
 #---- Figure 1B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
-tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live'))
+tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live')) |> filter(!Plot_Name %in% "COLO-380") 
 
 dbh_cols <- c('dens_10_19.9', 'dens_20_29.9', 'dens_30_39.9', 'dens_40_49.9', 
               'dens_50_59.9', 'dens_60_69.9', 'dens_70_79.9', 'dens_80_89.9',
@@ -291,7 +291,8 @@ ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle
        height = 5, width = 7.5, units = 'in')
 
 #---- Map 3 Regen by composition ----
-reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m')) |> filter(!ScientificName %in% 'None present')
+reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m')) |> 
+  filter(!ScientificName %in% c('None present', "Not Sampled")) |> filter(!Plot_Name %in% "COLO-380") 
 
 head(trspp_grps) # loaded in source_script_MIDN.R. Use as a first cut for grouping.
 
@@ -320,12 +321,13 @@ write_to_shp(reg_wide, shp_name =
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
 #---- Map 4 Tree canopy composition ----
-tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
+tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live')) |> filter(!Plot_Name %in% "COLO-380") 
 
-tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species"))
+tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
+  filter(!ScientificName %in% c("None present", "Not Sampled"))
 
 if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
-  warning("There's at least 1 NA in reg_spp_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
+  warning("There's at least 1 NA in tree_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 head(tree_grps)
 
 tree_wide <- tree_grps %>% group_by(Plot_Name, sppcode) %>% 
@@ -344,7 +346,7 @@ write_to_shp(tree_wide, shp_name =
 #---- Map 5 Regen stocking index ----
 reg_4yr <- do.call(joinRegenData,
                    args = c(args_4yr, speciesType = 'native',
-                            canopyForm = 'canopy', units = 'sq.m'))
+                            canopyForm = 'canopy', units = 'sq.m')) |> filter(!Plot_Name %in% "COLO-380") 
 
 reg_4yr_stock <- reg_4yr %>% group_by(Plot_Name) %>% 
                              summarize(stock = (sum(stock, na.rm = T)) * (4 * pi)) %>% 
@@ -356,7 +358,7 @@ write_to_shp(reg_4yr_stock, shp_name =
                 cycle_latest, ".shp"))
 
 #---- Map 6 Deer Browse Index ----
-stand_4yr <- do.call(joinStandData, args_4yr) 
+stand_4yr <- do.call(joinStandData, args_4yr)  |> filter(!Plot_Name %in% "COLO-380") 
 
 dbi <- left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
                  stand_4yr, by = "Plot_Name") %>% 
@@ -370,6 +372,7 @@ write_to_shp(dbi, shp_name =
 
 #---- Map 7 Invasive % Cover by Cycle ----
 invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive')) %>% 
+  filter(!Plot_Name %in% "COLO-380") %>%
   select(Plot_Name, cycle, ScientificName, quad_avg_cov) %>% 
   group_by(Plot_Name, cycle) %>% summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate, cycle),
@@ -459,8 +462,8 @@ write_to_shp(invspp, shp_name =
 
 #---- Map 9 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
-disturb <- do.call(joinStandDisturbance, args = args_4yr) %>% 
-  filter(DisturbanceLabel != "None") %>% 
+disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name %in% "COLO-380") %>%
+  filter(DisturbanceLabel != "None") %>%
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -474,7 +477,8 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%
 #mutate(detect = 'plot_dist')
 
 # Next compile pest/pathogens from Tree Conditions
-treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live'))
+treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live')) |> 
+  filter(!Plot_Name %in% "COLO-380") 
 
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
            "SB", "SLF", "SOD", "SPB", "SW")
@@ -525,7 +529,8 @@ write_to_shp(pests_wide, shp_name =
 
 #---- Map 10 Canopy Cover ----
 cancov <- do.call(joinStandData, args = args_all) %>% 
-  select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure)
+  select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure) |> 
+  filter(!Plot_Name %in% "COLO-380")
 
 cancov_wide <- cancov %>% pivot_wider(names_from = cycle, values_from = CrownClos)
 
@@ -533,6 +538,7 @@ write_to_shp(cancov_wide, shp_name = paste0(new_path, "shapefiles/", park, "_can
 
 #---- Table 2 Average Invasive cover by plot and cycle ----
 inv_plots <- do.call(sumSpeciesList, args = c(args_all, speciesType = "invasive")) %>% 
+  filter(!Plot_Name %in% "COLO-380") %>%
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% 
   group_by(Plot_Name, PlotCode, cycle, PanelCode) %>% 
   summarize(inv_cov = sum(quad_avg_cov, na.rm = T),
@@ -686,7 +692,8 @@ ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, Co
 write.csv(ed_all_final, paste0(new_path, 'tables/', park, "_early_detections.csv"), row.names = F)
 
 #---- CWD by cycle
-cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol)
+cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol) |> 
+  filter(!Plot_Name %in% "COLO-380") 
 
 cwd <- cwd1 %>% group_by(Plot_Name, cycle) %>% 
   summarize(cwd_vol = sum(CWD_Vol, na.rm = T), .groups = 'drop') %>% 

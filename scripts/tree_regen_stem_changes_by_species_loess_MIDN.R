@@ -187,7 +187,7 @@ lines = c(
   "Nyssa sylvatica (black gum)" = "dashed",
   "Other Exotic" = "dashed",
   "Other Native" = "solid",
-  "Pinus spp. (pine)" = "dashed",
+  "Pinus spp. (pine)" = "dotdash",
   "Prunus spp. (native cherry)" = "dashed", 
   "Pyrus calleryana (Bradford pear)" = "dotted",
   "Quercus spp. (oak)" = "solid",
@@ -197,7 +197,11 @@ lines = c(
   "Ulmus spp. (native elm)" = "dotted", 
   "Unknown spp." = "dotted")
 
+
 #---- Net stem/BA plots by species
+#spp_rows <- ifelse(park %in% c("GETT", "RICH", "COLO"), 6, 5) # rows in spp legend
+#spp_rows = 7
+
 net_stems <- 
   ggplot(tree_stem_smooth3, aes(x = SampleYear, y = estimate)) +
   geom_line(aes(color = spp_grp, linetype = spp_grp), linewidth = 1.5) +
@@ -211,12 +215,15 @@ net_stems <-
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = 'none', # b/c shares page with 4B 
-        legend.key.width = unit(1, 'cm'))
+        legend.position = 'right', # b/c shares page with 4B 
+        legend.key.width = unit(1, 'cm'),
+        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) #+ 
+  #guides(color = guide_legend(nrow = spp_rows))
 
 net_stems
 ggsave(paste0(new_path, "figures/", "Figure_5A_", park, "_smoothed_tree_stems_by_species_cycle.svg"),
-       height = 4.6, width = 8, units = 'in')
+       height = 6.15, width = 8, units = 'in')
+
 
 net_ba <- 
   ggplot(tree_BA_smooth3, aes(x = SampleYear, y = estimate)) +
@@ -231,15 +238,18 @@ net_ba <-
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = 'bottom', 
-        legend.key.width = unit(1, 'cm')) + 
-  guides(color = guide_legend(nrow = 5))
+        legend.position = 'right', 
+        legend.key.width = unit(1, 'cm'),
+        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) #+ 
+ # guides(color = guide_legend(nrow = spp_rows))
 
 net_ba
 ggsave(paste0(new_path, "figures/", "Figure_5B_", park, "_smoothed_BA_by_species_cycle.svg"),
     height = 6.15, width = 8)
 
-
+ggarrange(net_stems, net_ba, common.legend = T, legend = 'right', nrow = 2, labels = c("A.", "B.")) 
+ggsave(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.svg"),
+       height = 11, width = 12)
 #----- Similar figures for seedlings and saplings -----
 reg1 <- do.call(joinRegenData, c(args_all, units = 'sq.m')) |> 
   filter(!ScientificName %in% "None present") # b/c treat as shrub until tree-size
@@ -365,14 +375,15 @@ net_seeds <-
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = 'none', 
-        legend.key.width = unit(1, 'cm'))# + 
+        legend.position = 'right', 
+        legend.key.width = unit(1, 'cm'),
+        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm'))# + 
   #guides(color = guide_legend(nrow = 5))
 
 net_seeds
 
 ggsave(paste0(new_path, "figures/", "Figure_4A_", park, "_net_seedlings_by_species_cycle.svg"),
-    height = 4.6, width = 8)
+    height = 6.15, width = 8)
 
 
 net_saps <- 
@@ -386,14 +397,20 @@ net_saps <-
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = 'bottom', 
-        legend.key.width = unit(1, 'cm')) +
-  guides(color = guide_legend(nrow = 5))
+        legend.position = 'right', 
+        legend.key.width = unit(1, 'cm'),
+        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) +
+  guides(color = guide_legend(nrow = spp_rows))
 
 net_saps
 
 ggsave(paste0(new_path, "figures/", "Figure_4B_", park, "_net_saplings_by_species_cycle.svg"),
     height = 6.15, width = 8)
+
+ggarrange(net_seeds, net_saps, common.legend = T, legend = 'right', nrow = 2, labels = c("A.", "B."))
+
+ggsave(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.svg"),
+       height = 11, width = 12)
 
 #----- Trends in invasive guilds over time -----
 guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))

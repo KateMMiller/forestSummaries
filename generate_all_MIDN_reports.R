@@ -25,11 +25,13 @@ render_MIDN_reports <- function(park){
   #encoding = "UTF-8")
    }
 
-#render_MIDN_reports(park = "APCO")
+render_poss <- possibly(render_MIDN_reports, otherwise = "Error")
+
+render_MIDN_reports(park = "COLO")
 
 midn_parks <- sort(unique(midn_params$park))
 
 purrr::walk(midn_parks, ~render_MIDN_reports(park = .))
             
-purrr::walk(midn_parks[2:11], ~render_MIDN_reports(park = .))
+purrr::walk(midn_parks[4:11], ~render_poss(park = .))
 # Failed on COLO in regen_debt_metrics_MIDN.R 221

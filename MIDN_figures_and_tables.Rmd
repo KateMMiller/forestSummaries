@@ -23,6 +23,7 @@ library(htmltools)
 library(knitr)
 library(kableExtra)
 library(cowplot)
+library(ggpubr)
 #devtools::install_github(repo="haozhu233/kableExtra", ref="a6af5c0") # for collapse_rows()
 library(kableExtra)
 #devtools::install_github("katemmiller/forestTrends")
@@ -46,14 +47,6 @@ from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
 to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
 QAQC <<- FALSE
 locType <<- 'VS'
-
-# park = 'FRSP' #'RICH' #'PETE'
-# from = 2007
-# from_4yr = 2021
-# to = 2023
-# cycle_latest = 5
-# from_prev = 2016
-# to_prev = 2019
 
 park_long <- midn_names$LongName[midn_names$ParkCode == park]
 park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
@@ -163,13 +156,13 @@ tab3 <-
 if(nrow(ed_all_final)>0){
 tab4 <- 
   kable(ed_all_final, col.names = c("Plot", "Year", "X", "Y", "Latin Name", "Common Name", "Type"),
-        aling = c(rep('c', 4), 'l', 'l', 'l'), format = 'html',
+        align = c(rep('c', 4), 'l', 'l', 'l'), format = 'html',
         table.attr = "style='width:95%;height:95%;'") |> 
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
                 full_width = FALSE, position = 'center', font_size = 9) %>%
   column_spec(6, italic = TRUE) %>%
-  row_spec(1, extra_css = "border-top: 1px solid #000000;") %>%
-  row_spec(nrow(ed_all_final), extra_css = "border-bottom: 1px solid #000000;") %>%
+  row_spec(0:nrow(ed_all_final), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(ed_all_final), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>%
   save_kable(file = "table4.html", self_contained = F)
 } else {
@@ -276,14 +269,8 @@ cat(paste0("<p><b>Figure 3.</b> Deer browse impacts by cycle in ", park_long, " 
 includeHTML("html_header.html")
 ```
 
-|       A. 
 ```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_4A_", park, "_net_seedlings_by_species_cycle.svg"))
-```
-
-|       B. 
-```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_4B_", park, "_net_saplings_by_species_cycle.svg"))
+include_graphics(paste0(new_path, "figures/Figure_4", park, "_smoothed_regen_by_species_cycle.svg"))
 ```
 
 ```{r results = 'asis'}
@@ -300,14 +287,8 @@ approximated a linear trend between consecutive sample events per panel.</p>", s
 includeHTML("html_header.html")
 ```
 
-|       A. 
 ```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_5A_", park, "_smoothed_tree_stems_by_species_cycle.svg"))
-```
-
-|       B. 
-```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_5B_", park, "_smoothed_BA_by_species_cycle.svg"))
+include_graphics(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.svg"))
 ```
 
 ```{r results = 'asis'}

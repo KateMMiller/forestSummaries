@@ -9,21 +9,23 @@ library(vegan)
 
 # Plot list
 plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
-  select(Plot_Name, SampleYear)
+  select(Plot_Name, SampleYear) |> filter(!Plot_Name %in% "COLO-380") # remove if plot sampled again
 
 # Deer Browse Index
 dbi <- joinStandData(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
-  select(Plot_Name, dbi = Deer_Browse_Index)
+  select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 
 mean_dbi <- mean(dbi$dbi)
 mean_dbi # SARA = 4.22; SAGA 3.47; 2.6 ACAD
 
-dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index)
+dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 dbi_prev <- mean(dbiprev$dbi)
 dbi_prev # SARA = 4.125; SAGA = 3.38; 2.6 ACAD 
 
 # DBI distribution plot
-dbi_all <- joinStandData(park = park, from = from, to = to) |> select(Plot_Name, cycle, dbi = Deer_Browse_Index)
+dbi_all <- joinStandData(park = park, from = from, to = to) |> 
+  select(Plot_Name, cycle, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
+
 dbi_sum <- dbi_all |> group_by(cycle, dbi) |> 
   summarize(num_plots = sum(!is.na(dbi)), .groups = 'drop') |>
   filter(!(is.na(dbi)))
@@ -64,7 +66,7 @@ ggsave(paste0(figpath, "Figure_3_", park, "_DBI_by_cycle.svg"), height = 6.15, w
 
 # Regen densities
 # reg is all spp. reg$NatCan is used for metrics that only include native canopy forming spp.
-reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') 
+reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') |> filter(!Plot_Name %in% "COLO-380") 
 
 reg$CanopyExclusion[reg$ScientificName %in% c("Fraxinus americana", "Fraxinus nigra", 
                                                 "Fraxinus pennsylvanica", "Fraxinus")] <- TRUE
@@ -93,8 +95,8 @@ reg_tot <- reg |> group_by(Plot_Name) |>
     seed_tot = sum(seed_den, na.rm = T)
   )
 
-if(length(unique(reg_tot$Plot_Name)) < num_plots){
-  warning(paste0("Regen debt metrics don't include the total number of plots for", park, 
+if(length(unique(reg_tot$Plot_Name)) < num_plots & !park %in% "COLO"){
+  warning(paste0("Regen debt metrics don't include the total number of plots for ", park, 
                  ". Compare total number of plots = ", num_plots, " regen debt plot tally = ", 
                  length(unique(reg_tot$Plot_Name))))}
 
@@ -151,6 +153,7 @@ reg_sap <- reg |>
   pivot_wider(names_from = sppcode, values_from = sap_den, values_fill = 0)
 
 trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |> 
+  filter(!Plot_Name %in% "COLO-380") |> 
   mutate(genus = word(ScientificName, 1),
          species = ifelse(is.na(word(ScientificName, 2)), "SPP", word(ScientificName, 2)),
          sppcode1 = toupper(paste0(substr(genus, 1, 3), substr(species, 1, 3))),
@@ -200,7 +203,7 @@ sor_seed <- comb |> filter(strata %in% c("tree", "seedling")) |>
 sor_seed_mean <- mean(sor_seed$sor_seed, na.rm = T)
 
 # Tree DBH distribution
-tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live')
+tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> filter(!Plot_Name %in% "COLO-380") 
 
 tree_dist2 <- tree_dist |> 
   summarize(dbh_10cm = sum(dens_10_19.9)/num_plots,
