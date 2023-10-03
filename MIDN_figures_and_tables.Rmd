@@ -71,158 +71,15 @@ source('./scripts/regen_debt_metrics_MIDN.R') # regen debt table and DBI figure
 source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R') # smoothed composition plots
 ```
 
-```{r results = 'asis', include = F}
-html_header <- HTML('
-<div class="banner">
-  <div class="header">
-    <div id="col-left-header">
-        <h5> Mid-Atlantic Network </h5>
-        <h5> Inventory & Monitoring Division </h5>
-        <br>
-        <h5> Forest Monitoring Data Summary </h5></div>
-    <div id="col-right-header">
-        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead"></div>
-    <div id="col-middle-header">
-        <h5> National Park Service </h5>
-        <h5> U.S. Department of the Interior </h5>
-        <br>
-        <h5>', park_title, '</h5><br></div></div></div><br>')
-
-save_html(html_header, "html_header.html")
-# change style so no padding under last h5
-```
-
-
-```{r results = 'asis'}
-includeHTML("html_header.html")
-```
-
-|       A. 
-```{r out.width = "94%"}
-include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
-```
-
-
-|       B. 
-```{r out.width = "94%"}
-include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
-```
-
-
-```{r results = 'asis'}
-cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, ").",
-    paste(cycle_labs, collapse = "; "), ". ", 
-    ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""),
-    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
-```
-
-### {.page-break-before}
-```{r results = 'asis'}
-includeHTML("html_header.html")
-```
-<br>
-<br>
-```{r out.width = "50%"}
-include_graphics(paste0(new_path, "figures/Figure_2_Regen_Debt_table.svg"))
-```
-<br>
-
-```{r results = 'asis'}
-cat("<p><b>Figure 2.</b> Regeneration Debt metrics and status for the most recent 4-year census (",
-    from_4yr, " \U2013 ", to, ") in", park_long, ". Flat Tree Diam. Dist. stands for Flat
-Tree Diameter Distribution. If TRUE, the density of small trees is lower than expected due to
-chronic regeneration failure. See <a href ='https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.2837'>Miller et al. 2023</a> for more details on metric calculations, thresholds, and assessment of status.</p>", sep = "")
-```
-
-<div style = "margin-left: -20px;">
-```{r out.width = "80%"}
-include_graphics(paste0(new_path, "figures/", "Figure_3_", park, "_DBI_by_cycle.svg"))
-```
-</div>
-
-```{r results = 'asis'}
-cat(paste0("<p><b>Figure 3.</b> Deer browse impacts by cycle in ", park_long, " (", park, "). ",
-    paste(cycle_labs, collapse = "; "), ". ", 
-    ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), 
-    sep = ""))
-
-```
-
-
-### {.page-break-before}
-```{r results = 'asis'}
-includeHTML("html_header.html")
-```
-
-
-|       A. 
-```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_4A_", park, "_net_seedlings_by_species_cycle.svg"))
-```
-
-
-|       B. 
-```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_4B_", park, "_net_saplings_by_species_cycle.svg"))
-```
-
-
-```{r results = 'asis'}
-cat("<p><b>Figure 4.</b> Loess smoothed changes in stem density for seedlings (A) and saplings (B) by
-species group and sample year in ", park_long, ". Specified loess span
-approximated a linear trend between consecutive sample events per panel.</p>", sep = "")
-```
-
-### {.page-break-before}
-```{r results = 'asis'}
-includeHTML("html_header.html")
-```
-
-|       A. 
-```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_5A_", park, "_smoothed_tree_stems_by_species_cycle.svg"))
-```
-
-
-|       B. 
-```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_5B_", park, "_smoothed_BA_by_species_cycle.svg"))
-```
-
-
-```{r results = 'asis'}
-cat("<p><b>Figure 5.</b> Loess smoothed changes in tree stem density (A) and basal area (B) by
-species group and sample year in ", park_long, ". Specified loess span
-approximated a linear trend between consecutive sample events per panel.</p>", sep = "")
-```
-
-### {.page-break-before}
-```{r results = 'asis'}
-includeHTML("html_header.html")
-```
-
-```{r out.width = "85%"}
-include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"))
-```
-
-
-```{r results = 'asis'}
-cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover by guild and sample year in ", 
-    park_long, ". Specified loess span approximated a linear trend between consecutive sample events per panel.</p>", 
-    sep = "")
-```
-
-### {.page-break-before}
-```{r results = 'asis', eval = T}
-includeHTML("html_header.html")
-```
 
 ```{r results = 'hide', include = F}
-cap_t1 <- paste0("<p style='font-size:10px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per sq.m) and stocking index (per 2m radius microplot) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotataions, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m2 and 0.14 saplings/m2 or have a stocking index >100. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
+cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per sq.m) and stocking index (per 2m radius microplot) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotataions, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m2 and 0.14 saplings/m2 or have a stocking index >100. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
 
-cap_t2 <- paste0("<p style='font-size:10px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), " Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
+cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), " Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
 
-cap_t3 <- paste0("<p style='font-size:10px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), " Species on the list include all exotic vascular plant species that are capable of dominating Northeastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
+cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), " Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
+
+cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
 ```
 
 
@@ -243,7 +100,7 @@ tab1 <-
                      "Saplings per sq.m" = cycle_latest, 
                      "Stocking Index" = cycle_latest)) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
-                full_width = FALSE, position = 'left', font_size = 9) %>%
+                full_width = FALSE, position = 'center', font_size = 9) %>%
   column_spec(c(1, 2), border_left = T, border_right = T) %>%
   column_spec(border_cols, border_right = T) %>%
   purrr::reduce(3:border_cols[1], function(x, y){
@@ -273,7 +130,7 @@ tab2 <-
   add_header_above(c(" " = 1, " " = 1, "Average % Cover" = cycle_latest, 
                      "Number of Species per Plot" = cycle_latest)) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
-                full_width = FALSE, position = 'left', font_size = 9) %>%
+                full_width = FALSE, position = 'center', font_size = 9) %>%
   column_spec(c(1, 2), border_left = T, border_right = T) %>%
   column_spec(border2_cols, border_right = T) %>%
   row_spec(1, extra_css = "border-top: 1px solid #000000;") %>%
@@ -289,7 +146,7 @@ tab3 <-
   kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
         table.attr = "style='width:95%;height:95%;'") %>% #, caption = cap_t3, title = NULL) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
-                full_width = FALSE, position = 'left', font_size = 9) %>%
+                full_width = FALSE, position = 'center', font_size = 9) %>%
   column_spec(1, italic = TRUE) %>%
   column_spec(c(1, 2), border_left = T, border_right = T) %>%
   column_spec(ncol(inv_spp), border_right = T) %>%
@@ -300,18 +157,46 @@ tab3 <-
 
 
 ```
+```{r}
+if(nrow(ed_all_final)>0){
+tab4 <- 
+  kable(ed_all_final, col.names = c("Plot", "Year", "X", "Y", "Latin Name", "Common Name", "Type"),
+        aling = c(rep('c', 4), 'l', 'l', 'l'), format = 'html',
+        table.attr = "style='width:95%;height:95%;'") |> 
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = FALSE, position = 'center', font_size = 9) %>%
+  column_spec(6, italic = TRUE) %>%
+  row_spec(1, extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(nrow(ed_all_final), extra_css = "border-bottom: 1px solid #000000;") %>%
+  #landscape(margin = "1cm") %>%
+  save_kable(file = "table4.html", self_contained = F)
+} else {
+tab4 <- HMTL("<p>No invasive species early detections observed in most recent census. </p>")  
+save_html(tab4, "table4.html")
+}
 
-<br>
-
-```{r results = 'asis'}
-cat(cap_t1)
 ```
 
-```{r echo = F, eval = T}
-includeHTML("table1.html")
-```
-<br>
+```{r results = 'asis', include = F}
+html_header <- HTML('
+<div class="banner">
+  <div class="header">
+    <div id="col-left-header">
+        <h5> Mid-Atlantic Network </h5>
+        <h5> Inventory & Monitoring Division </h5>
+        <br>
+        <h5> Forest Monitoring Data Summary </h5></div>
+    <div id="col-right-header">
+        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead"></div>
+    <div id="col-middle-header">
+        <h5> National Park Service </h5>
+        <h5> U.S. Department of the Interior </h5>
+        <br>
+        <h5>', park_title, '</h5></div></div></div><br>')
 
+save_html(html_header, "html_header.html")
+# change style so no padding under last h5
+```
 
 ```{r results = 'asis', include = F}
 # have to run this to reset competing css from table1.html
@@ -325,35 +210,168 @@ margin-bottom: 0;
 )
 ```
 
+
+<!-- Start of page 1 -->
+
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "92%"}
+include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
+```
+
+|       B. 
+```{r out.width = "92%"}
+include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, ").",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""),
+    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
+```
+
+<!-- Start of page 2 -->
+
+### {.page-break-before}
+
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+<br>
+```{r out.width = "45%", out.extra = 'style="margin-left:130px;"'}
+include_graphics(paste0(new_path, "figures/Figure_2_Regen_Debt_table.svg"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 2.</b> Regeneration Debt metrics and status for the most recent 4-year census (",
+    from_4yr, " \U2013 ", to, ") in", park_long, ". Flat Tree Diam. Dist. stands for Flat
+Tree Diameter Distribution. If TRUE, the density of small trees is lower than expected due to
+chronic regeneration failure. See <a href ='https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.2837'>Miller et al. 2023</a> for more details on metric calculations, thresholds, and assessment of status.</p>", sep = "")
+```
+<br>
+
+```{r out.width = "80%", out.extra = 'style="margin-left:100px;"'}
+include_graphics(paste0(new_path, "figures/", "Figure_3_", park, "_DBI_by_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 3.</b> Deer browse impacts by cycle in ", park_long, " (", park, "). ",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), 
+    sep = ""))
+
+```
+<br>
+
+<!-- Start of page 3 -->
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_4A_", park, "_net_seedlings_by_species_cycle.svg"))
+```
+
+|       B. 
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_4B_", park, "_net_saplings_by_species_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 4.</b> Loess smoothed changes in stem density for seedlings (A) and saplings (B) by
+species group and sample year in ", park_long, ". Specified loess span
+approximated a linear trend between consecutive sample events per panel.</p>", sep = "")
+```
+<br>
+
+<!-- Start of page 4 -->
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_5A_", park, "_smoothed_tree_stems_by_species_cycle.svg"))
+```
+
+|       B. 
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_5B_", park, "_smoothed_BA_by_species_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 5.</b> Loess smoothed changes in tree stem density (A) and basal area (B) by
+species group and sample year in ", park_long, ". Specified loess span
+approximated a linear trend between consecutive sample events per panel.</p>", sep = "")
+```
+<br>
+
+<!-- Start of page 5-->
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+```{r out.width = "85%"}
+include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover by guild and sample year in ", 
+    park_long, ". Specified loess span approximated a linear trend between consecutive sample events per panel.</p>", 
+    sep = "")
+```
+<br>
+
+<!-- Start of page 6 -->
+
+### {.page-break-before}
+```{r results = 'asis', eval = T}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis'}
+cat(cap_t1)
+```
+
+```{r echo = F, eval = T}
+includeHTML("table1.html")
+```
+<br>
+
+<!-- Start of page 7 -->
+
 ### {.page-break-before}
 
 ```{r results = 'asis'}
 includeHTML("html_header.html")
 ```
 
-<br>
-
-
 ```{r results = 'asis'}
 cat(cap_t2)
 ```
 
-
-
 ```{r echo = F, eval = T}
 includeHTML("table2.html")
 ```
-
 <br>
 
+<!-- Start of page 8 -->
 
 ###   {.page-break-before}
-
 ```{r results = 'asis'}
 includeHTML("html_header.html")
 ```
-
-<br>
 
 ```{r results = 'asis'}
 cat(cap_t3)
@@ -363,5 +381,20 @@ cat(cap_t3)
 includeHTML("table3.html")
 
 ```
+<br>
 
+<!-- Start of page 9 -->
+
+###   {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis'}
+cat(cap_t4)
+```
+
+```{r echo = F, eval = T}
+includeHTML("table4.html")
+```
 <br>

@@ -864,10 +864,11 @@ spp_inv2 <- left_join(spp_inv, plotevs_4yr |> select(Plot_Name, X = xCoordinate,
 #---- ED Pests ----
 priority_pests <- c("ALB", "BLD", "EAB", "EHS", "HWA", "RPS", "SLF", "SOD", "SPB", "SW")
 
-pest_eds <- pests_wide %>% select(Plot_Name, X, Y, any_of(priority_pests)) %>% 
-  mutate(pres = ifelse(ncol(.) > 3, rowSums(.[4:ncol(.)]), 0)) %>% filter(pres > 0)
+pest_eds <- pests_wide %>% select(Plot_Name, SampleYear, X, Y, any_of(priority_pests)) 
 
 if(nrow(pest_eds) > 0){
+pest_eds$num_pres <- rowSums(pest_eds[5:ncol(pest_eds)])
+pest_eds <- pest_eds |> filter(num_pres >= 1)
 write.csv(pest_eds, paste0(new_path, 'tables/', park, "_pest_detections.csv"), row.names = F)
 }
 

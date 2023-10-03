@@ -601,6 +601,8 @@ colSums(vincetoxicum[,-1])
 inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything())
 
+inv_spp <- inv_spp[, c("ScientificName", "CommonName", sort(names(inv_spp[,3:ncol(inv_spp)])))]
+
 write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
 
@@ -632,12 +634,12 @@ ised_taxon <- left_join(ised_taxon2, taxa %>% select(TaxonID, TSN, ScientificNam
 
 ised_join <- left_join(spp_all, ised_taxon, by = c("TSN", "ScientificName", "ParkUnit" = "Unit")) %>% 
   filter(IsEarlyDetection == 1) %>% 
-  select(-SampleYear, -cycle, -TSN, BA_cm2, -DBH_mean, -stock, -shrub_pct_freq,
+  select(-cycle, -TSN, BA_cm2, -DBH_mean, -stock, -shrub_pct_freq,
          -quad_pct_freq, -IsEarlyDetection) %>% 
   arrange(Plot_Name, ScientificName) %>% 
   left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% filter(!is.na(ScientificName)) %>% 
-  select(Plot_Name, X, Y, ScientificName, quad_avg_cov)
+  select(Plot_Name, SampleYear, X, Y, ScientificName, quad_avg_cov)
 
 write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_species.csv"),
           row.names = FALSE)
@@ -645,12 +647,43 @@ write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_s
 #---- ED Pests ----
 priority_pests <- c("ALB", "BLD", "EAB", "EHS", "HWA", "RPS", "SLF", "SOD", "SPB", "SW")
 
-pest_eds <- pests_wide %>% select(Plot_Name, X, Y, any_of(priority_pests)) %>% 
-  mutate(pres = ifelse(ncol(.) > 3, rowSums(.[4:ncol(.)]), 0)) %>% filter(pres > 0)
+pest_eds <- pests_wide %>% select(Plot_Name, SampleYear, X, Y, any_of(priority_pests)) 
 
 if(nrow(pest_eds) > 0){
+pest_eds$num_pres <- rowSums(pest_eds[5:ncol(pest_eds)])
+pest_eds <- pest_eds |> filter(num_pres >= 1)
 write.csv(pest_eds, paste0(new_path, 'tables/', park, "_pest_detections.csv"), row.names = F)
 }
+
+#---- ED all species ----
+ised_spp <- left_join(ised_join, 
+                      prepTaxa() |> select(ScientificName, CommonName, Tree, Shrub, Vine, Herbaceous, Graminoid),
+                      by = "ScientificName") |> 
+  mutate(type = case_when(Tree == 1 ~ 'tree', 
+                          Shrub == 1 ~ 'shrub',
+                          Vine == 1 ~ 'shrub',
+                          Graminoid == 1 ~ 'graminoid',
+                          Herbaceous == 1 ~ 'herbaceous',
+                          TRUE ~ "UNK")) |> 
+  select(-Tree, -Shrub, -Vine, -Herbaceous, -Graminoid)
+
+pest_names <- read.csv("tree_conditions_table.csv")
+
+if(nrow(pest_eds) > 0){
+  pest_pres <- names(pest_eds[names(pest_eds) %in% priority_pests])
+  pest_eds_long <- pest_eds |> select(-num_pres) |> 
+    pivot_longer(cols = all_of(pest_pres), 
+                names_to = "pest", values_to = "pres") |> 
+    select(-pres)
+  
+  pest_eds2 <- left_join(pest_eds_long, pest_names, by = c("pest" = "Code")) |> 
+    select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')
+  
+ed_all <- rbind(ised_spp, pest_eds2)
+} else {ised_spp}
+
+ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type)
+write.csv(ed_all_final, paste0(new_path, 'tables/', park, "_early_detections.csv"), row.names = F)
 
 #---- CWD by cycle
 cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol)
