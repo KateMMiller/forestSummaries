@@ -86,8 +86,8 @@ h5 {
   font-family: "Arial",Arial,sans-serif;
   text-align:left;
   font-size:10px;
-  padding:0;
-  margin:0;
+  padding-bottom:0;
+  margin-bottom:0;
 }
 
 /* Banner */
@@ -112,8 +112,8 @@ h5 {
  text-align: left;
  color: white;
  font-size: 14px;
- padding: 2px 2px 2px 2px;
- /*argin:4px 5px;*/
+ padding: 0px 2px 0px 2px;
+ /*margin:4px 5px;*/
  font-family: "Arial",Arial,sans-serif;
  /*position: fixed;*/
  }
@@ -122,7 +122,7 @@ h5 {
   float:left;
   text-align:left;
   width: 63%;
-  padding: 5px 5px;
+  padding: 0 5px 0 5px;
 }
 
 #col-right-header{
@@ -138,8 +138,8 @@ h5 {
   text-align:left;
   margin-right:0;
   width: 27%;
-  padding:5px 0;
-  /*padding: 5px 0px 5px 5px;*/
+  /*padding:5px 0; */
+  padding: 0px 5px 0px 5px;
 }
 
 /* Clear floats after the columns */
@@ -147,16 +147,6 @@ h5 {
   content: "";
   display: table;
   clear: both;
-}
-
-.column_1 {
-  float:left;
-  width:48%;
-}
-
-.column_2 {
-  float:right;
-  width:48%;
 }
 
 .header img{
@@ -170,8 +160,8 @@ h5 {
   text-align: left;
   color: white;
   font-size: 10px;
-  padding: 0 0 5px 0;
-  /*margin:4px 5px; */
+  padding: 0 0 0 0;
+  margin: 5px 5px 0 5px; 
   font-family: "Arial",Arial,sans-serif;
 }
 
@@ -182,12 +172,18 @@ h5 {
   flex: 2;
 }
 
+/*
+.caption {
+  font-size: 10px;
+  font-family: "Arial", Arial, sans-serif;
+}
+*/
 table{
   border: 1px solid black;
   border-collapse: collapse;
   padding: 0;
   margin: 0;
-  font-size:11px;
+  font-size:9px;
   font-family: "Arial",Arial,sans-serif;
 }
 table th tr td .quads{
@@ -204,7 +200,7 @@ table th {
   /*border-spacing: 2px 5px;*/
   padding: 2px 10px 2px 10px;
   font-family: "Arial", Arial, sans-serif;
-  font-size: 11px;
+  font-size: 9px;
 }
 
 table tr td {
@@ -215,14 +211,14 @@ table tr td {
   border-left: 1px solid black;
   /*border-spacing: 2px 5px; */
   font-family: "Arial", Arial, sans-serif;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 table td{
   /*border-spacing: 2px 5px;*/
   padding: 4px 6px;
   font-family: "Arial", Arial, sans-serif;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .table-striped tr:nth-child(even){
@@ -236,8 +232,8 @@ table td{
 @page {
   border-bottom: 1px solid black;
   padding: 0;
-  margin-top: 2px;
-  margin-bottom: 12px;
+  margin-top: 3px;
+  margin-bottom: 14px;
 /*  margin-right: 4px;
   margin-left: 4px; */
   @bottom-left{
@@ -254,7 +250,7 @@ table td{
  } 
   
 /* @page :left { */
-@page{
+/*@page{
    @top-left { 
      content: element(runningTitle); 
      width: 624px; 
@@ -265,4 +261,4 @@ table td{
      padding: 0;
      margin: 0 0 4px 0;
    } 
- }
+ }*/
