@@ -391,10 +391,14 @@ invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive'
 table(invspp_4yr$ScientificName)
 
 Ligustrum = c("Ligustrum", "Ligustrum obtusifolium", "Ligustrum vulgare")
-Lonicera = c("Lonicera - Exotic", "Lonicera morrowii", "Lonicera X bella")
+Lonicera = c("Lonicera - Exotic", "Lonicera morrowii", "Lonicera X bella", "Lonicera", 
+             "Lonicera maackii")
 Vincetoxicum = c("Vincetoxicum", "Vincetoxicum hirundinaria", "Vincetoxicum nigrum",
                  "Vincetoxicum rossicum")
 Elaeagnus = c("Elaeagnus", "Elaeagnus angustifolia", "Elaeagnus umbellata")
+Euonymus = c("Euonymus", "Euonymus alatus", "Euonymus atropurpureus")
+Centaurea = c("Centaurea", "Centaurea jacea", "Centaurea stoebe")
+
 #sort(unique(invspp_4yr$ScientificName))
 
 invspp1 <- do.call(joinQuadSpecies, 
@@ -409,6 +413,8 @@ invspp1 <- do.call(joinQuadSpecies,
            ScientificName %in% Lonicera ~ "Lonicera - Exotic",
            ScientificName %in% Vincetoxicum ~ "Vincetoxicum",
            ScientificName %in% Elaeagnus ~ "Elaeagnus",
+           ScientificName %in% Euonymus ~"Euonymus",
+           ScientificName %in% Centaurea ~"Centaurea",
            TRUE ~ ScientificName)) %>% 
   arrange(Plot_Name, ScientificName)
 
@@ -424,8 +430,10 @@ topspp <- invspp1 %>% left_join(plotspp_df, ., by = c('Plot_Name', 'ScientificNa
   mutate(quad_avg_cov = replace_na(quad_avg_cov, 0),
          present = replace_na(present, 0)) %>% 
   group_by(ScientificName) %>% 
-  summarize(avg_cov = mean(quad_avg_cov, na.rm = T),
-            num_plots = sum(present), .groups = 'drop') %>% 
+  summarize(sum_cov = sum(quad_avg_cov, na.rm = T),
+            num_plots = sum(present), 
+            avg_cov = sum_cov/num_plots,
+            .groups = 'drop') %>% 
   arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
   #arrange(desc(avg_cov)) %>% slice(1:12) %>% select(ScientificName)
 
@@ -436,7 +444,7 @@ invspp <- invspp1 %>%
     ScientificName == "None present" ~ "None present", 
     TRUE ~ "Other invasive")) %>% 
   group_by(Plot_Name, ScientificName) %>% 
-  summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% 
+  summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% # lumps the rest of spp covers
   left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% 
   #left_join(., prepTaxa() %>% select(ScientificName, CommonName), by = "ScientificName") %>% 
@@ -546,7 +554,7 @@ inv_plots <- do.call(sumSpeciesList, args = c(args_all, speciesType = "invasive"
 
 inv_plots_wide <- inv_plots %>% pivot_wider(names_from = cycle, 
                                             values_from = c(inv_cov, numspp)) %>% 
-  select(-Plot_Name) %>% mutate(PanelCode = ifelse(PanelCode %in% c(1:2), 1, 2))
+  select(-Plot_Name) 
 
 write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park, 
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
@@ -567,12 +575,12 @@ centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
   summarize_if(is.numeric, sum) |> 
   mutate(ScientificName = "Centaurea", CommonName = "knapweed") 
 
-miss_cy <- setdiff(names(inv_spp), names(centaurea))
+miss_cy <- setdiff(names(inv_spp1), names(centaurea))
 centaurea[miss_cy] <- 0
 
 lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(ScientificName %in% c("Lonicera - Exotic", "Lonicera morrowii", "Lonicear tatartica", 
-                               "Lonicear X bella")) %>% 
+                               "Lonicear X bella", "Lonicera maackii")) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
@@ -580,7 +588,7 @@ lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) 
   summarize_if(is.numeric, sum) |> 
   mutate(ScientificName = "Lonicera - Exotic", CommonName = "honeysuckle - exotic") 
 
-miss_cy <- setdiff(names(inv_spp), names(lonicera))
+miss_cy <- setdiff(names(inv_spp1), names(lonicera))
 lonicera[miss_cy] <- 0
 
 euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
@@ -593,7 +601,7 @@ euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) 
   summarize_if(is.numeric, sum) |> 
   mutate(ScientificName = "Euonymus", CommonName = "burningbush") 
 
-miss_cy <- setdiff(names(inv_spp), names(euonymus))
+miss_cy <- setdiff(names(inv_spp1), names(euonymus))
 euonymus[miss_cy] <- 0
 
 ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
@@ -606,7 +614,7 @@ ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
   summarize_if(is.numeric, sum) |> 
   mutate(ScientificName = "Ligustrum", CommonName = "privet") 
 
-miss_cy <- setdiff(names(inv_spp), names(ligustrum))
+miss_cy <- setdiff(names(inv_spp1), names(ligustrum))
 ligustrum[miss_cy] <- 0
 
 vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
@@ -619,7 +627,7 @@ vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic
   summarize_if(is.numeric, sum) |> 
   mutate(ScientificName = "Vincetoxicum", CommonName = "swallowwort") 
 
-miss_cy <- setdiff(names(inv_spp), names(vincetoxicum))
+miss_cy <- setdiff(names(inv_spp1), names(vincetoxicum))
 vincetoxicum[miss_cy] <- 0
 
 elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
@@ -632,7 +640,7 @@ elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
   summarize_if(is.numeric, sum) |> 
   mutate(ScientificName = "Elaeagnus", CommonName = "exotic olive") 
 
-miss_cy <- setdiff(names(inv_spp), names(elaeagnus))
+miss_cy <- setdiff(names(inv_spp1), names(elaeagnus))
 elaeagnus[miss_cy] <- 0
 
 inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
@@ -640,6 +648,7 @@ inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName)
   filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", 
                                 "Euonymus alatus", "Euonymus", "Euonymus atropurpureus", 
                                 "Lonicera morrowii", "Lonicera tatartica", "Lonicera X bella",
+                                "Lonicera maackii", "Lonicera - Exotic", "Lonicera",
                                 "Centaurea", "Centaurea stoebe", "Centaurea jacea",
                                 "Vincetoxicum", "Vincetoxicum nigrum", "Vincetoxicum rossicum", 
                                 "Vincetoxicum hirundinaria"))
