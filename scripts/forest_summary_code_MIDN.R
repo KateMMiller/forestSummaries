@@ -642,11 +642,12 @@ elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
 
 miss_cy <- setdiff(names(inv_spp1), names(elaeagnus))
 elaeagnus[miss_cy] <- 0
-
+sort(unique(prepTaxa()$ScientificName))
 inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything()) |> 
   filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", 
-                                "Euonymus alatus", "Euonymus", "Euonymus atropurpureus", 
+                                "Euonymus alatus", "Euonymus", "Euonymus atropurpureus",
+                                "Ligustrum", "Ligustrum vulgare", "Ligustrum obtusifolium",
                                 "Lonicera morrowii", "Lonicera tatartica", "Lonicera X bella",
                                 "Lonicera maackii", "Lonicera - Exotic", "Lonicera",
                                 "Centaurea", "Centaurea stoebe", "Centaurea jacea",

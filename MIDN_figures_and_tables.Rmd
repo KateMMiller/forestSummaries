@@ -9,7 +9,7 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'VAFO' 
+  park: 'APCO' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
@@ -34,7 +34,7 @@ library(vegan)
 
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
-# park <- "VAFO"
+ # park <- "APCO"
 park <<- params$park
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv")

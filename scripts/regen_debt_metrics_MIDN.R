@@ -2,7 +2,6 @@
 # Smoothed tree, sapling, seedling changes in abundance over time
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
-
 library(vegan)
 
 #---- Params -----
@@ -343,5 +342,12 @@ results_plot
 path <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
                park, "/", to, '/figures/')
 ggsave(paste0(path, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+
+debt_final <- debt_final |> mutate(park = park)
+
+#write.csv(debt_final, "Regen_Debt_table.csv", row.names= F)
+debt_append <- read.csv("Regen_Debt_table.csv")
+debt_append2 <- rbind(debt_append, debt_final) 
+write.csv(debt_append2, "Regen_Debt_table.csv", row.names = F)
 
 # Now open svg and make the Regen Debt Status fill white, "#FFFFFF", and font size 13 instead of 11.
