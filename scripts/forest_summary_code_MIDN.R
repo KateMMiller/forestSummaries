@@ -4,6 +4,8 @@
 
 new_path = paste0(path, park, "/", as.character(to), "/")
 
+span = 8/16
+
 #---- Functions ----
 # Write dataframe to shapefile using common settings
 write_to_shp <- function(data, x = "X", y = "Y", shp_name){
@@ -96,7 +98,7 @@ reg_size_cy[reg_sz_cols][reg_size_cy[is.na(reg_sz_cols)]] <- 0
 # Use forestTrends to generate loess-smoothed CIs
 reg_smooth1 <- map_dfr(reg_sz_cols, 
                       ~case_boot_loess(reg_size_cy, x = 'cycle', y = .x, ID = 'Plot_Name', 
-                                       span = 8/4, num_reps = 250, chatty = TRUE) %>% 
+                                       span = span, num_reps = 250, chatty = TRUE) %>% 
                       mutate(size_class = .x)
 )
 
@@ -198,7 +200,7 @@ dbh_cols <- c('dens_10_19.9', 'dens_20_29.9', 'dens_30_39.9', 'dens_40_49.9',
 
 tree_dbh_sm <- map_dfr(dbh_cols, 
                     ~case_boot_loess(tree_dd, x = 'cycle', y = .x, ID = 'Plot_Name', 
-                                     span = 8/4, num_reps = 250, chatty = TRUE) %>% 
+                                     span = span, num_reps = 250, chatty = TRUE) %>% 
                      mutate(dbh_class = .x)
 )
 tree_dbh_sm

@@ -187,19 +187,19 @@ sor_fun <- function(df){
   return(sor)
 }
 
-sor_sap <- comb |> filter(strata %in% c("tree", "sapling")) |> 
-  group_by(Plot_Name) |> nest() |> 
-  mutate(sor_sap = purrr::map(data, sor_fun)) |> 
-  unnest(cols = c("sor_sap")) |> select(-data)
+sor_sap <- comb %>% filter(strata %in% c("tree", "sapling")) %>% 
+  group_by(Plot_Name) %>% nest() %>% 
+  mutate(sap_sor = purrr::map(data, sor_fun)) %>%
+  unnest(cols = c(sap_sor)) %>% select(Plot_Name, sap_sor) %>% data.frame() 
 
-sor_sap_mean <- mean(sor_sap$sor_sap, na.rm = T)
+sor_sap_mean <- mean(sor_sap$sap_sor, na.rm = T)
 
-sor_seed <- comb |> filter(strata %in% c("tree", "seedling")) |> 
-  group_by(Plot_Name) |> nest() |> 
-  mutate(sor_seed = purrr::map(data, sor_fun)) |> 
-  unnest(cols = c("sor_seed")) |> select(-data)
+sor_seed <- comb %>% filter(strata %in% c("tree", "seedling")) %>% 
+  group_by(Plot_Name) %>% nest() %>% 
+  mutate(seed_sor = purrr::map(data, sor_fun)) %>% 
+  unnest(cols = c(seed_sor)) %>% select(Plot_Name, seed_sor) %>% data.frame()
 
-sor_seed_mean <- mean(sor_seed$sor_seed, na.rm = T)
+sor_seed_mean <- mean(sor_seed$data, na.rm = T)
 
 # Tree DBH distribution
 tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> filter(!Plot_Name %in% "COLO-380") 
