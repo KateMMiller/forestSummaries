@@ -242,7 +242,7 @@ table td{
 /*  margin-right: 4px;
   margin-left: 4px; */
   @bottom-left{
-    content: "September 2023"
+    content: "October 2023"
   }
   @bottom-right{
     content: "Page " counter(page) ' of ' counter(pages);

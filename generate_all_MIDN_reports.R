@@ -31,10 +31,10 @@ pdf_print <- function(park){
   report_dir <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
                        park, "/", end_year, "/")
   report_name <- paste0(park, "_Figures_and_Tables_", format(Sys.time(), "%b_%Y"))
-  chrome_print(input = paste0(report_dir, report_name, ".html"), 
-               output = paste0(report_dir, report_name, ".pdf"),
+  chrome_print(input = paste0(out_path, report_name, ".html"), 
+               output = paste0(out_path, report_name, ".pdf"),
                format = 'pdf')
-  cat('Report printed to: ', paste0(report_dir, report_name, ".pdf"))
+  cat('Report printed to: ', paste0(out_path, report_name, ".pdf"))
 }
 
 render_poss <- possibly(render_MIDN_reports, otherwise = "Error")
@@ -45,7 +45,6 @@ midn_parks <- sort(unique(midn_params$park))
 #"APCO" "BOWA" "COLO" "FRSP" "GETT" "GEWA" "HOFU" "PETE" "RICH" "SAHI" "THST" "VAFO"
 purrr::walk(midn_parks, ~render_poss(park = .))
             
-#purrr::walk(midn_parks[4:11], ~render_poss(park = .))
-# Failed on COLO in regen_debt_metrics_MIDN.R 221
+#pdf_print("APCO")
 
 purrr::walk(midn_parks, ~pdf_print(.))
