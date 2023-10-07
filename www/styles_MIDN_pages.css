@@ -254,9 +254,7 @@ table td{
    position: running(runningTitle);
  } 
   
-@media print {
-body {-webkit-print-color-adjust: exact;}
-}  
+@media print { -webkit-print-color-adjust: exact !important;  }
   
 /* @page :left { */
 /*@page{

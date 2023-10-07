@@ -199,7 +199,7 @@ sor_seed <- comb %>% filter(strata %in% c("tree", "seedling")) %>%
   mutate(seed_sor = purrr::map(data, sor_fun)) %>% 
   unnest(cols = c(seed_sor)) %>% select(Plot_Name, seed_sor) %>% data.frame()
 
-sor_seed_mean <- mean(sor_seed$data, na.rm = T)
+sor_seed_mean <- mean(sor_seed$seed_sor, na.rm = T)
 
 # Tree DBH distribution
 tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> filter(!Plot_Name %in% "COLO-380") 

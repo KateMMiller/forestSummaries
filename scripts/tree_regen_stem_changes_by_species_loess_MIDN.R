@@ -2,6 +2,8 @@
 # Smoothed tree, sapling, seedling changes in abundance over time
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
+span <- 4/5 #roughly linear between timesteps
+#span = 4/5
 
 if(!exists('trspp_grps')){stop("Must run source_script_MIDN.R before this script will work.")}
 head(trspp_grps)
@@ -69,7 +71,7 @@ tree_spp_sum <- tree_spp_sum1 |> group_by(Plot_Name, SampleYear, spp_grp, sppcod
 head(tree_spp_sum)
 spp_list <- sort(unique(tree_spp_sum$sppcode))
 
-span = 4/5
+
 length(unique(tree_spp_sum$spp_grp))
 table(tree_spp_sum$spp_grp)
 

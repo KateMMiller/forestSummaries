@@ -9,7 +9,7 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'VAFO' 
+  park: 'GEWA' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
@@ -34,7 +34,7 @@ library(vegan)
 
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
- # park <- "VAFO"
+ # park <- "GEWA"
 park <<- params$park
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv")
@@ -50,7 +50,31 @@ locType <<- 'VS'
 
 park_long <- midn_names$LongName[midn_names$ParkCode == park]
 park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
+network_long <- midn_names$Network_long[midn_names$ParkCode == park]
+
 ```
+
+```{r results = 'asis', include = F}
+html_header <- HTML('
+<div class="banner">
+  <div class="header">
+    <div id="col-left-header">
+        <h5>', network_long, '</h5>
+        <h5> Inventory & Monitoring Division </h5>
+        <br>
+        <h5> Forest Monitoring Data Summary </h5></div>
+    <div id="col-right-header">
+        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead"></div>
+    <div id="col-middle-header">
+        <h5> National Park Service </h5>
+        <h5> U.S. Department of the Interior </h5>
+        <br>
+        <h5>', park_title, '</h5></div></div></div><br>')
+
+save_html(html_header, "html_header.html")
+# change style so no padding under last h5
+```
+
 ```{r include = F, cache = F}
 source('source_script_MIDN.R') # sets up parameters. Can also run all the scripts below, but turned off to help troubleshoot.
 ```
@@ -172,32 +196,12 @@ tab4 <-
   #landscape(margin = "1cm") %>%
   save_kable(file = "table4.html", self_contained = F)
 } else {
-tab4 <- HMTL("<p>No invasive species early detections observed in most recent census. </p>")  
+tab4 <- HTML("<p>No invasive species early detections observed in most recent census. </p>")  
 save_html(tab4, "table4.html")
 }
 
 ```
 
-```{r results = 'asis', include = F}
-html_header <- HTML('
-<div class="banner">
-  <div class="header">
-    <div id="col-left-header">
-        <h5> Mid-Atlantic Network </h5>
-        <h5> Inventory & Monitoring Division </h5>
-        <br>
-        <h5> Forest Monitoring Data Summary </h5></div>
-    <div id="col-right-header">
-        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead"></div>
-    <div id="col-middle-header">
-        <h5> National Park Service </h5>
-        <h5> U.S. Department of the Interior </h5>
-        <br>
-        <h5>', park_title, '</h5></div></div></div><br>')
-
-save_html(html_header, "html_header.html")
-# change style so no padding under last h5
-```
 
 ```{r results = 'asis', include = F}
 # have to run this to reset competing css from table1.html
