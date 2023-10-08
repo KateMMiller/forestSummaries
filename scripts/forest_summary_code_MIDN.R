@@ -503,20 +503,20 @@ treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>%
 
 # Compile notes from visit that could contain mentions of pests
 
-vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
-  mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ "BLD",
-                          grepl("Emerald|emerald|EAB", Notes) ~ "EAB",
-                          grepl("Red pine scale|RPS|red pine scale", Notes) ~ "RPS",
-                          grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
-                                Notes) ~ "HWA",
-                          grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ "BBD",
-                          grepl("GM|spongy|gypsy", Notes) ~ "GM",
-                          TRUE ~ NA_character_
-  )) %>% filter(!is.na(pest)) %>% 
-  select(Plot_Name, pest) %>% unique()
+# vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
+#   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ "BLD",
+#                           grepl("Emerald|emerald|EAB", Notes) ~ "EAB",
+#                           grepl("Red pine scale|RPS|red pine scale", Notes) ~ "RPS",
+#                           grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
+#                                 Notes) ~ "HWA",
+#                           grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ "BBD",
+#                           grepl("GM|spongy|gypsy", Notes) ~ "GM",
+#                           TRUE ~ NA_character_
+#   )) %>% filter(!is.na(pest)) %>% 
+#   select(Plot_Name, pest) %>% unique()
 
 # Combine detections to 1 shapefile
-pest_detects <- rbind(treepests, disturb, vnotes) %>% 
+pest_detects <- rbind(treepests, disturb) %>% #, vnotes) %>% 
   left_join(plotevs_4yr %>% select(Plot_Name, SampleYear, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% 
   select(Plot_Name, SampleYear, X, Y, everything()) %>% unique() %>%  
@@ -726,7 +726,7 @@ ised_spp <- left_join(ised_join,
                           Graminoid == 1 ~ 'graminoid',
                           Herbaceous == 1 ~ 'herbaceous',
                           TRUE ~ "UNK")) |> 
-  select(-Tree, -Shrub, -Vine, -Herbaceous, -Graminoid)
+  select(-Tree, -Shrub, -Vine, -Herbaceous, -Graminoid)|> arrange(type, ScientificName)
 
 pest_names <- read.csv("tree_conditions_table.csv")
 
@@ -736,15 +736,15 @@ if(ncol(pest_eds) >= 5){
   pest_eds_long <- pest_eds |> select(-num_pres) |> 
     pivot_longer(cols = all_of(pest_pres), 
                 names_to = "pest", values_to = "pres") |> 
-    select(-pres)
+    select(-pres) 
   
   pest_eds2 <- left_join(pest_eds_long, pest_names, by = c("pest" = "Code")) |> 
-    select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')
+    select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')|> arrange(ScientificName)
   
 ed_all <- rbind(ised_spp, pest_eds2)
 } else {ised_spp}
 
-ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type)
+ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) 
 write.csv(ed_all_final, paste0(new_path, 'tables/', park, "_early_detections.csv"), row.names = F)
 
 #---- CWD by cycle
