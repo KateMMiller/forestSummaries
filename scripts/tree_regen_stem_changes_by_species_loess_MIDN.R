@@ -439,12 +439,14 @@ guild_plot <-
   geom_line(aes(color = guild, group = guild), linewidth = 1.5) +
   labs(x = NULL, y = "% Invasive Cover") +
   theme_FVM()+
-  scale_color_manual(values = gcols,  name = "Invasive Guild") +
+  scale_color_manual(values = gcols,  name = "Invasive Guild: ") +
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom',  
-        legend.key.width = unit(1.5, 'cm'))
+        legend.key.width = unit(1.5, 'cm'), 
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10))
 
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
     height = 4.6, width = 8)

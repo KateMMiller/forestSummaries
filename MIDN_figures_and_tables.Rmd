@@ -9,7 +9,7 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'GEWA' 
+  park: 'APCO' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
@@ -34,7 +34,7 @@ library(vegan)
 
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
- # park <- "GEWA"
+ # park <- "APCO"
 park <<- params$park
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv")
@@ -88,17 +88,15 @@ source('./scripts/regen_debt_metrics_MIDN.R') # regen debt table and DBI figure
 source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R') # smoothed composition plots
 ```
 
-
 ```{r results = 'hide', include = F}
-cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per sq.m) and stocking index (per 2m radius microplot) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotataions, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m2 and 0.14 saplings/m2 or have a stocking index >100. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
+cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023.", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
 
-cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), " Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), "Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
-cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), " Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
 cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
 ```
-
 
 ```{r include = F, eval = T, results = 'hide'}
 # Table 1 setup
@@ -199,9 +197,7 @@ tab4 <-
 tab4 <- HTML("<p>No invasive species early detections observed in most recent census. </p>")  
 save_html(tab4, "table4.html")
 }
-
 ```
-
 
 ```{r results = 'asis', include = F}
 # have to run this to reset competing css from table1.html
@@ -215,9 +211,8 @@ margin-bottom: 0;
 )
 ```
 
-
 <!-- Start of page 1 -->
-
+<br>
 ```{r results = 'asis'}
 includeHTML("html_header.html")
 ```
@@ -233,10 +228,10 @@ include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by
 ```
 
 ```{r results = 'asis'}
-cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, ").",
+cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, "). ",
     paste(cycle_labs, collapse = "; "), ". ", 
     ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""),
-    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
+    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals to account for non-normal error. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
 ```
 
 <!-- Start of page 2 -->
@@ -247,15 +242,15 @@ cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_l
 includeHTML("html_header.html")
 ```
 <br>
-```{r out.width = "45%", out.extra = 'style="margin-left:130px;"'}
+```{r out.width = "45%", out.extra = 'style="margin-left:130px; margin-top:-20px;"'}
 include_graphics(paste0(new_path, "figures/Figure_2_Regen_Debt_table.svg"))
 ```
 
 ```{r results = 'asis'}
-cat("<p><b>Figure 2.</b> Regeneration Debt metrics and status for the most recent 4-year census (",
-    from_4yr, " \U2013 ", to, ") in", park_long, ". Flat Tree Diam. Dist. stands for Flat
+cat("<p><b>Figure 2.</b> Regeneration Debt status for the most recent 4-year census (",
+    from_4yr, " \U2013 ", to, ") in ", park_long, " (", park, "). ", " Flat Tree Diam. Dist. stands for Flat
 Tree Diameter Distribution. If TRUE, the density of small trees is lower than expected due to
-chronic regeneration failure. See <a href ='https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.2837'>Miller et al. 2023</a> for more details on metric calculations, thresholds, and assessment of status.</p>", sep = "")
+chronic regeneration failure. Sapling/Seedling Composition is the % of total stems composed of native canopy-forming species. Sorenson is a measure of how closely the regen. layer matches canopy composition. For more details on metric calculations, thresholds and assessment of status, see <a href ='https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.2837'>Miller et al. 2023</a>.</p>", sep = "")
 ```
 <br>
 

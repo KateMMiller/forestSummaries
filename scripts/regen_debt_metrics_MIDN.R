@@ -230,7 +230,7 @@ aic_check
 flat_dist <- ifelse(aic_check$linear < aic_check$exp, 1, 0)
 
 #----- Regen Debt Table -----
-debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "Pct Stocked Plots",
+debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "% Stocked Plots",
                               "Stocking Index", "Deer Browse Impacts", "Flat Tree Diam. Dist.",
                               "Sapling Composition", "Seedling Comp.", 
                               "Sorensen Sapling", "Sorensen Seedling"),
@@ -238,8 +238,8 @@ debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "Pct Stocke
                              regsum_natcan$stock, mean_dbi, flat_dist, 
                              reg_pct$sap_pct, reg_pct$seed_pct, 
                              sor_sap_mean, sor_seed_mean),
-                   Units = c("(stems/sq.m)", "(stems/sq.m)", "%", 
-                             "(per 2m radius microplot)", "(range: 1 - 5)", "", "%", "%", 
+                   Units = c("(stems/m^2)", "(stems/m^2)", "%", 
+                             "(2m radius scale)", "(range: 1 - 5)", "", "%", "%", 
                              "(range: 0 - 1)", "(range: 0 - 1)"))
 debt <- debt |> mutate(
   status = 
@@ -251,9 +251,9 @@ debt <- debt |> mutate(
               Metric == "Seedling Density" & Value >= 0.25 & Value < 2 ~ "Caution",
               Metric == "Seedling Density" & Value >= 2.0 ~ "Acceptable",
               
-              Metric == "Pct Stocked Plots" & Value < 33 ~ "Critical",
-              Metric == "Pct Stocked Plots" & Value >= 33 & Value < 67 ~ "Caution",
-              Metric == "Pct Stocked Plots" & Value >= 67 ~ "Acceptable",
+              Metric == "% Stocked Plots" & Value < 33 ~ "Critical",
+              Metric == "% Stocked Plots" & Value >= 33 & Value < 67 ~ "Caution",
+              Metric == "% Stocked Plots" & Value >= 67 ~ "Acceptable",
               
               Metric == "Stocking Index" & Value < 25 ~ "Critical",
               Metric == "Stocking Index" & Value >= 25 & Value < 100 ~ "Caution",
