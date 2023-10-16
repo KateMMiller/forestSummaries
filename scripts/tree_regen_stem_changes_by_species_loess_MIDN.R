@@ -174,7 +174,7 @@ cols = c(
   "Unknown spp." = "#CACACA")
 
 lines = c(
-  "Acer rubrum (red maple)" = "solid",
+  "Acer rubrum (red maple)" = "dotdash",
   "Acer spp. (maple)" = "dashed",
   "Ailanthus altissima (tree-of-heaven)" = "solid",
   "Betula lenta (black birch)" = "dashed",
