@@ -76,7 +76,7 @@ save_html(html_header, "html_header.html")
 ```
 
 ```{r include = F, cache = F}
-source('source_script_MIDN.R') # sets up parameters. Can also run all the scripts below, but turned off to help troubleshoot.
+source('source_script_MIDN.R') # sets up parameters. Can also run all the scripts below, but turned off for easier troubleshooting.
 ```
 ```{r include = F, cache = F}
 source('./scripts/forest_summary_code_MIDN.R') # main figures and tables
@@ -91,7 +91,7 @@ source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R') # smoothed c
 ```{r results = 'hide', include = F}
 cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023.", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
 
-cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), "Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
 cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
@@ -119,6 +119,7 @@ tab1 <-
   column_spec(1:ncol(reg_cycle_tab), border_left = T, border_right = T) %>%
   column_spec(border_cols, extra_css = "border-right: 1.5px solid #000000;") %>%
   column_spec(1, extra_css = "border-left: 1.5px solid #000000;") %>%
+  # color code cells based on their value per metric
   purrr::reduce(3:border_cols[1], function(x, y){
     colm <- reg_cycle_tab[, y]
     column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 0.25, reg_pass, "#FFFFFF"))}, .init = .) %>%
@@ -151,6 +152,13 @@ tab2 <-
   column_spec(1:ncol(inv_cycle_tab), border_left = T, border_right = T) %>%
   column_spec(1, extra_css =  "border-left: 1.5px solid #000000;") %>%
   column_spec(border2_cols, border_right = T) %>%
+  #color code most invaded plots
+  purrr::reduce(3:border2_cols[1], function(x, y){
+    colm <- inv_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 10, "#F2F2A0", "#FFFFFF"))}, .init = .) %>%
+  purrr::reduce((border2_cols[1] + 1): border2_cols[2], function(x, y){
+    colm <- inv_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(!is.na(colm) & colm > 3, "#F2F2A0", "#FFFFFF"))}, .init = .) %>%
   row_spec(0:nrow(inv_cycle_tab), extra_css = "border-top: 1px solid #000000;") %>%
   row_spec(0:nrow(inv_cycle_tab), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>%
@@ -218,12 +226,12 @@ includeHTML("html_header.html")
 ```
 
 |       A. 
-```{r out.width = "92%"}
+```{r out.width = "92%", out.extra = 'style="margin-top:-10px;margin-left:20px"'}
 include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
 ```
 
 |       B. 
-```{r out.width = "92%"}
+```{r out.width = "92%", out.extra = 'style="margin-top:-10px;margin-left:20px"'}
 include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
 ```
 

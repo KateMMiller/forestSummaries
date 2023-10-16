@@ -219,7 +219,7 @@ net_stems <-
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', # b/c shares page with 4B 
         legend.key.width = unit(1.5, 'cm'),
-        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) #+ 
+        plot.margin = margin(0.1, 0.4, 1.5, 0.4, 'cm')) #+ 
   #guides(color = guide_legend(nrow = spp_rows))
 
 net_stems
@@ -242,7 +242,7 @@ net_ba <-
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
         legend.key.width = unit(1.5, 'cm'),
-        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) #+ 
+        plot.margin = margin(0.5, 0.4, 0.1, 0.4, 'cm')) #+ 
  # guides(color = guide_legend(nrow = spp_rows))
 
 net_ba
@@ -250,8 +250,10 @@ ggsave(paste0(new_path, "figures/", "Figure_5B_", park, "_smoothed_BA_by_species
     height = 6.15, width = 8)
 
 ggarrange(net_stems, net_ba, common.legend = T, legend = 'right', nrow = 2, labels = c("A.", "B.")) 
+
 ggsave(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.svg"),
-       height = 11, width = 12)
+       height = 11, width = 9.5)
+
 #----- Similar figures for seedlings and saplings -----
 reg1 <- do.call(joinRegenData, c(args_all, units = 'sq.m')) |> 
   filter(!ScientificName %in% "None present") # b/c treat as shrub until tree-size
@@ -299,7 +301,7 @@ reg_spp_smooth[,c("seed_den", "sap_den")][is.na(reg_spp_smooth[,c("seed_den", "s
 
 spp_list <- sort(unique(reg_spp_smooth$sppcode))
 
-span = 4/5
+#span = 4/5
 table(reg_spp_smooth$SampleYear, reg_spp_smooth$Plot_Name)
 
 seed_smooth <- purrr::map_dfr(spp_list, 
@@ -379,7 +381,7 @@ net_seeds <-
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
         legend.key.width = unit(1.5, 'cm'),
-        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm'))# + 
+        plot.margin = margin(0.1, 0.4, 1.5, 0.4, 'cm'))# + 
   #guides(color = guide_legend(nrow = 5))
 
 net_seeds
@@ -401,7 +403,7 @@ net_saps <-
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
         legend.key.width = unit(1.5, 'cm'),
-        plot.margin = margin(0.1, 0.4, 0.1, 0.4, 'cm')) #+
+        plot.margin = margin(0.5, 0.4, 0.1, 0.4, 'cm')) #+
   #guides(color = guide_legend(nrow = spp_rows))
 
 net_saps
@@ -412,8 +414,8 @@ ggsave(paste0(new_path, "figures/", "Figure_4B_", park, "_net_saplings_by_specie
 ggarrange(net_seeds, net_saps, common.legend = T, legend = 'right', nrow = 2, labels = c("A.", "B."))
 
 ggsave(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.svg"),
-       height = 11, width = 12)
-
+       height = 11, width = 9.5)
+       
 #----- Trends in invasive guilds over time -----
 guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
 guild_list <- sort(unique(guilds$Group))
@@ -439,14 +441,15 @@ guild_plot <-
   geom_line(aes(color = guild, group = guild), linewidth = 1.5) +
   labs(x = NULL, y = "% Invasive Cover") +
   theme_FVM()+
-  scale_color_manual(values = gcols,  name = "Invasive Guild: ") +
+  scale_color_manual(values = gcols,  name = "Invasive Guild") +
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = 'bottom',  
+        legend.position = 'right',  
         legend.key.width = unit(1.5, 'cm'), 
         legend.title = element_text(size = 10),
-        legend.text = element_text(size = 10))
+        legend.text = element_text(size = 10), 
+        plot.margin = margin(0.4, 0.4, 0.1, 0.4, "cm"))
 
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
     height = 4.6, width = 8)

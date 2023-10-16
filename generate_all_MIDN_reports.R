@@ -26,6 +26,7 @@ render_MIDN_reports <- function(park){
            output_options = list(self_contained = TRUE))#,
   #encoding = "UTF-8")
 }
+#render_MIDN_reports(park = "COLO")
 
 pdf_print <- function(park){
   report_dir <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
@@ -36,19 +37,15 @@ pdf_print <- function(park){
                format = 'pdf')
   cat('Report printed to: ', paste0(out_path, report_name, ".pdf"))
 }
+#pagedown::chrome_print("MIDN_figures_and_tables.html")
 
 # Set up safe functions that continue with the next park upon error
 render_poss <- possibly(render_MIDN_reports, otherwise = "Error")
 print_poss <- possibly(pdf_print, otherwise = "Error")
 
-#render_MIDN_reports(park = "COLO")
 
 midn_parks <- sort(unique(midn_params$park))
 #"APCO" "BOWA" "COLO" "FRSP" "GETT" "GEWA" "HOFU" "PETE" "RICH" "SAHI" "THST" "VAFO"
 purrr::walk(midn_parks, ~render_poss(park = .))
-purrr::walk(midn_parks, ~pdf_print(.))
+purrr::walk(midn_parks, ~pdf_poss(.))
 
-pdf_print("VAFO")
-pdf_print("THST")
-
-pagedown::chrome_print("MIDN_figures_and_tables.html")
