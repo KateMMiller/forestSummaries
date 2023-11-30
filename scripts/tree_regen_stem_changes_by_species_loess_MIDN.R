@@ -462,7 +462,7 @@ Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica',
 frax <- do.call(joinTreeData, c(args_vs, status = 'live')) |> filter(ScientificName %in% Fraxinus_spp)
 head(frax)
 
-frax_sum <- frax |> group_by(Plot_Name, cycle) |> 
+frax_sum <- frax |> group_by(Plot_Name, PlotCode, cycle) |> 
   summarize(num_stems = sum(num_stems), 
             sppcode = "FRAXSPP",
             .groups = 'drop')
@@ -474,10 +474,10 @@ fraxspp_wide <- frax_sum |>
               values_fill = 0)
 
 plots <- do.call(joinLocEvent, args = args_vs) |> 
-  select(Plot_Name, X = xCoordinate, Y = yCoordinate) |> unique()
+  select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate) |> unique()
 
-fraxspp <- left_join(plots, fraxspp_wide, by = "Plot_Name") |> unique()
-fraxspp[,4:ncol(fraxspp)][is.na(fraxspp[,4:ncol(fraxspp)])] <- 0
+fraxspp <- left_join(plots, fraxspp_wide, by = c("Plot_Name", "PlotCode")) |> unique()
+fraxspp[,5:ncol(fraxspp)][is.na(fraxspp[,5:ncol(fraxspp)])] <- 0
 head(fraxspp)
 
 
