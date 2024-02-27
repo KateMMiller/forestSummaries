@@ -71,7 +71,6 @@ tree_spp_sum <- tree_spp_sum1 |> group_by(Plot_Name, SampleYear, spp_grp, sppcod
 head(tree_spp_sum)
 spp_list <- sort(unique(tree_spp_sum$sppcode))
 
-
 length(unique(tree_spp_sum$spp_grp))
 table(tree_spp_sum$spp_grp)
 
@@ -339,7 +338,7 @@ seed_smooth2 <-
 
 # Join full group names back into dataframe
 seed_smooth3 <- left_join(seed_smooth2,
-                          plot_spp_yr |> select(spp_grp, sppcode) |> unique(),
+                          plot_rspp_yr |> select(spp_grp, sppcode) |> unique(),
                           by = c('sppcode'), 
                           relationship = 'many-to-many') |> 
                 mutate(spp_grp = as.character(spp_grp)) |> 
@@ -359,7 +358,7 @@ sap_smooth2 <-
             by = "sppcode")
 
 sap_smooth3 <- left_join(sap_smooth2,
-                         plot_spp_yr |> select(spp_grp, sppcode) |> unique(),
+                         plot_rspp_yr |> select(spp_grp, sppcode) |> unique(),
                          by = c('sppcode'), 
                          relationship = 'many-to-many') |> 
   mutate(spp_grp = as.character(spp_grp)) |>
