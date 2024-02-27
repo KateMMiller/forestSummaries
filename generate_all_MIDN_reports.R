@@ -47,5 +47,7 @@ print_poss <- possibly(pdf_print, otherwise = "Error")
 midn_parks <- sort(unique(midn_params$park))
 #"APCO" "BOWA" "COLO" "FRSP" "GETT" "GEWA" "HOFU" "PETE" "RICH" "SAHI" "THST" "VAFO"
 purrr::walk(midn_parks, ~render_poss(park = .))
-purrr::walk(midn_parks, ~pdf_poss(.))
+purrr::walk(midn_parks, ~print_poss(.))
+
+render_MIDN_reports("SAHI")
 
