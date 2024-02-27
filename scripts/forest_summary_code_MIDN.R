@@ -17,7 +17,7 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 plotevs <- do.call(joinLocEvent, args_all) |> filter(!Plot_Name %in% "COLO-380") 
 plotevs_vs <- do.call(joinLocEvent, args_vs) |> filter(!Plot_Name %in% "COLO-380") 
 plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) |> filter(!Plot_Name %in% "COLO-380") 
-
+head(plotevs)
 #---- Table 1. Regen densities by plot and year ----
 reg <- do.call(joinRegenData, 
                args = c(args_all, speciesType = 'native', 
@@ -138,7 +138,7 @@ midn2_labs <- c("1" = "Cycle 1: 2007 \u2013 2010",
 ncbn_labs <- c("1" = "Cycle 1: 2008 \u2013 2011",
                "2" = "Cycle 2: 2012 \u2013 2015",
                "3" = "Cycle 3: 2016 \u2013 2019",
-               "4" = "Cycle 4: 2019 \u2020 2023")
+               "4" = "Cycle 4: 2019 \u2021 2023")
 colo_labs <- c("1" = "Cycle 1: 2011 \u2013 2014",
                "2" = "Cycle 2: 2015 \u2013 2018",
                "3" = "Cycle 3: 2019 \u2013 2023")
@@ -567,6 +567,7 @@ inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
+View(inv_spp1)
 
 centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Centaurea", ScientificName)) %>% 
