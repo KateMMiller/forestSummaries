@@ -181,8 +181,8 @@ h5 {
 table{
   border: 1px solid black;
   border-collapse: collapse;
-  padding: 0;
-  margin: 0;
+  padding: 0 0 4px 0;
+  margin: 0 0 2px 0;
   font-size:9px;
   font-family: "Arial",Arial,sans-serif;
 }
@@ -235,8 +235,8 @@ table td{
 
 @page {
   border-bottom: 1px solid black;
-  padding: 0;
-  margin-top: 3px;
+  padding: 5px;
+  margin-top: 5px;
   margin-bottom: 14px;
   font-size: 10px;
 /*  margin-right: 4px;
