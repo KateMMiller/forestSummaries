@@ -562,12 +562,12 @@ write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park,
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
 #---- Table 3 Invasive species by number of plots cycle
-inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>%
+  filter(!Plot_Name %in% "COLO-380") %>%
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
-View(inv_spp1)
 
 centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Centaurea", ScientificName)) %>% 
@@ -645,10 +645,10 @@ elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
 
 miss_cy <- setdiff(names(inv_spp1), names(elaeagnus))
 elaeagnus[miss_cy] <- 0
-sort(unique(prepTaxa()$ScientificName))
+
 inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything()) |> 
-  filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", 
+  filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", "Elaeagnus",
                                 "Euonymus alatus", "Euonymus", "Euonymus atropurpureus",
                                 "Ligustrum", "Ligustrum vulgare", "Ligustrum obtusifolium",
                                 "Lonicera morrowii", "Lonicera tatartica", "Lonicera X bella",
