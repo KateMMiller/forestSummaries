@@ -33,7 +33,7 @@ pdf_print <- function(park){
   report_name <- paste0(park, "_Figures_and_Tables_", format(Sys.time(), "%b_%Y"))
   chrome_print(input = paste0(out_path, report_name, ".html"), 
                output = paste0(out_path, report_name, ".pdf"),
-               format = 'pdf', browser = 'msedge')#, scale = 3)#, 
+               format = 'pdf', browser = 'msedge', scale = 1.5)#, 
                #box_model = "content")
   cat('Report printed to: ', paste0(out_path, report_name, ".pdf"))
 }
@@ -47,7 +47,7 @@ print_poss <- possibly(pdf_print, otherwise = "Error")
 midn_parks <- sort(unique(midn_params$park))
 #"APCO" "BOWA" "COLO" "FRSP" "GETT" "GEWA" "HOFU" "PETE" "RICH" "SAHI" "THST" "VAFO"
 purrr::walk(midn_parks, ~render_poss(park = .))
-purrr::walk(midn_parks, ~print_poss(.))
+purrr::walk(midn_parks[1], ~print_poss(.))
 
 #render_MIDN_reports("SAHI")
 
