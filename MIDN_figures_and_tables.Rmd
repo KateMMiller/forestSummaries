@@ -9,7 +9,7 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'APCO' 
+  park: 'FRSP' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
@@ -35,7 +35,7 @@ library(vegan)
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
  # park <- "SAHI"
-park <<- params$park
+park <<- params$park #assigns to global env. so easier for later code to find
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv")
 #park <<- park
@@ -110,7 +110,7 @@ reg_pass <- "#BFDFC7"
 # Have to use %>% pipe to use the '.' in the reduce.
 tab1 <- 
   kable(reg_cycle_tab, col.names = tab1_row2, digits = 2, align = 'c', format = 'html', 
-        table.attr = "style='width:95%;height:95%;'") %>% #, caption = cap_t1) %>%
+        table.attr = "style='width:95%;height:92%;'") %>% #, caption = cap_t1) %>%
   add_header_above(c(" " = 1, " " = 1, "Seedlings per sq.m" = cycle_latest, 
                      "Saplings per sq.m" = cycle_latest, 
                      "Stocking Index" = cycle_latest)) %>%
@@ -143,7 +143,7 @@ border2_cols <- c(2 + cycle_latest, 2 + cycle_latest*2, 2 )
 
 tab2 <- 
   kable(inv_cycle_tab, col.names = tab2_row2, digits = 2, align = 'c', format = 'html', 
-        table.attr = "style='width:95%;height:95%;'") %>% #, caption = cap_t2, title = NULL) %>%
+        table.attr = "style='width:95%;height:92%;'") %>% #, caption = cap_t2, title = NULL) %>%
   add_header_above(c(" " = 1, " " = 1, "Average % Cover" = cycle_latest, 
                      "Number of Species per Plot" = cycle_latest)) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
@@ -173,7 +173,7 @@ inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
 
 tab3 <- 
   kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
-        table.attr = "style='width:95%;height:95%;'") %>% #, caption = cap_t3, title = NULL) %>%
+        table.attr = "style='width:95%;height:92%;'") %>% #, caption = cap_t3, title = NULL) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
                 full_width = TRUE, position = 'center', font_size = 9) %>%
   column_spec(1, italic = TRUE) %>%
@@ -213,7 +213,7 @@ HTML(
 "<style>
 h4, .h4, h5, .h5, h6, .h6 {
 margin-top: 0; 
-margin-bottom: 0;
+margin-bottom: 6px;
 }
 </style>"
 )
