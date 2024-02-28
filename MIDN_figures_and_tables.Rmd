@@ -36,6 +36,7 @@ library(vegan)
 # assign params to global env. for source files to find. Makes iterating easier.
  # park <- "SAHI"
 park <<- params$park #assigns to global env. so easier for later code to find
+path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' # output files go here
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv")
 #park <<- park
@@ -207,13 +208,14 @@ save_html(tab4, "table4.html")
 }
 ```
 
-```{r results = 'asis', include = F}
+```{r results = 'asis', include = F, eval = F}
 # have to run this to reset competing css from table1.html
+# Turned off b/c causing bottom row of tables not to print
 HTML(
 "<style>
 h4, .h4, h5, .h5, h6, .h6 {
 margin-top: 0; 
-margin-bottom: 6px;
+margin-bottom: 10px;
 }
 </style>"
 )

@@ -58,8 +58,7 @@ ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac))
 # dbi_plot
 # dev.off()
 
-figpath <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
-               park, "/", to, '/figures/')
+figpath <- paste0(path, park, "/", to, '/figures/')
 ggsave(paste0(figpath, "Figure_3_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
 
 
@@ -341,9 +340,8 @@ results_plot <-
 
 results_plot
 
-path <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
-               park, "/", to, '/figures/')
-ggsave(paste0(path, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+figpath2 <- paste0(path, park, "/", to, '/figures/')
+ggsave(paste0(figpath2, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
 
 debt_final <- debt_final |> mutate(park = park)
 
