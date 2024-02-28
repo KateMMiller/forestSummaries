@@ -153,6 +153,7 @@ h5 {
   display: inline-block;
   height: 70px;
   position: relative;
+  padding-right: 4px;
 }
 
 .header h5 {
@@ -235,7 +236,7 @@ table td{
 
 @page {
   border-bottom: 1px solid black;
-  padding: 5px;
+  padding: 5px 0 0 0;
   margin-top: 5px;
   margin-bottom: 14px;
   font-size: 10px;
