@@ -21,6 +21,9 @@ body {
   position:relative;  
 }
 
+element.style{
+  zoom: 150%;
+}
 /*
 img {
   margin-top:0;
@@ -263,7 +266,12 @@ table td{
    position: running(runningTitle);
  } 
   
-@media print { -webkit-print-color-adjust: exact !important;  
+@media print { 
+  -webkit-print-color-adjust: exact !important;
+  body{
+    zoom:150%;
+  }
+} 
 
 
 
