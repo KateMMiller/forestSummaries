@@ -183,9 +183,10 @@ table{
   border: 1px solid black;
   border-collapse: collapse;
   padding: 0 0 4px 0;
-  margin: 0 0 2px 0;
+  margin: 0 0 10px 0;
   font-size:9px;
   font-family: "Arial",Arial,sans-serif;
+  /*page-break-inside: avoid;*/
 }
 table th tr td .quads{
   font-size:9px;
@@ -208,6 +209,10 @@ table th {
   font-size: 9px;
 }
 
+table tf {
+  padding-bottom: 5px;
+}
+
 table tr td {
   border: 1px solid black;
   border-bottom: 1px solid black;
@@ -217,13 +222,16 @@ table tr td {
   /*border-spacing: 2px 5px; */
   font-family: "Arial", Arial, sans-serif;
   font-size: 9px;
+  overflow: auto; 
 }
 
 table td{
   /*border-spacing: 2px 5px;*/
-  padding: 4px 6px;
+  padding: 2px 5px;
+  margin: 0 0 2px 0;
   font-family: "Arial", Arial, sans-serif;
   font-size: 9px;
+  overflow: auto; 
 }
 
 .table-striped tr:nth-child(even){
@@ -236,8 +244,8 @@ table td{
 
 @page {
   border-bottom: 1px solid black;
-  padding: 5px 0 0 0;
-  margin-top: 5px;
+  padding: 0 0 0 0;
+  margin-top: 4px;
   margin-bottom: 14px;
   font-size: 10px;
 /*  margin-right: 4px;
@@ -255,7 +263,10 @@ table td{
    position: running(runningTitle);
  } 
   
-@media print { -webkit-print-color-adjust: exact !important;  }
+@media print { -webkit-print-color-adjust: exact !important;  
+
+
+
   
 /* @page :left { */
 /*@page{
