@@ -320,12 +320,14 @@ results_plot <-
                 fontface = ifelse(Metric == "Regen. Debt Status", 2, 1))) +
   scale_fill_manual(values = c('Acceptable' = "#BDEBA7", 
                                'Caution' = "#FFFF79",
-                               'Critical' = "#FF5B5B"), na.value = "white",
+                               'Critical' = "#FF5B5B"), 
+                    na.value = "white",
                     labels = c("Acceptable",
                                "Caution",
                                "Critical"),
+                    breaks = c("Acceptable", "Caution", "Critical"),
                     name = NULL, 
-                    drop = FALSE)+
+                    drop = FALSE)+ #, na.translate = FALSE)+
   labs(x = NULL, y = NULL) + 
   theme_bw() +
   theme(axis.text.x = element_blank(),
