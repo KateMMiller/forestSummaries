@@ -410,6 +410,7 @@ includeHTML("table1a.html")
 <br>
 
 ```{r results = 'asis', eval = tab1_evalb}
+cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
 
@@ -418,12 +419,12 @@ cat(cap_t1_cont)
 ```
 
 ```{r echo = F, eval = tab1_evalb}
-cat("### {.page-break-before}", "\n\n")
 includeHTML("table1b.html")
 ```
 <br>
 
 ```{r results = 'asis', eval = tab1_evalc}
+cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
 
@@ -432,12 +433,12 @@ cat(cap_t1_cont)
 ```
 
 ```{r echo = F, eval = tab1_evalc}
-cat("### {.page-break-before}", "\n\n")
 includeHTML("table1c.html")
 ```
 <br>
 
 ```{r results = 'asis', eval = tab1_evalc}
+cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
 
@@ -446,7 +447,6 @@ cat(cap_t1_cont)
 ```
 
 ```{r echo = F, eval = tab1_evalc}
-cat("### {.page-break-before}", "\n\n")
 includeHTML("table1d.html")
 ```
 <br>
