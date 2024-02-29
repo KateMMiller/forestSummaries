@@ -268,8 +268,11 @@ table td{
   
 @media print { 
   -webkit-print-color-adjust: exact !important;
-  body{
+  /*body{
     zoom:150%;
+  }*/
+  table{
+    zoom:80%;
   }
 } 
 

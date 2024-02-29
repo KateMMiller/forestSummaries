@@ -14,7 +14,7 @@ params:
 ---
 ```{r setup, include = FALSE, results = 'hide'}
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
-options(knitr.kable.NA = '')
+options(knitr.kable.NA = '-')
 
 library(pagedown)
 library(tidyverse)
@@ -92,16 +92,22 @@ source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R') # smoothed c
 ```{r results = 'hide', include = F}
 cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
 
+cap_t1_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1 (cont.).</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "</p>")
+
 cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
+cap_t2_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2 (cont.).</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+
 cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+
+cap_t3_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3 (cont.).</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
 cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
 ```
 
 ```{r include = F, eval = T, results = 'hide'}
 # Table 1 setup
-reg_cycle_tab <- reg_cycle_wide |> arrange(Plot) |> select(-Plot_Name)
+reg_cycle_tab <- reg_cycle_wide |> arrange(Plot) |> select(-Plot_Name) |> data.frame()
 tab1_cols <- names(reg_cycle_tab)
 tab1_row2 <- gsub("seed_den_|sap_den_|stock_", "Cycle ", tab1_cols)
 border_cols <- c(2 + cycle_latest, 2 + cycle_latest*2, 2 + cycle_latest*3)
@@ -109,32 +115,58 @@ border_cols <- c(2 + cycle_latest, 2 + cycle_latest*2, 2 + cycle_latest*3)
 reg_pass <- "#BFDFC7"
 
 # Have to use %>% pipe to use the '.' in the reduce.
-tab1 <- 
-  kable(reg_cycle_tab, col.names = tab1_row2, digits = 2, align = 'c', format = 'html', 
-        table.attr = "style='width:95%;height:92%;'") %>% #, caption = cap_t1) %>%
-  add_header_above(c(" " = 1, " " = 1, "Seedlings per sq.m" = cycle_latest, 
-                     "Saplings per sq.m" = cycle_latest, 
+# Have to manually split tables that are >30 rows because page break kept dropping a row
+#if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
+  
+tab1_kab <- function(park, row_start = 1, row_end = 30, table_name = "table1"){
+  df <- if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
+    reg_cycle_tab
+  } else {
+      data.frame(reg_cycle_tab[row_start:row_end,])}
+  
+  kable(df, col.names = tab1_row2, digits = 2, align = 'c', format = 'html', 
+        table.attr = "style='width:95%;height:95%;'", row.names = F) %>% #, caption = cap_t1) %>%
+  add_header_above(c(" " = 1, " " = 1,
+                     "Seedlings per sq.m" = cycle_latest,
+                     "Saplings per sq.m" = cycle_latest,
                      "Stocking Index" = cycle_latest)) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
                 full_width = FALSE, position = 'center', font_size = 9) %>%
-  column_spec(1:ncol(reg_cycle_tab), border_left = T, border_right = T) %>%
+  column_spec(1:ncol(df), border_left = T, border_right = T) %>%
   column_spec(border_cols, extra_css = "border-right: 1.5px solid #000000;") %>%
   column_spec(1, extra_css = "border-left: 1.5px solid #000000;") %>%
   # color code cells based on their value per metric
   purrr::reduce(3:border_cols[1], function(x, y){
-    colm <- reg_cycle_tab[, y]
+    colm <- df[, y]
     column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 0.25, reg_pass, "#FFFFFF"))}, .init = .) %>%
   purrr::reduce((border_cols[1] + 1): border_cols[2], function(x, y){
-    colm <- reg_cycle_tab[, y]
+    colm <- df[, y]
     column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 0.14, reg_pass, "#FFFFFF"))}, .init = .) %>%
   purrr::reduce((border_cols[2] + 1): border_cols[3], function(x, y){
-    colm <- reg_cycle_tab[, y]
+    colm <- df[, y]
     column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 100, reg_pass, "#FFFFFF"))}, .init = .) %>%
-  row_spec(0:nrow(reg_cycle_tab), extra_css = "border-top: 1px solid #000000;") %>%
-  row_spec(0:nrow(reg_cycle_tab), extra_css = "border-bottom: 1px solid #000000;") %>%
+  row_spec(0:nrow(df), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(df), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>% 
-  save_kable(file = "table1.html", self_contained = F) # save as html b/c pagedown was having issues
+  save_kable(file = paste0(table_name, ".html"), self_contained = F) # save as html b/c pagedown was having issues
+}
+
+num_plots <- nrow(reg_cycle_tab)
+
+if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
+  tab1_kab(park)
+} else if(park %in% "FRSP"){
+  tab1_kab("FRSP", 1, 30, "table1a")
+  tab1_kab("FRSP", 31, 60, "table1b")
+  tab1_kab("FRSP", 61, 90, "table1c")
+  tab1_kab("FRSP", 91, num_plots, "table1d")
+} else if(park %in% c("COLO", "GETT", "PETE", "RICH")){
+  tab1_kab(park, 1, 30, "table1a")
+  tab1_kab(park, 31, num_plots, "table1b")
+}
+
 ```
+
 ```{r include = F, eval = T, results = 'hide'}
 # Table 2 setup
 inv_cycle_tab <- inv_plots_wide |> arrange(PlotCode) 
@@ -142,28 +174,48 @@ tab2_cols <- names(inv_cycle_tab)
 tab2_row2 <- gsub("inv_cov_|numspp_", "Cycle ", tab2_cols)
 border2_cols <- c(2 + cycle_latest, 2 + cycle_latest*2, 2 )
 
-tab2 <- 
-  kable(inv_cycle_tab, col.names = tab2_row2, digits = 2, align = 'c', format = 'html', 
-        table.attr = "style='width:95%;height:92%;'") %>% #, caption = cap_t2, title = NULL) %>%
+tab2_kab <- function(park, row_start = 1, row_end = 30, table_name = "table2"){
+  df <- if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
+    inv_cycle_tab
+  } else {
+      data.frame(inv_cycle_tab[row_start:row_end,])}
+  
+  kable(df, col.names = tab2_row2, digits = 2, align = 'c', format = 'html', 
+        table.attr = "style='width:95%;height:95%;'", row.names = F) %>% #, caption = cap_t2, title = NULL) %>%
   add_header_above(c(" " = 1, " " = 1, "Average % Cover" = cycle_latest, 
                      "Number of Species per Plot" = cycle_latest)) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
                 full_width = FALSE, position = 'center', font_size = 9) %>%
   column_spec(c(1, 2), border_left = T, border_right = T) %>%
-  column_spec(1:ncol(inv_cycle_tab), border_left = T, border_right = T) %>%
+  column_spec(1:ncol(df), border_left = T, border_right = T) %>%
   column_spec(1, extra_css =  "border-left: 1.5px solid #000000;") %>%
   column_spec(border2_cols, border_right = T) %>%
   #color code most invaded plots
   purrr::reduce(3:border2_cols[1], function(x, y){
-    colm <- inv_cycle_tab[, y]
+    colm <- df[, y]
     column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 10, "#F2F2A0", "#FFFFFF"))}, .init = .) %>%
   purrr::reduce((border2_cols[1] + 1): border2_cols[2], function(x, y){
-    colm <- inv_cycle_tab[, y]
+    colm <- df[, y]
     column_spec(x, y, background = ifelse(!is.na(colm) & colm > 3, "#F2F2A0", "#FFFFFF"))}, .init = .) %>%
-  row_spec(0:nrow(inv_cycle_tab), extra_css = "border-top: 1px solid #000000;") %>%
-  row_spec(0:nrow(inv_cycle_tab), extra_css = "border-bottom: 1px solid #000000;") %>%
+  row_spec(0:nrow(df), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(df), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>%
-  save_kable(file = "table2.html", self_contained = F)
+  save_kable(file = paste0(table_name, ".html"), self_contained = F)
+}
+
+num_plots <- nrow(inv_cycle_tab)
+
+if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
+  tab2_kab(park)
+} else if(park %in% "FRSP"){
+  tab2_kab("FRSP", 1, 30, "table2a")
+  tab2_kab("FRSP", 31, 60, "table2b")
+  tab2_kab("FRSP", 61, 90, "table2c")
+  tab2_kab("FRSP", 91, num_plots, "table2d")
+} else if(park %in% c("COLO", "GETT", "PETE", "RICH")){
+  tab2_kab(park, 1, 30, "table2a")
+  tab2_kab(park, 31, num_plots, "table2b")
+}
 ```
 ```{r include = F, eval = T, results = 'hide'}
 # Table 3 setup
@@ -174,7 +226,7 @@ inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
 
 tab3 <- 
   kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
-        table.attr = "style='width:95%;height:92%;'") %>% #, caption = cap_t3, title = NULL) %>%
+        table.attr = "style='width:93%;height:93%;'") %>% #, caption = cap_t3, title = NULL) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
                 full_width = TRUE, position = 'center', font_size = 9) %>%
   column_spec(1, italic = TRUE) %>%
@@ -186,7 +238,6 @@ tab3 <-
   row_spec(0:nrow(inv_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>%
   save_kable(file = "table3.html", self_contained = F)
-
 
 ```
 ```{r}
@@ -207,6 +258,7 @@ tab4 <- HTML("<p>No invasive species early detections observed in most recent ce
 save_html(tab4, "table4.html")
 }
 ```
+
 
 ```{r results = 'asis', include = F, eval = F}
 # have to run this to reset competing css from table1.html
@@ -338,14 +390,64 @@ cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover 
 includeHTML("html_header.html")
 ```
 
-```{r results = 'asis'}
+```{r results = 'asis', eval = T}
 cat(cap_t1)
 ```
 
-```{r echo = F, eval = T}
+```{r}
+tab1_eval <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), FALSE, TRUE)
+tab1_evalb <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), TRUE, FALSE)
+tab1_evalc <- ifelse(park %in% "FRSP", TRUE, FALSE)
+```
+
+```{r echo = F, eval = tab1_eval}
 includeHTML("table1.html")
 ```
+
+```{r echo = F, eval = !tab1_eval}
+includeHTML("table1a.html")
+```
 <br>
+
+```{r results = 'asis', eval = tab1_evalb}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab1_evalb}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab1_evalb}
+includeHTML("table1b.html")
+```
+<br>
+
+```{r results = 'asis', eval = tab1_evalc}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab1_evalc}
+includeHTML("table1c.html")
+```
+<br>
+
+```{r results = 'asis', eval = tab1_evalc}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab1_evalc}
+includeHTML("table1d.html")
+```
+<br>
+
 
 <!-- Start of page 7 -->
 
@@ -359,11 +461,59 @@ includeHTML("html_header.html")
 cat(cap_t2)
 ```
 
-```{r echo = F, eval = T}
+```{r}
+tab2_eval <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), FALSE, TRUE)
+tab2_evalb <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), TRUE, FALSE)
+tab2_evalc <- ifelse(park %in% "FRSP", TRUE, FALSE)
+```
+
+```{r echo = F, eval = tab2_eval}
 includeHTML("table2.html")
+```
+
+```{r echo = F, eval = !tab2_eval}
+includeHTML("table2a.html")
 ```
 <br>
 
+```{r results = 'asis', eval = tab2_evalb}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab2_evalb}
+cat(cap_t2_cont)
+```
+
+```{r echo = F, eval = tab2_evalb}
+includeHTML("table2b.html")
+```
+<br>
+
+```{r results = 'asis', eval = tab2_evalc}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc}
+cat(cap_t2_cont)
+```
+
+```{r echo = F, eval = tab2_evalc}
+includeHTML("table2c.html")
+```
+<br>
+
+```{r results = 'asis', eval = tab2_evalc}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc}
+cat(cap_t2_cont)
+```
+
+```{r echo = F, eval = tab2_evalb}
+includeHTML("table2d.html")
+```
+<br>
 <!-- Start of page 8 -->
 
 ###   {.page-break-before}
