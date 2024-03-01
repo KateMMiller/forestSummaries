@@ -9,7 +9,7 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'FRSP' 
+  park: 'VAFO' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
@@ -407,7 +407,6 @@ includeHTML("table1.html")
 ```{r echo = F, eval = !tab1_eval}
 includeHTML("table1a.html")
 ```
-<br>
 
 ```{r results = 'asis', eval = tab1_evalb}
 cat("### {.page-break-before}", "\n\n")
@@ -421,7 +420,6 @@ cat(cap_t1_cont)
 ```{r echo = F, eval = tab1_evalb}
 includeHTML("table1b.html")
 ```
-<br>
 
 ```{r results = 'asis', eval = tab1_evalc}
 cat("### {.page-break-before}", "\n\n")
@@ -435,7 +433,6 @@ cat(cap_t1_cont)
 ```{r echo = F, eval = tab1_evalc}
 includeHTML("table1c.html")
 ```
-<br>
 
 ```{r results = 'asis', eval = tab1_evalc}
 cat("### {.page-break-before}", "\n\n")
@@ -449,8 +446,6 @@ cat(cap_t1_cont)
 ```{r echo = F, eval = tab1_evalc}
 includeHTML("table1d.html")
 ```
-<br>
-
 
 <!-- Start of page 7 -->
 
