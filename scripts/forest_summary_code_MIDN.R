@@ -9,6 +9,7 @@ span = 8/16
 #---- Functions ----
 # Write dataframe to shapefile using common settings
 write_to_shp <- function(data, x = "X", y = "Y", shp_name){
+  data$PlotCode <- as.numeric(substr(data$Plot_Name, 6, 8))
   st_write(st_as_sf(data, coords = c(x, y), crs = park_crs),
            shp_name, delete_layer = TRUE)#FALSE)
 }
@@ -17,6 +18,7 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 plotevs <- do.call(joinLocEvent, args_all) |> filter(!Plot_Name %in% "COLO-380") 
 plotevs_vs <- do.call(joinLocEvent, args_vs) |> filter(!Plot_Name %in% "COLO-380") 
 plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) |> filter(!Plot_Name %in% "COLO-380") 
+head(plotevs)
 
 #---- Table 1. Regen densities by plot and year ----
 reg <- do.call(joinRegenData, 
@@ -138,7 +140,7 @@ midn2_labs <- c("1" = "Cycle 1: 2007 \u2013 2010",
 ncbn_labs <- c("1" = "Cycle 1: 2008 \u2013 2011",
                "2" = "Cycle 2: 2012 \u2013 2015",
                "3" = "Cycle 3: 2016 \u2013 2019",
-               "4" = "Cycle 4: 2019 \u2020 2023")
+               "4" = "Cycle 4: 2019 \u2021 2023")
 colo_labs <- c("1" = "Cycle 1: 2011 \u2013 2014",
                "2" = "Cycle 2: 2015 \u2013 2018",
                "3" = "Cycle 3: 2019 \u2013 2023")
@@ -562,13 +564,14 @@ write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park,
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
 #---- Table 3 Invasive species by number of plots cycle
-inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>%
+  filter(!Plot_Name %in% "COLO-380") %>%
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
 
-centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
   filter(grepl("Centaurea", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -580,7 +583,7 @@ centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
 miss_cy <- setdiff(names(inv_spp1), names(centaurea))
 centaurea[miss_cy] <- 0
 
-lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
   filter(ScientificName %in% c("Lonicera - Exotic", "Lonicera morrowii", "Lonicear tatartica", 
                                "Lonicear X bella", "Lonicera maackii")) %>% 
   mutate(present = 1) %>% 
@@ -593,7 +596,7 @@ lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) 
 miss_cy <- setdiff(names(inv_spp1), names(lonicera))
 lonicera[miss_cy] <- 0
 
-euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
   filter(ScientificName %in% c("Euonymus", "Euonymus alatus", "Euonymus atropurpureus"))  %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -606,7 +609,7 @@ euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) 
 miss_cy <- setdiff(names(inv_spp1), names(euonymus))
 euonymus[miss_cy] <- 0
 
-ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
   filter(grepl("Ligustrum", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -619,7 +622,7 @@ ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
 miss_cy <- setdiff(names(inv_spp1), names(ligustrum))
 ligustrum[miss_cy] <- 0
 
-vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
   filter(grepl("Vincetoxicum", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -632,7 +635,7 @@ vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic
 miss_cy <- setdiff(names(inv_spp1), names(vincetoxicum))
 vincetoxicum[miss_cy] <- 0
 
-elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
   filter(grepl("Elaeagnus", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -644,17 +647,31 @@ elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
 
 miss_cy <- setdiff(names(inv_spp1), names(elaeagnus))
 elaeagnus[miss_cy] <- 0
-sort(unique(prepTaxa()$ScientificName))
+
+wisteria <- do.call(sumSpeciesList, args = c(args_all)) %>% 
+  filter(grepl("Wisteria", ScientificName)) %>% 
+  mutate(present = 1) %>% 
+  group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
+  pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
+              names_prefix = "cycle_") |> 
+  select(-Plot_Name) |> 
+  summarize_if(is.numeric, sum) |> 
+  mutate(ScientificName = "Wisteria", CommonName = "exotic wisteria") 
+
+miss_cy <- setdiff(names(inv_spp1), names(wisteria))
+wisteria[miss_cy] <- 0
+
 inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything()) |> 
-  filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", 
+  filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", "Elaeagnus",
                                 "Euonymus alatus", "Euonymus", "Euonymus atropurpureus",
                                 "Ligustrum", "Ligustrum vulgare", "Ligustrum obtusifolium",
                                 "Lonicera morrowii", "Lonicera tatartica", "Lonicera X bella",
                                 "Lonicera maackii", "Lonicera - Exotic", "Lonicera",
                                 "Centaurea", "Centaurea stoebe", "Centaurea jacea",
                                 "Vincetoxicum", "Vincetoxicum nigrum", "Vincetoxicum rossicum", 
-                                "Vincetoxicum hirundinaria"))
+                                "Vincetoxicum hirundinaria", 
+                                "Wisteria", "Wisteria florubunda", "Wisteria sinensis"))
 
 inv_spp_final <- rbind(inv_spp, centaurea, lonicera, euonymus, 
                        ligustrum, vincetoxicum, elaeagnus) %>% 

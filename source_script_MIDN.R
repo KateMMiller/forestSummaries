@@ -12,11 +12,12 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
+if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'}
+
 importData()
 
 # Downgrade Fraxinus to subcanopy species
 VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"] <- TRUE
-
 
 park_crs = ifelse(park %in% c("APCO", "BOWA"), 26917, 26918)
 
@@ -41,8 +42,6 @@ args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = lo
 args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 
 # Set up file structure
-path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
-
 parks <- c("APCO", "ASIS", "BOWA", "COLO", "FRSP", "GETT", "GEWA", 
            "HOFU", "PETE", "RICH", "SAHI", "THST", "VAFO")
 
