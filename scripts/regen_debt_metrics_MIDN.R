@@ -340,7 +340,8 @@ results_plot <-
 
 results_plot
 
-figpath2 <- paste0(path, park, "/", to, '/figures/')
+figpath2 <- paste0(path, park, "/", to, '/figures/') # not hard coded
+
 ggsave(paste0(figpath2, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
 
 debt_final <- debt_final |> mutate(park = park)
