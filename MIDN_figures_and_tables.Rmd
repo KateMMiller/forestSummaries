@@ -34,11 +34,10 @@ library(vegan)
 
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
- # park <- "SAHI"
 park <<- params$park #assigns to global env. so easier for later code to find
 path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' # output files go here
 midn_names <- read.csv("MIDN_MetaData.csv")
-midn_params <- read.csv("MIDN_params.csv")
+midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
 #park <<- park
 from <<- as.numeric(midn_params$from[midn_params$park == park])
 from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
@@ -551,3 +550,12 @@ cat(cap_t4)
 includeHTML("table4.html")
 ```
 <br>
+
+
+```{r error = T, results = 'hide', echo = FALSE, include = FALSE}
+# remove saved tables so they're not included in other parks that errored
+file.remove(c("table1.html", "table2.html", "table3.html", "table4.html", 
+              'table1a.html', 'table1b.html', 'table1c.html', 'table1d.html', 
+              'table2a.html', 'table2b.html', 'table2c.html', 'table2d.html'))
+```
+
