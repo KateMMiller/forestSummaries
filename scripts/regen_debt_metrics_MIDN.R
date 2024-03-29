@@ -111,7 +111,7 @@ reg_comb <- left_join(plotevs, reg_comb, by = "Plot_Name")
 #if(length(unique(reg_comb$Plot_Name)) < num_plots){warning("Need to left_join with plotevs")} 
 head(reg_comb)
 
-reg_comb[,2:7][is.na(reg_comb[,2:7])] <- 0
+reg_comb[,2:ncol(reg_comb)][is.na(reg_comb[,2:ncol(reg_comb)])] <- 0
 reg_comb$sap_dens_pct[is.nan(reg_comb$sap_dens_pct)] <- 0
 reg_comb$seed_dens_pct[is.nan(reg_comb$seed_dens_pct)] <- 0
 
@@ -346,7 +346,8 @@ ggsave(paste0(figpath2, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 4.
 
 debt_final <- debt_final |> mutate(park = park)
 
-write.csv(debt_final, "Regen_Debt_table.csv", row.names= F)
+write.csv(debt_final, paste0(new_path, "tables/Regen_Debt_table.csv"), row.names= F)
+
 # debt_append <- read.csv("Regen_Debt_table.csv")
 # debt_append2 <- rbind(debt_append, debt_final) 
 # write.csv(debt_append2, "Regen_Debt_table.csv", row.names = F)
