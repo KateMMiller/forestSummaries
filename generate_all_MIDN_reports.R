@@ -26,6 +26,15 @@ render_MIDN_reports <- function(park){
            output_dir = out_path,
            output_options = list(self_contained = TRUE))#,
     
+  } else if(park == "ASIS"){
+    
+    render(input = paste0(rmd_path, "ASIS_figures_and_tables.Rmd"),
+           output_file = paste0(park, 
+                                "_Figures_and_Tables_", 
+                                format(Sys.time(), '%b_%Y'), ".html"),
+           output_dir = out_path,
+           output_options = list(self_contained = TRUE))#,
+    
   } else {
   
     render(input = paste0(rmd_path, "MIDN_figures_and_tables.Rmd"),
