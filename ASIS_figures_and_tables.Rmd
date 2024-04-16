@@ -1,0 +1,377 @@
+---
+output: 
+  pagedown::html_paged:
+    css: www/styles_MIDN_pages.css
+    toc: false
+    numbered_sections: false
+    number_sections: false
+    #includes:
+      #in_header: "header_MIDN.html"
+      #after_body: "footer.html"
+---
+```{r setup, include = FALSE, results = 'hide'}
+# NOTE: Once ASIS has started a second cycle, you should be able to transition to the MIDN-level summaries.
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
+options(knitr.kable.NA = '-')
+
+library(pagedown)
+library(tidyverse)
+library(forestMIDN)
+library(htmltools)
+library(knitr)
+library(kableExtra)
+library(cowplot)
+library(ggpubr)
+#devtools::install_github(repo="haozhu233/kableExtra", ref="a6af5c0") # for collapse_rows()
+library(kableExtra)
+#devtools::install_github("katemmiller/forestTrends")
+library(forestTrends)
+library(sf)
+library(vegan)
+```
+
+```{r}
+# assign params to global env. for source files to find. Makes iterating easier.
+park <<- "ASIS" #assigns to global env. so easier for later code to find
+path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' # output files go here
+midn_names <- read.csv("MIDN_MetaData.csv")
+midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
+#park <<- park
+from <<- as.numeric(midn_params$from[midn_params$park == park])
+from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
+to <<- as.numeric(midn_params$to[midn_params$park == park])
+cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
+from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
+to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
+QAQC <<- FALSE
+locType <<- 'VS'
+
+park_long <- midn_names$LongName[midn_names$ParkCode == park]
+park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
+network_long <- midn_names$Network_long[midn_names$ParkCode == park]
+
+```
+
+```{r results = 'asis', include = F}
+html_header <- HTML('
+<div class="banner">
+  <div class="header">
+    <div id="col-left-header">
+        <h5>', network_long, '</h5>
+        <h5> Inventory & Monitoring Division </h5>
+        <br>
+        <h5> Forest Monitoring Data Summary </h5></div>
+    <div id="col-right-header">
+        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead"></div>
+    <div id="col-middle-header">
+        <h5> National Park Service </h5>
+        <h5> U.S. Department of the Interior </h5>
+        <br>
+        <h5>', park_title, '</h5></div></div></div><br>')
+
+save_html(html_header, "html_header.html")
+# change style so no padding under last h5
+```
+
+```{r include = F, cache = F}
+source('source_script_ASIS.R') # sets up parameters. Can also run all the scripts below, but turned off for easier troubleshooting.
+```
+```{r include = F, cache = F}
+source('./scripts/forest_summary_code_ASIS.R') # main figures and tables
+```
+```{r include = F, cache = F}
+source('./scripts/regen_debt_metrics_ASIS.R') # regen debt table and DBI figure
+```
+```{r include = F, cache = F}
+source('./scripts/tree_regen_stem_density_by_species_ASIS.R') # smoothed composition plots
+```
+
+```{r results = 'hide', include = F}
+cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) for cycle 1. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are not considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", "</p>")
+
+cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot in cycle 1. ", paste0(cycle_labs, collapse = "; "), ". Plots with at least 10% average cover or 4 or more invasive species present are in yellow.", "</p>")
+
+cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", "</p>")
+
+cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
+```
+
+```{r include = F, eval = T, results = 'hide'}
+# Table 1 setup
+reg_cycle_tab <- reg_cycle_wide |> arrange(Plot) |> select(-Plot_Name) |> data.frame()
+tab1_cols <- names(reg_cycle_tab)
+tab1_row2 <- gsub("seed_den_|sap_den_|stock_", "Cycle ", tab1_cols)
+border_cols <- c(2 + cycle_latest, 2 + cycle_latest*2, 2 + cycle_latest*3)
+
+reg_pass <- "#BFDFC7"
+
+# Have to use %>% pipe to use the '.' in the reduce.
+# Have to manually split tables that are >30 rows because page break kept dropping a row
+#if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
+tab1_kab <- function(park, table_name = "table1"){
+  kable(reg_cycle_tab, col.names = c("Plot", "Panel", "Seedlings per sq.m", "Saplings per sq.m", "Stocking Index"), 
+        digits = 2, align = 'c', format = 'html', 
+        table.attr = "style='width:95%;height:95%;'", row.names = F) %>% #, caption = cap_t1) %>%
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = FALSE, position = 'center', font_size = 9) %>%
+  column_spec(1:ncol(reg_cycle_tab), border_left = T, border_right = T) %>%
+  column_spec(border_cols, extra_css = "border-right: 1.5px solid #000000;") %>%
+  column_spec(1, extra_css = "border-left: 1.5px solid #000000;") %>%
+  # color code cells based on their value per metric
+  purrr::reduce(3:border_cols[1], function(x, y){
+    colm <- reg_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 0.25, reg_pass, "#FFFFFF"))}, .init = .) %>%
+  purrr::reduce((border_cols[1] + 1): border_cols[2], function(x, y){
+    colm <-reg_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 0.14, reg_pass, "#FFFFFF"))}, .init = .) %>%
+  purrr::reduce((border_cols[2] + 1): border_cols[3], function(x, y){
+    colm <- reg_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 100, reg_pass, "#FFFFFF"))}, .init = .) %>%
+  row_spec(0:nrow(reg_cycle_tab), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(reg_cycle_tab), extra_css = "border-bottom: 1px solid #000000;") %>%
+  #landscape(margin = "1cm") %>% 
+  save_kable(file = paste0(table_name, ".html"), self_contained = F) # save as html b/c pagedown was having issues
+}
+
+num_plots <- nrow(reg_cycle_tab)
+tab1_kab(park)
+```
+
+```{r include = F, eval = T, results = 'hide'}
+# Table 2 setup
+inv_cycle_tab <- inv_plots_wide |> arrange(PlotCode) 
+tab2_cols <- names(inv_cycle_tab)
+tab2_row2 <- gsub("inv_cov_|numspp_", "Cycle ", tab2_cols)
+border2_cols <- c(2 + cycle_latest, 2 + cycle_latest*2, 2 )
+
+tab2_kab <- function(park, table_name = "table2"){
+  kable(inv_cycle_tab, col.names = tab2_row2, digits = 2, align = 'c', format = 'html', 
+        table.attr = "style='width:95%;height:95%;'", row.names = F) %>% #, caption = cap_t2, title = NULL) %>%
+  add_header_above(c(" " = 1, " " = 1, "Average % Cover" = cycle_latest, 
+                     "Number of Species per Plot" = cycle_latest)) %>%
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = FALSE, position = 'center', font_size = 9) %>%
+  column_spec(c(1, 2), border_left = T, border_right = T) %>%
+  column_spec(1:ncol(inv_cycle_tab), border_left = T, border_right = T) %>%
+  column_spec(1, extra_css =  "border-left: 1.5px solid #000000;") %>%
+  column_spec(border2_cols, border_right = T) %>%
+  #color code most invaded plots
+  purrr::reduce(3:border2_cols[1], function(x, y){
+    colm <- inv_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(!is.na(colm) & colm >= 10, "#F2F2A0", "#FFFFFF"))}, .init = .) %>%
+  purrr::reduce((border2_cols[1] + 1): border2_cols[2], function(x, y){
+    colm <- inv_cycle_tab[, y]
+    column_spec(x, y, background = ifelse(!is.na(colm) & colm > 3, "#F2F2A0", "#FFFFFF"))}, .init = .) %>%
+  row_spec(0:nrow(inv_cycle_tab), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(inv_cycle_tab), extra_css = "border-bottom: 1px solid #000000;") %>%
+  #landscape(margin = "1cm") %>%
+  save_kable(file = paste0(table_name, ".html"), self_contained = F)
+}
+
+num_plots <- nrow(inv_cycle_tab)
+tab2_kab(park)
+
+```
+```{r include = F, eval = T, results = 'hide'}
+# Table 3 setup
+tab3_cols <- c("Latin Name", "Common Name", gsub("cycle_", "Cycle ", 
+                                                 names(inv_spp_final[,3:ncol(inv_spp_final)])))
+
+inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
+
+if(nrow(inv_spp) > 0){
+tab3 <- 
+  kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
+        table.attr = "style='width:93%;height:93%;'") %>% #, caption = cap_t3, title = NULL) %>%
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = TRUE, position = 'center', font_size = 9) %>%
+  column_spec(1, italic = TRUE) %>%
+  column_spec(c(1, 2), border_left = T, border_right = T) %>%
+  column_spec(ncol(inv_spp), border_right = T) %>%
+  column_spec(1:ncol(inv_spp), border_left = T, border_right = T) %>%
+  column_spec(1, extra_css =  "border-left: 1.5px solid #000000;") %>%
+  row_spec(0:nrow(inv_spp), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(inv_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
+  #landscape(margin = "1cm") %>%
+  save_kable(file = "table3.html", self_contained = F)
+} else {
+  tab3 <- HTML("<p>   No priority invasive species observed in cycle 1. </p>")  
+  save_html(tab3, "table3.html")
+}
+
+```
+```{r}
+if(nrow(ed_all_final)>0){
+tab4 <- 
+  kable(ed_all_final, col.names = c("Plot", "Year", "X", "Y", "Latin Name", "Common Name", "Type"),
+        align = c(rep('c', 4), 'l', 'l', 'l'), format = 'html',
+        table.attr = "style='width:95%;height:95%;'") |> 
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = FALSE, position = 'center', font_size = 9) %>%
+  column_spec(5, italic = TRUE) %>%
+  row_spec(0:nrow(ed_all_final), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(ed_all_final), extra_css = "border-bottom: 1px solid #000000;") %>%
+  #landscape(margin = "1cm") %>%
+  save_kable(file = "table4.html", self_contained = F)
+} else {
+tab4 <- HTML("<p>No invasive species early detections observed in most recent census. </p>")  
+save_html(tab4, "table4.html")
+}
+```
+
+
+```{r results = 'asis', include = F, eval = F}
+# have to run this to reset competing css from table1.html
+# Turned off b/c causing bottom row of tables not to print
+HTML(
+"<style>
+h4, .h4, h5, .h5, h6, .h6 {
+margin-top: 0; 
+margin-bottom: 10px;
+}
+</style>"
+)
+```
+
+<!-- Start of page 1 -->
+<br>
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "92%", out.extra = 'style="margin-top:-10px;margin-left:20px"'}
+include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
+```
+
+|       B. 
+```{r out.width = "92%", out.extra = 'style="margin-top:-10px;margin-left:20px"'}
+include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, "). ",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    
+    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are +/- 1 SE. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
+```
+
+<!-- Start of page 2 -->
+
+### {.page-break-before}
+
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+<br>
+```{r out.width = "45%", out.extra = 'style="margin-left:130px; margin-top:-20px;"'}
+include_graphics(paste0(new_path, "figures/Figure_2_Regen_Debt_table.svg"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 2.</b> Regeneration Debt status for the most recent 4-year census (",
+    from_4yr, " \U2013 ", to, ") in ", park_long, " (", park, "). ", " Flat Tree Diam. Dist. stands for Flat
+Tree Diameter Distribution. If TRUE, the density of small trees is lower than expected due to
+chronic regeneration failure. Sapling/Seedling Composition is the % of total stems composed of native canopy-forming species. Sorenson is a measure of how closely the regen. layer matches canopy composition. For more details on metric calculations, thresholds and assessment of status, see <a href ='https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.2837'>Miller et al. 2023</a>.</p>", sep = "")
+```
+<br>
+
+```{r out.width = "80%", out.extra = 'style="margin-left:100px;"'}
+include_graphics(paste0(new_path, "figures/", "Figure_3_", park, "_DBI_by_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 3.</b> Ungulate browse impacts in cycle 1 in ", park_long, " (", park, "). Note that this index does not distinguish deer from horse browse in ", park, ". ",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    sep = ""))
+
+```
+<br>
+
+<!-- Start of page 3 -->
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+```{r out.width = "98%"}
+include_graphics(paste0(new_path, "figures/Figure_4_", park, "_tree_sapling_regen_by_species.svg"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 4.</b> Average abundance by species for tree basal area (sq.m/ha), live tree density (stems/ha), sapling density (stems/sq.m), and seedling density (stems/sq.m) in cycle 1 for ", park_long, ". </p>", sep = "")
+```
+<br>
+
+<!-- Start of page 4 -->
+
+### {.page-break-before}
+```{r results = 'asis', eval = T}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = T}
+cat(cap_t1)
+```
+
+```{r echo = F}
+includeHTML("table1.html")
+```
+<br>
+
+<!-- Start of page 7 -->
+
+### {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis'}
+cat(cap_t2)
+```
+
+```{r echo = F}
+includeHTML("table2.html")
+```
+<br>
+
+<!-- Start of page 8 -->
+
+###   {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis'}
+cat(cap_t3)
+```
+
+```{r echo = F, eval = T}
+includeHTML("table3.html")
+
+```
+
+<br>
+
+
+<!-- Start of page 9 -->
+
+###   {.page-break-before}
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis'}
+cat(cap_t4)
+```
+
+```{r echo = F, eval = T}
+includeHTML("table4.html")
+```
+<br>
+
+```{r error = T, results = 'hide', echo = FALSE, include = FALSE}
+file.remove(c("table1.html", "table2.html", "table3.html", "table4.html"))
+```
+

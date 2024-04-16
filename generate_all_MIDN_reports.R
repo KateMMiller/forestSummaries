@@ -17,6 +17,26 @@ render_MIDN_reports <- function(park){
   
   outpath = paste0(report_path, park, "/", end_year, "/")
   
+  if(park == "SAHI"){
+    
+    render(input = paste0(rmd_path, "SAHI_figures_and_tables.Rmd"),
+           output_file = paste0(park, 
+                                "_Figures_and_Tables_", 
+                                format(Sys.time(), '%b_%Y'), ".html"),
+           output_dir = out_path,
+           output_options = list(self_contained = TRUE))#,
+    
+  } else if(park == "ASIS"){
+    
+    render(input = paste0(rmd_path, "ASIS_figures_and_tables.Rmd"),
+           output_file = paste0(park, 
+                                "_Figures_and_Tables_", 
+                                format(Sys.time(), '%b_%Y'), ".html"),
+           output_dir = out_path,
+           output_options = list(self_contained = TRUE))#,
+    
+  } else {
+  
     render(input = paste0(rmd_path, "MIDN_figures_and_tables.Rmd"),
            params = list(park = park), 
            output_file = paste0(park, 
@@ -25,8 +45,10 @@ render_MIDN_reports <- function(park){
            output_dir = out_path,
            output_options = list(self_contained = TRUE))#,
   #encoding = "UTF-8")
+  }
 }
-#render_MIDN_reports(park = "COLO")
+
+render_MIDN_reports(park = "SAHI")
 
 pdf_print <- function(park){
   report_dir <- paste0(report_path, park, "/", end_year, "/")
@@ -48,5 +70,7 @@ midn_parks <- sort(unique(midn_params$park))
 purrr::walk(midn_parks, ~render_poss(park = .))
 purrr::walk(midn_parks, ~print_poss(.))
 
-#render_MIDN_reports("SAHI")
+# render_poss("SAHI")
+# print_poss("SAHI")
+
 

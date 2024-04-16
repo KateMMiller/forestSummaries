@@ -15,11 +15,11 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to) |> #filter(IsStunted
   select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 
 mean_dbi <- mean(dbi$dbi)
-mean_dbi # SARA = 4.22; SAGA 3.47; 2.6 ACAD
+mean_dbi 
 
 dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 dbi_prev <- mean(dbiprev$dbi)
-dbi_prev # SARA = 4.125; SAGA = 3.38; 2.6 ACAD 
+dbi_prev 
 
 # DBI distribution plot
 dbi_all <- joinStandData(park = park, from = from, to = to) |> 
@@ -111,7 +111,7 @@ reg_comb <- left_join(plotevs, reg_comb, by = "Plot_Name")
 #if(length(unique(reg_comb$Plot_Name)) < num_plots){warning("Need to left_join with plotevs")} 
 head(reg_comb)
 
-reg_comb[,2:ncol(reg_comb)][is.na(reg_comb[,2:ncol(reg_comb)])] <- 0
+reg_comb[,2:7][is.na(reg_comb[,2:7])] <- 0
 reg_comb$sap_dens_pct[is.nan(reg_comb$sap_dens_pct)] <- 0
 reg_comb$seed_dens_pct[is.nan(reg_comb$seed_dens_pct)] <- 0
 
@@ -160,6 +160,7 @@ trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |>
   group_by(Plot_Name, sppcode) |> 
   summarize(treeBA = sum(BA_cm2, na.rm = T)/plot_size, .groups = 'drop') |> 
   pivot_wider(names_from = sppcode, values_from = treeBA, values_fill = 0)
+
 
 all_spp <- c("Plot_Name", sort(unique(c(names(trees[,-1]), names(reg_seed[,-1]), names(reg_sap[,-1])))))
 

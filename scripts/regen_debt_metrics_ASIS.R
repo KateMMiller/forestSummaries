@@ -15,11 +15,11 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to) |> #filter(IsStunted
   select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 
 mean_dbi <- mean(dbi$dbi)
-mean_dbi # SARA = 4.22; SAGA 3.47; 2.6 ACAD
+mean_dbi 
 
-dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
-dbi_prev <- mean(dbiprev$dbi)
-dbi_prev # SARA = 4.125; SAGA = 3.38; 2.6 ACAD 
+# dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
+# dbi_prev <- mean(dbiprev$dbi)
+# dbi_prev 
 
 # DBI distribution plot
 dbi_all <- joinStandData(park = park, from = from, to = to) |> 
@@ -49,9 +49,11 @@ ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac))
   scale_fill_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
                                "High" = "#f94b24", "Very High" = "#a60808"),
                     labels = c("Low", "Medium", "High", "Very High"), 
-                    name = "Deer Browse Impact") +
+                    name = "Ungulate Browse Impact") +
   scale_y_continuous(breaks = c(0, 0.25, 0.50, 0.75, 1.00), labels = c(0, 25, 50, 75, 100)) +
+  scale_x_continuous(breaks = c(1)) +
   labs(y = "Proportion of Plots")
+dbi_plot
 
 # svg(paste0(new_path, "figures/", "Figure_6_", park, "_DBI_by_cycle.svg"),
 #     height = 6.15, width = 8)
@@ -161,6 +163,7 @@ trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |>
   summarize(treeBA = sum(BA_cm2, na.rm = T)/plot_size, .groups = 'drop') |> 
   pivot_wider(names_from = sppcode, values_from = treeBA, values_fill = 0)
 
+
 all_spp <- c("Plot_Name", sort(unique(c(names(trees[,-1]), names(reg_seed[,-1]), names(reg_sap[,-1])))))
 
 seed_miss <- setdiff(all_spp, names(reg_seed))
@@ -230,7 +233,7 @@ flat_dist <- ifelse(aic_check$linear < aic_check$exp, 1, 0)
 
 #----- Regen Debt Table -----
 debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "% Stocked Plots",
-                              "Stocking Index", "Deer Browse Impacts", "Flat Tree Diam. Dist.",
+                              "Stocking Index", "Ungulate Browse Impacts", "Flat Tree Diam. Dist.",
                               "Sapling Composition", "Seedling Comp.", 
                               "Sorensen Sapling", "Sorensen Seedling"),
                    Value = c(regsum_natcan$sapden, regsum_natcan$seedden, regsum_natcan$pct_stocked,
@@ -258,9 +261,9 @@ debt <- debt |> mutate(
               Metric == "Stocking Index" & Value >= 25 & Value < 100 ~ "Caution",
               Metric == "Stocking Index" & Value >= 100 ~ "Acceptable",
               
-              Metric == "Deer Browse Impacts" & Value >= 4 ~ "Critical",
-              Metric == "Deer Browse Impacts" & Value > 3 & Value < 4 ~ "Caution",
-              Metric == "Deer Browse Impacts" & Value <= 3 ~ "Acceptable",
+              Metric == "Ungulate Browse Impacts" & Value >= 4 ~ "Critical",
+              Metric == "Ungulate Browse Impacts" & Value > 3 & Value < 4 ~ "Caution",
+              Metric == "Ungulate Browse Impacts" & Value <= 3 ~ "Acceptable",
               
               Metric == "Flat Tree Diam. Dist." & Value == 1 ~ "Critical",
               Metric == "Flat Tree Diam. Dist." & Value == 0 ~ "Acceptable",
@@ -347,7 +350,6 @@ ggsave(paste0(figpath2, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 4.
 debt_final <- debt_final |> mutate(park = park)
 
 write.csv(debt_final, paste0(new_path, "tables/Regen_Debt_table.csv"), row.names= F)
-
 # debt_append <- read.csv("Regen_Debt_table.csv")
 # debt_append2 <- rbind(debt_append, debt_final) 
 # write.csv(debt_append2, "Regen_Debt_table.csv", row.names = F)
