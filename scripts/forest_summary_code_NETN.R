@@ -253,11 +253,11 @@ dom_regspp <- reg_all %>% group_by(Plot_Name, ScientificName) %>% summarize(reg 
 dom_regspp
 
 Acer <- c('Acer rubrum', 'Acer saccharinum', 'Acer negundo', 'Acer saccharum') # Drop Acer saccharum for MABI
-Betula <- c('Betula','Betula alleghaniensis', 'Betula X cearulea ', #'Betula lenta',  #Drop for MIMA
+Betula <- c('Betula','Betula alleghaniensis', 'Betula X cearulea ', 'Betula lenta',  # Drop Betula lenta for MIMA
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
 Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', "Fraxinus nigra")
-Pinus <- c("Pinus resinosa", "Pinus") #, "Pinus strobus") # drop for MIMA
+Pinus <- c("Pinus resinosa", "Pinus", "Pinus strobus") # drop Pinus strobus for MIMA
 Populus <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
 Prunus <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')
 Quercus <- c('Quercus', 'Quercus (Red group)', 'Quercus (White group)',
@@ -605,14 +605,14 @@ topspp <- invspp1 %>% left_join(plotspp_df, ., by = c('Plot_Name', 'ScientificNa
   group_by(ScientificName) %>% 
   summarize(avg_cov = mean(quad_avg_cov, na.rm = T),
             num_plots = sum(present), .groups = 'drop') %>% 
-  arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
-  #arrange(desc(avg_cov)) %>% slice(1:12) %>% select(ScientificName)
+  #arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
+  arrange(desc(avg_cov)) %>% slice(1:10) %>% select(ScientificName) # going with top 10 by avg cover for 2024
 
 # Prep for shapefile
 invspp <- invspp1 %>% 
   mutate(ScientificName = case_when(
     ScientificName %in% topspp$ScientificName ~ ScientificName, 
-    ScientificName == "None present" ~ "None present", 
+    is.na(ScientificName) ~ "None present", #None present is coming through as NA now
     TRUE ~ "Other invasive")) %>% 
   group_by(Plot_Name, ScientificName) %>% 
   summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% 
@@ -640,7 +640,7 @@ write_to_shp(invspp, shp_name =
 #---- Map 9 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
 disturb <- do.call(joinStandDisturbance, args = args_4yr) %>% 
-  filter(DisturbanceLabel != "None") %>% 
+  filter(DisturbanceSummary != "None") %>% 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -669,6 +669,16 @@ treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>%
 
 
 # Compile notes from visit that could contain mentions of pests
+#Review notes for false positives first
+vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>% 
+  mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ Notes,
+                          grepl("Emerald|emerald|EAB", Notes) ~ Notes,
+                          grepl("Red pine scale|RPS|red pine scale", Notes) ~ Notes,
+                          grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
+                                Notes) ~ Notes,
+                          grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ Notes,
+                          grepl("GM|spongy|gypsy", Notes) ~ Notes,
+                          TRUE ~ NA_character_)) %>% filter(!is.na(pest)) 
 
 vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ "BLD",
