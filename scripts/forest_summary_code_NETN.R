@@ -77,7 +77,7 @@ write_to_shp(reg_size_4yr,
              shp_name = paste0(new_path, "shapefiles/", park, 
                                "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
 
-#---- Figure 1A Regen trends by size class ----
+#---- Figure 2A Regen trends by size class ----
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
@@ -109,11 +109,35 @@ reg_smooth$size_class <- factor(reg_smooth$size_class,
                                            "seed_100_150cm", "seed_p150cm", 
                                            "sap_den"))
 
-cycle_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
+# Set up cycle labels for figures
+# netn1+2: SARA, MABI, SAGA, MIMA
+netn1_labs = c("1" = "Cycle 1: 2006 & 2008",
+               "2" = "Cycle 2: 2010 & 2012", 
+               "3" = "Cycle 3: 2014 & 2016", 
+               "4" = "Cycle 4: 2018 & 2022",
+               "5" = "Cycle 5: 2023")
+# netn2: MORR, ROVA, WEFA
+netn2_labs = c("1" = "Cycle 1: 2007 \u2013 2009",
+               "2" = "Cycle 2: 2011 \u2013 2013", 
+               "3" = "Cycle 3: 2015 \u2013 2017", 
+               "4" = "Cycle 4: 2019 \u2013 2022",
+               "5" = "Cycle 5: 2024") 
+
+ACAD_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
                "2" = "Cycle 2: 2010 \u2013 2013", 
                "3" = "Cycle 3: 2014 \u2013 2017", 
-               "4" = "Cycle 4: 2018 \u2013 2022",
-               "5" = "Cycle 5: 2023")
+               "4" = "Cycle 4: 2018 \u2013 2021",
+               "5" = "Cycle 5: 2022 \u2013")
+
+cycle_labs <- switch(park,
+                     "SARA" = netn1_labs, 
+                     "MABI" = netn1_labs,
+                     "SAGA" = netn1_labs,
+                     "MIMA" = netn1_labs,
+                     "MORR" = netn2_labs,
+                     "ROVA" = netn2_labs,
+                     "WEFA" = netn2_labs,
+                     "ACAD" = ACAD_labs)
 
 reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
@@ -137,10 +161,10 @@ reg_trend_plot <-
 
 reg_trend_plot
   
-ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_2A_", park, "_regen_by_size_class_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')
 
-#---- Figure 1B Diam. dist. trends by size class ----
+#---- Figure 2B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
 tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live'))
@@ -236,7 +260,7 @@ dbh_trend_plot <-
 
 dbh_trend_plot
 
-ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_2B_", park, "_tree_dbh_dist_by_cycle.svg"),
        height = 4.6, width = 7.8, units = 'in')
 
 #---- Map 3 Regen by composition ----
@@ -520,11 +544,15 @@ invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive'
   select(ScientificName) %>% unique() %>% arrange(ScientificName)
 
 Ligustrum = c("Ligustrum", "Ligustrum obtusifolium", "Ligustrum vulgare")
-Lonicera = c("Lonicera - Exotic", "Lonicera morrowii", "Lonicera X bella")
+Lonicera = c("Lonicera - Exotic", "Lonicera morrowii", "Lonicera X bella", "Lonicera", 
+             "Lonicera maackii")
 Vincetoxicum = c("Vincetoxicum", "Vincetoxicum hirundinaria", "Vincetoxicum nigrum",
                  "Vincetoxicum rossicum")
+Elaeagnus = c("Elaeagnus", "Elaeagnus angustifolia", "Elaeagnus umbellata")
+Euonymus = c("Euonymus", "Euonymus alatus", "Euonymus atropurpureus", "Euonymus fortunei")
+Centaurea = c("Centaurea", "Centaurea jacea", "Centaurea stoebe")
 
-#sort(unique(invspp_4yr$ScientificName))
+sort(unique(invspp_4yr$ScientificName))
 
 invspp1 <- do.call(joinQuadSpecies, 
                    #args = list(from = 2017, to = 2022, speciesType = 'invasive')) %>% 
@@ -537,6 +565,9 @@ invspp1 <- do.call(joinQuadSpecies,
            ScientificName %in% Ligustrum ~ "Ligustrum",
            ScientificName %in% Lonicera ~ "Lonicera - Exotic",
            ScientificName %in% Vincetoxicum ~ "Vincetoxicum",
+           ScientificName %in% Elaeagnus ~ "Elaeagnus",
+           ScientificName %in% Euonymus ~"Euonymus",
+           ScientificName %in% Centaurea ~"Centaurea",
            TRUE ~ ScientificName)) %>% 
   arrange(Plot_Name, ScientificName)
 
@@ -618,7 +649,7 @@ treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>%
 
 
 # Compile notes from visit that could contain mentions of pests
-#Review notes for false positives first
+#Review notes for false positives first, remove from final table below
 vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>% 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ Notes,
                           grepl("Emerald|emerald|EAB", Notes) ~ Notes,
@@ -706,13 +737,15 @@ inv_plots_wide <- inv_plots %>% pivot_wider(names_from = cycle,
 write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park, 
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
-#---- Table 3 Invasive species by number of plots cycle
+#---- Table 3 Exotic species by number of plots cycle
+#for 2024 including all exotic species found in plots instead of only invasives
 inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
-  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
+  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
+  arrange(cycle) %>% # moved arrange() b/c cycle_1 was coming out last instead of first
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
-
+  
 centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Centaurea", ScientificName)) %>% 
   mutate(present = 1) %>% 
@@ -758,9 +791,13 @@ vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic
 
 colSums(vincetoxicum[,-1])
 
-
-inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
+inv_spp2 <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName, InvasiveNETN),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything())
+
+inv_spp <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
+                         mutate(InvasiveNETN = case_when(InvasiveNETN == 'TRUE' ~ 'Yes',
+                                                         InvasiveNETN =='FALSE' ~ 'No')) %>% 
+                         relocate(InvasiveNETN, .after = CommonName)
 
 write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
@@ -813,11 +850,11 @@ write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_s
 #---- Invasive Detections for MABI/SAGA/ACAD ---- 
 taxa <- prepTaxa()
 
-spp_inv <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive')) |> 
+spp_invD <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive')) |> 
   select(Plot_Name, SampleYear, quad_avg_cov, ScientificName) |> 
   filter(!ScientificName %in% "None present")
 
-spp_inv2 <- left_join(spp_inv, plotevs_4yr |> select(Plot_Name, X = xCoordinate, Y = yCoordinate),
+spp_invD2 <- left_join(spp_invD, plotevs_4yr |> select(Plot_Name, X = xCoordinate, Y = yCoordinate),
                       by = "Plot_Name")
 
 #---- ED Pests ----
