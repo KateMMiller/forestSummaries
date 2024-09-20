@@ -9,7 +9,7 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'VAFO' 
+  park: 'APCO' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
@@ -47,7 +47,9 @@ from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
 to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
 QAQC <<- FALSE
 locType <<- 'VS'
-
+#panel_4yr_start <<- as.numeric(midn_params$panel_4yr[midn_params$park == park])
+#+++ NOTE: IF GET add_header_above error, need to update cycle_latest in MIDN_params.csv  +++
+#+
 park_long <- midn_names$LongName[midn_names$ParkCode == park]
 park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 network_long <- midn_names$Network_long[midn_names$ParkCode == park]
@@ -64,7 +66,7 @@ html_header <- HTML('
         <br>
         <h5> Forest Monitoring Data Summary </h5></div>
     <div id="col-right-header">
-        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead"></div>
+        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead" height = "75px" width = "58px"></div>
     <div id="col-middle-header">
         <h5> National Park Service </h5>
         <h5> U.S. Department of the Interior </h5>
@@ -95,11 +97,11 @@ cap_t1_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1 (con
 
 cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
-cap_t2_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2 (cont.).</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+cap_t2_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2 (cont.).</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete. ", ""), " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes.</a>", "</p>")
 
-cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes.</a>", "</p>")
 
-cap_t3_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3 (cont.).</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+cap_t3_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3 (cont.).</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", ifelse(length(cycle_labs) == 5, "Note that cycle 5 is only partially complete.", ""), "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes.</a>", "</p>")
 
 cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
 ```
@@ -116,7 +118,7 @@ reg_pass <- "#BFDFC7"
 # Have to use %>% pipe to use the '.' in the reduce.
 # Have to manually split tables that are >30 rows because page break kept dropping a row
 #if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
-  
+
 tab1_kab <- function(park, row_start = 1, row_end = 30, table_name = "table1"){
   df <- if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
     reg_cycle_tab
@@ -274,17 +276,16 @@ margin-bottom: 10px;
 
 <!-- Start of page 1 -->
 <br>
-```{r results = 'asis'}
+```{r results = 'asis', warning = F, message = F}
 includeHTML("html_header.html")
 ```
 
 |       A. 
-```{r out.width = "92%", out.extra = 'style="margin-top:-10px;margin-left:20px"'}
+```{r out.width = "92%", out.extra = 'style="margin-top:-60px;margin-left:20px;margin-bottom:-30px"'}
 include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
 ```
-
 |       B. 
-```{r out.width = "92%", out.extra = 'style="margin-top:-10px;margin-left:20px"'}
+```{r out.width = "92%", out.extra = 'style="margin-top:-60px;margin-left:20px;margin-bottom:-50px"'}
 include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
 ```
 
@@ -299,11 +300,11 @@ cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_l
 
 ### {.page-break-before}
 
-```{r results = 'asis'}
+```{r results = 'asis', warning = F, message = F}
 includeHTML("html_header.html")
 ```
 <br>
-```{r out.width = "45%", out.extra = 'style="margin-left:130px; margin-top:-20px;"'}
+```{r out.width = "45%", out.extra = 'style="margin-left:130px; margin-top:-100px;margin-bottom:-100px;"'}
 include_graphics(paste0(new_path, "figures/Figure_2_Regen_Debt_table.svg"))
 ```
 
@@ -315,7 +316,7 @@ chronic regeneration failure. Sapling/Seedling Composition is the % of total ste
 ```
 <br>
 
-```{r out.width = "80%", out.extra = 'style="margin-left:100px;"'}
+```{r out.width = "80%", out.extra = 'style="margin-left:100px;margin-top:-60px;margin-bottom:-30px;"'}
 include_graphics(paste0(new_path, "figures/", "Figure_3_", park, "_DBI_by_cycle.svg"))
 ```
 
@@ -331,7 +332,7 @@ cat(paste0("<p><b>Figure 3.</b> Deer browse impacts by cycle in ", park_long, " 
 <!-- Start of page 3 -->
 
 ### {.page-break-before}
-```{r results = 'asis'}
+```{r results = 'asis', warning = F, message = F}
 includeHTML("html_header.html")
 ```
 
@@ -349,7 +350,7 @@ approximated a linear trend between consecutive sample events per panel.</p>", s
 <!-- Start of page 4 -->
 
 ### {.page-break-before}
-```{r results = 'asis'}
+```{r results = 'asis', warning = F, message = F}
 includeHTML("html_header.html")
 ```
 
@@ -367,7 +368,7 @@ approximated a linear trend between consecutive sample events per panel.</p>", s
 <!-- Start of page 5-->
 
 ### {.page-break-before}
-```{r results = 'asis'}
+```{r results = 'asis', warning = F, message = F}
 includeHTML("html_header.html")
 ```
 
@@ -385,7 +386,7 @@ cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover 
 <!-- Start of page 6 -->
 
 ### {.page-break-before}
-```{r results = 'asis', eval = T}
+```{r results = 'asis', eval = T, warning = F, message = F}
 includeHTML("html_header.html")
 ```
 
@@ -399,15 +400,15 @@ tab1_evalb <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), TRUE, 
 tab1_evalc <- ifelse(park %in% "FRSP", TRUE, FALSE)
 ```
 
-```{r echo = F, eval = tab1_eval}
+```{r echo = F, eval = tab1_eval, warning = F, message = F}
 includeHTML("table1.html")
 ```
 
-```{r echo = F, eval = !tab1_eval}
+```{r echo = F, eval = !tab1_eval, warning = F, message = F}
 includeHTML("table1a.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalb}
+```{r results = 'asis', eval = tab1_evalb, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
@@ -416,11 +417,11 @@ includeHTML("html_header.html")
 cat(cap_t1_cont)
 ```
 
-```{r echo = F, eval = tab1_evalb}
+```{r echo = F, eval = tab1_evalb, warning = F, message = F}
 includeHTML("table1b.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc}
+```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
@@ -429,11 +430,11 @@ includeHTML("html_header.html")
 cat(cap_t1_cont)
 ```
 
-```{r echo = F, eval = tab1_evalc}
+```{r echo = F, eval = tab1_evalc, warning = F, message = F}
 includeHTML("table1c.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc}
+```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
@@ -442,14 +443,14 @@ includeHTML("html_header.html")
 cat(cap_t1_cont)
 ```
 
-```{r echo = F, eval = tab1_evalc}
+```{r echo = F, eval = tab1_evalc, warning = F, message = F}
 includeHTML("table1d.html")
 ```
 
 <!-- Start of page 7 -->
 
 ### {.page-break-before}
-```{r results = 'asis'}
+```{r results = 'asis', warning = F, message = F}
 includeHTML("html_header.html")
 ```
 
@@ -463,16 +464,16 @@ tab2_evalb <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), TRUE, 
 tab2_evalc <- ifelse(park %in% "FRSP", TRUE, FALSE)
 ```
 
-```{r echo = F, eval = tab2_eval}
+```{r echo = F, eval = tab2_eval, warning = F, message = F}
 includeHTML("table2.html")
 ```
 
-```{r echo = F, eval = !tab2_eval}
+```{r echo = F, eval = !tab2_eval, warning = F, message = F}
 includeHTML("table2a.html")
 ```
 <br>
 
-```{r results = 'asis', eval = tab2_evalb}
+```{r results = 'asis', eval = tab2_evalb, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
@@ -481,13 +482,13 @@ includeHTML("html_header.html")
 cat(cap_t2_cont)
 ```
 
-```{r echo = F, eval = tab2_evalb}
+```{r echo = F, eval = tab2_evalb, warning = F, message = F}
 includeHTML("table2b.html")
 cat("\n")
 ```
 <br>
 
-```{r results = 'asis', eval = tab2_evalc}
+```{r results = 'asis', eval = tab2_evalc, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
@@ -496,14 +497,14 @@ includeHTML("html_header.html")
 cat(cap_t2_cont)
 ```
 
-```{r echo = F, eval = tab2_evalc}
+```{r echo = F, eval = tab2_evalc, warning = F, message = F}
 includeHTML("table2c.html")
 cat("\n")
 
 ```
 <br>
 
-```{r results = 'asis', eval = tab2_evalc}
+```{r results = 'asis', eval = tab2_evalc, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
@@ -512,7 +513,7 @@ includeHTML("html_header.html")
 cat(cap_t2_cont)
 ```
 
-```{r echo = F, eval = tab2_evalc}
+```{r echo = F, eval = tab2_evalc, warning = F, message = F}
 includeHTML("table2d.html")
 cat("\n")
 
@@ -521,7 +522,7 @@ cat("\n")
 <!-- Start of page 8 -->
 
 ###   {.page-break-before}
-```{r results = 'asis'}
+```{r results = 'asis', warning = F, message = F}
 includeHTML("html_header.html")
 ```
 
@@ -529,7 +530,7 @@ includeHTML("html_header.html")
 cat(cap_t3)
 ```
 
-```{r echo = F, eval = T}
+```{r echo = F, eval = T, warning = F, message = F}
 includeHTML("table3.html")
 
 ```
@@ -538,7 +539,7 @@ includeHTML("table3.html")
 <!-- Start of page 9 -->
 
 ###   {.page-break-before}
-```{r results = 'asis'}
+```{r results = 'asis', warning = F, message = F}
 includeHTML("html_header.html")
 ```
 
@@ -546,7 +547,7 @@ includeHTML("html_header.html")
 cat(cap_t4)
 ```
 
-```{r echo = F, eval = T}
+```{r echo = F, eval = T, warning = F, message = F}
 includeHTML("table4.html")
 ```
 <br>
