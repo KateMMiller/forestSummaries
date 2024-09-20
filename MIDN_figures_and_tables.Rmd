@@ -281,11 +281,12 @@ includeHTML("html_header.html")
 ```
 
 |       A. 
-```{r out.width = "92%", out.extra = 'style="margin-top:-60px;margin-left:20px;margin-bottom:-30px"'}
+```{r out.width = "92%", out.extra = 'style="margin-top:-60px;margin-left:20px;margin-bottom:-60px"'}
 include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
 ```
+
 |       B. 
-```{r out.width = "92%", out.extra = 'style="margin-top:-60px;margin-left:20px;margin-bottom:-50px"'}
+```{r out.width = "92%", out.extra = 'style="margin-top:-45px;margin-left:20px;margin-bottom:-50px"'}
 include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
 ```
 
@@ -316,7 +317,7 @@ chronic regeneration failure. Sapling/Seedling Composition is the % of total ste
 ```
 <br>
 
-```{r out.width = "80%", out.extra = 'style="margin-left:100px;margin-top:-60px;margin-bottom:-30px;"'}
+```{r out.width = "80%", out.extra = 'style="margin-left:100px;margin-top:-150px;margin-bottom:-30px;"'}
 include_graphics(paste0(new_path, "figures/", "Figure_3_", park, "_DBI_by_cycle.svg"))
 ```
 
