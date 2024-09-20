@@ -6,7 +6,7 @@
 # Write dataframe to shapefile using common settings
 write_to_shp <- function(data, x = "X", y = "Y", shp_name){
   st_write(st_as_sf(data, coords = c(x, y), crs = park_crs),
-           shp_name, delete_layer = FALSE)#FALSE)
+           shp_name, delete_layer = TRUE)#FALSE)
 }
 
 #---- Plot event lists ----
@@ -630,7 +630,7 @@ invspp <- invspp1 %>%
   arrange(sppcode, Plot_Name) %>% 
   select(Plot_Name, X, Y, sppcode, quad_cov) %>% 
   pivot_wider(names_from = sppcode, values_from = quad_cov, values_fill = 0) %>% 
-  select(-NONPRE)
+  select(-any_of("NONPRE"))
 
 invspp$totcov = rowSums(invspp[,4:ncol(invspp)])
 

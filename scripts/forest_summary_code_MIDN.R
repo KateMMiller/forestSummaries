@@ -17,8 +17,16 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 #---- Plot event lists ----
 plotevs <- do.call(joinLocEvent, args_all) |> filter(!Plot_Name %in% "COLO-380") 
 plotevs_vs <- do.call(joinLocEvent, args_vs) |> filter(!Plot_Name %in% "COLO-380") 
-plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) |> filter(!Plot_Name %in% "COLO-380") 
-head(plotevs)
+plotevs_4yr1 <- plotevs %>% filter(between(SampleYear, from_4yr, to)) |> 
+  filter(!Plot_Name %in% "COLO-380") 
+
+# Take the highest sample year when multiple panels were sampled within a year
+# and only one of those panels is the most recent visit to that plot. 
+plotevs_4yr <- plotevs_4yr1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |> 
+  slice_max(SampleYear) |> ungroup()
+
+# vector of the EventIDs that represent the most recent visit to each plot
+evs_4yr <- plotevs_4yr$EventID
 
 #---- Table 1. Regen densities by plot and year ----
 reg <- do.call(joinRegenData, 
@@ -57,7 +65,7 @@ reg_cycle <- reg %>% group_by(Plot_Name, PlotCode, cycle) %>%
                      rename(X = xCoordinate, Y = yCoordinate) #abbr for shapefile
 names(reg_cycle)
 
-max(reg_cycle[,4:ncol(reg_cycle)])
+#max(reg_cycle[,5:ncol(reg_cycle)])
 
 write_to_shp(reg_cycle, 
              shp_name = paste0(new_path, "shapefiles/", park, "_regen_by_cycle_", to, ".shp" ))
@@ -65,15 +73,20 @@ write_to_shp(reg_cycle,
 #---- Map 2 regen by size class ----
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
-reg_size <- reg %>% group_by(Plot_Name, PlotCode, SampleYear) |> 
-  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T)
+reg_size <- reg  |> filter(EventID %in% evs_4yr) |> 
+  group_by(Plot_Name, PlotCode, SampleYear, EventID) |> 
+  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T) |> ungroup()
 
-reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
-                             left_join(plotevs_4yr %>% select(Plot_Name, PlotCode, xCoordinate, yCoordinate),
-                                       ., by = c('Plot_Name', 'PlotCode'))
+reg_size_4yr <- reg_size %>% 
+  left_join(plotevs_4yr %>% select(Plot_Name, PlotCode, xCoordinate, yCoordinate),
+            ., by = c('Plot_Name', 'PlotCode')) |> 
+  select(-EventID)
 
-reg_size_4yr[, reg_sz_cols][reg_size_4yr[is.na(reg_size_4yr[,reg_sz_cols])]] <- 0
-head(reg_size_4yr)
+reg_size_4yr$seed_15_30cm[is.na(reg_size_4yr$seed_15_30cm)] <- 0
+reg_size_4yr$seed_30_100cm[is.na(reg_size_4yr$seed_30_100cm)] <- 0
+reg_size_4yr$seed_100_150cm[is.na(reg_size_4yr$seed_100_150cm)] <- 0
+reg_size_4yr$seed_p150cm[is.na(reg_size_4yr$seed_p150cm)] <- 0
+reg_size_4yr$sap_den[is.na(reg_size_4yr$sap_den)] <- 0
 
 colnames(reg_size_4yr) <- c("Plot_Name", "PlotCode", "X", "Y", "SampleYear", 
                              "s15_30", "s30_100", "s100_150", "s150p", "sap") #abbr. for shapefile
@@ -130,25 +143,29 @@ midn1_labs <- c("1" = "Cycle 1: 2007 \u2013 2010",
                 "2" = "Cycle 2: 2011 \u2013 2014",
                 "3" = "Cycle 3: 2015 \u2013 2018",
                 "4" = "Cycle 4: 2019 \u2013 2022",
-                "5" = "Cycle 5: 2023")
+                "5" = "Cycle 5: 2023 \u2013 2024")
 #midn2 <- c("APCO", "BOWA", "GETT", "HOFU", "VAFO")
 midn2_labs <- c("1" = "Cycle 1: 2007 \u2013 2010",
                 "2" = "Cycle 2: 2011 \u2013 2014",
                 "3" = "Cycle 3: 2015 \u2013 2018",
-                "4" = "Cycle 4: 2019 \u2013 2023")
+                "4" = "Cycle 4: 2019 \u2013 2023",
+                "5" = "Cycle 5: 2024")
 #ncbn <- c("GEWA", "THST")
 ncbn_labs <- c("1" = "Cycle 1: 2008 \u2013 2011",
                "2" = "Cycle 2: 2012 \u2013 2015",
                "3" = "Cycle 3: 2016 \u2013 2019",
-               "4" = "Cycle 4: 2019 \u2021 2023")
+               "4" = "Cycle 4: 2019 \u2021 2024")
+
 colo_labs <- c("1" = "Cycle 1: 2011 \u2013 2014",
                "2" = "Cycle 2: 2015 \u2013 2018",
-               "3" = "Cycle 3: 2019 \u2013 2023")
+               "3" = "Cycle 3: 2019 \u2013 2023",
+               "4" = "Cycle 4: 2024")
+
 sahi_labs = c("1" = "Cycle 1: 2009",
               "2" = "Cycle 2: 2013",
               "3" = "Cycle 3: 2017",
               "4" = "Cycle 4: 2023")
-asis_labs = c("1" = "Cycle 1: 2019 \u2013 2023") #full cycle ends in 2024
+asis_labs = c("1" = "Cycle 1: 2019 \u2013 2024") #full cycle ends in 2024
   
 
 cycle_labs <- switch(park,
@@ -168,17 +185,18 @@ cycle_labs <- switch(park,
 
 reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
+table(reg_smooth$size_class)
 
 reg_trend_plot <- 
-  ggplot(reg_smooth, aes(x = size_class, y = estimate, color = size_class,#linetype = sign, 
+  ggplot(reg_smooth, aes(x = size_class, y = estimate, #color = size_class,#linetype = sign, 
                          group = size_class))+ theme_FVM()+
-  geom_bar(stat = 'identity', aes(fill = size_class, color = 'DimGrey'))+
+  geom_bar(stat = 'identity', aes(fill = size_class), color = 'DimGrey')+
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8)+
   labs(x  = "Cycle", y = bquote(Stems/m^2))+
   facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5)+
-  scale_color_manual(values = reg_colors, name = "Size Class",
-                     labels = reg_labels)+
+  # scale_color_manual(values = reg_colors, name = "Size Class",
+  #                    labels = reg_labels)+
   scale_fill_manual(values = reg_colors, name = "Size Class",
                     labels = reg_labels)+
   scale_x_discrete(name = "Size Class",
@@ -279,10 +297,10 @@ dbh_trend_plot <-
                 color = 'DimGrey', alpha = 0.8)+
   labs(x  = "Cycle", y = "Stems/ha")+
   facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 5)+
-  scale_color_manual(values = reg_colors, name = "DBH Size Class",
-                     labels = reg_labels)+
-  scale_fill_manual(values = reg_colors, name = "DBH Size Class",
-                    labels = reg_labels)+
+  # scale_color_manual(values = reg_colors, name = "DBH Size Class",
+  #                    labels = reg_labels)+
+  # scale_fill_manual(values = reg_colors, name = "DBH Size Class",
+  #                   labels = reg_labels)+
   scale_x_discrete(name = "DBH Size Class",
                    labels = dbh_labels)+ 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
@@ -295,8 +313,10 @@ ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle
 
 #---- Map 3 Regen by composition ----
 reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m')) |> 
-  filter(!ScientificName %in% c('None present', "Not Sampled")) |> filter(!Plot_Name %in% "COLO-380") 
+  filter(!ScientificName %in% c('None present', "Not Sampled")) |> filter(!Plot_Name %in% "COLO-380") |> 
+  filter(EventID %in% evs_4yr)
 
+table(reg_all$PanelCode, reg_all$SampleYear)
 head(trspp_grps) # loaded in source_script_MIDN.R. Use as a first cut for grouping.
 
 reg_grps <- left_join(reg_all, trspp_grps, by = c("ScientificName" = "Species"))
@@ -324,7 +344,9 @@ write_to_shp(reg_wide, shp_name =
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
 #---- Map 4 Tree canopy composition ----
-tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live')) |> filter(!Plot_Name %in% "COLO-380") 
+tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live')) |> filter(!Plot_Name %in% "COLO-380") |> 
+  filter(EventID %in% evs_4yr)
+table(tree_4yr$PanelCode, tree_4yr$SampleYear)
 
 tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
   filter(!ScientificName %in% c("None present", "Not Sampled"))
@@ -349,7 +371,10 @@ write_to_shp(tree_wide, shp_name =
 #---- Map 5 Regen stocking index ----
 reg_4yr <- do.call(joinRegenData,
                    args = c(args_4yr, speciesType = 'native',
-                            canopyForm = 'canopy', units = 'sq.m')) |> filter(!Plot_Name %in% "COLO-380") 
+                            canopyForm = 'canopy', units = 'sq.m')) |> filter(!Plot_Name %in% "COLO-380") |> 
+  filter(EventID %in% evs_4yr)
+
+table(reg_4yr$PanelCode, reg_4yr$SampleYear)
 
 reg_4yr_stock <- reg_4yr %>% group_by(Plot_Name, PlotCode) %>% 
                              summarize(stock = (sum(stock, na.rm = T)) * (4 * pi)) %>% 
@@ -361,7 +386,9 @@ write_to_shp(reg_4yr_stock, shp_name =
                 cycle_latest, ".shp"))
 
 #---- Map 6 Deer Browse Index ----
-stand_4yr <- do.call(joinStandData, args_4yr)  |> filter(!Plot_Name %in% "COLO-380") 
+stand_4yr <- do.call(joinStandData, args_4yr)  |> filter(!Plot_Name %in% "COLO-380") |> 
+  filter(EventID %in% evs_4yr)
+table(stand_4yr$PanelCode, stand_4yr$SampleYear)
 
 dbi <- left_join(plotevs_4yr %>% select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate),
                  stand_4yr, by = c("Plot_Name", "PlotCode")) %>% 
@@ -390,6 +417,7 @@ write_to_shp(invcov_wide, shp_name =
 #---- Map 8 Invasive % Cover by Species ----
 # Lump some species in the same genus
 invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive') %>% 
+  filter(EventID %in% evs_4yr) %>%
   select(ScientificName) %>% unique() %>% arrange(ScientificName)
 
 table(invspp_4yr$ScientificName)
@@ -408,6 +436,7 @@ Centaurea = c("Centaurea", "Centaurea jacea", "Centaurea stoebe")
 invspp1 <- do.call(joinQuadSpecies, 
                    #args = list(from = 2017, to = 2022, speciesType = 'invasive')) %>% 
                    args = c(args_4yr, speciesType = 'invasive')) %>% 
+  filter(EventID %in% evs_4yr) %>%
   select(Plot_Name, PlotCode, ScientificName, quad_avg_cov) %>% 
   left_join(plotevs_4yr %>% select(Plot_Name, PlotCode), ., by = c("Plot_Name", "PlotCode")) %>% 
   mutate(quad_avg_cov = replace_na(quad_avg_cov, 0),
@@ -474,8 +503,10 @@ write_to_shp(invspp, shp_name =
 
 #---- Map 9 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
-disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name %in% "COLO-380") %>%
-  filter(DisturbanceLabel != "None") %>%
+disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  
+  filter(EventID %in% evs_4yr) %>%
+  filter(!Plot_Name %in% "COLO-380") %>%
+  filter(DisturbanceSummary != "None") %>%
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -490,7 +521,9 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name
 
 # Next compile pest/pathogens from Tree Conditions
 treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live')) |> 
+  filter(EventID %in% evs_4yr) |> 
   filter(!Plot_Name %in% "COLO-380") 
+table(treecond_4yr$PanelCode, treecond_4yr$SampleYear)
 
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
            "SB", "SLF", "SOD", "SPB", "SW")
@@ -529,13 +562,10 @@ pests_wide <- pest_detects %>%
   pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
   select(-None)
 
-# if(park == "MABI"){
-# pests_wide$EAB[pests_wide$Plot_Name == "MABI-013" & pests_wide$SampleYear == 2022] <- 0
-# # Tree note said "No EAB", but was picked up in query for positive EAB detections
-# }
 if(ncol(pests_wide) > 5){
 pests_wide$none <- rowSums(pests_wide[,6:ncol(pests_wide)])
 } else {pests_wide$none <- 0}
+
 write_to_shp(pests_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
 
@@ -688,7 +718,7 @@ write.csv(inv_spp_final, paste0(new_path, "tables/", "Table_3_", park,
 taxa <- prepTaxa()
 spp_all <- do.call(sumSpeciesList, args = c(args_4yr))
 
-# Need to import ParkTaxonProtectedStatus table from local database until it's added to the taxon view
+# Need to import ParkTaxonProtectedStatus table from local SQL database because it's not in the taxon view
 connect <- "Driver={SQL Server};server=localhost\\SQLEXPRESS;database=MIDN_Forest;trusted_connection=TRUE;ReadOnly=True"
 
 con <- RODBC::odbcDriverConnect(connection = connect, readOnlyOptimize = TRUE, rows_at_time = 1)

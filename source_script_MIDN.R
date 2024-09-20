@@ -12,6 +12,7 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
+#park = "FRSP"
 if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'}
 
 importData()
@@ -22,7 +23,7 @@ VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"]
 park_crs = ifelse(park %in% c("APCO", "BOWA"), 26917, 26918)
 
 num_plots = case_when(park == "APCO" ~ 28,
-                      park == "ASIS" ~ 18, # Will be 24
+                      park == "ASIS" ~ 24, # Will be 24
                       park == "BOWA" ~ 8,
                       park == "COLO" ~ 48,
                       park == "FRSP" ~ 104,
