@@ -189,18 +189,18 @@ table(reg_smooth$size_class)
 
 reg_trend_plot <- 
   ggplot(reg_smooth, aes(x = size_class, y = estimate, #color = size_class,#linetype = sign, 
-                         group = size_class))+ theme_FVM()+
-  geom_bar(stat = 'identity', aes(fill = size_class), color = 'DimGrey')+
+                         group = size_class)) + theme_FVM() +
+  geom_bar(stat = 'identity', aes(fill = size_class), color = 'DimGrey') +
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
-                color = 'DimGrey', alpha = 0.8)+
-  labs(x  = "Cycle", y = bquote(Stems/m^2))+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5)+
+                color = 'DimGrey', alpha = 0.8) +
+  labs(x  = "Cycle", y = bquote(Stems/m^2)) +
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5) +
   # scale_color_manual(values = reg_colors, name = "Size Class",
-  #                    labels = reg_labels)+
+  #                    labels = reg_labels) +
   scale_fill_manual(values = reg_colors, name = "Size Class",
-                    labels = reg_labels)+
+                    labels = reg_labels) +
   scale_x_discrete(name = "Size Class",
-                   labels = reg_labels)+ 
+                   labels = reg_labels) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
         legend.position = 'none')
 
@@ -291,7 +291,7 @@ cycle_labs_tr = c("1" = ifelse(AIC_test$best_mod[AIC_test$cycle == 1] == 'linear
                                paste0(cycle_labs[5], "*"), cycle_labs[5]))
 
 dbh_trend_plot <- 
-  ggplot(tree_dbh_sm, aes(x = dbh_class, y = estimate))+ theme_FVM()+
+  ggplot(tree_dbh_sm, aes(x = dbh_class, y = estimate)) + theme_FVM() +
   geom_bar(stat = 'identity', fill = "#81B082" , color = 'DimGrey')+
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8)+
@@ -371,7 +371,7 @@ write_to_shp(tree_wide, shp_name =
 #---- Map 5 Regen stocking index ----
 reg_4yr <- do.call(joinRegenData,
                    args = c(args_4yr, speciesType = 'native',
-                            canopyForm = 'canopy', units = 'sq.m')) |> filter(!Plot_Name %in% "COLO-380") |> 
+                            canopyForm = 'canopy', units = 'sq.m')) |> 
   filter(EventID %in% evs_4yr)
 
 table(reg_4yr$PanelCode, reg_4yr$SampleYear)
@@ -386,7 +386,7 @@ write_to_shp(reg_4yr_stock, shp_name =
                 cycle_latest, ".shp"))
 
 #---- Map 6 Deer Browse Index ----
-stand_4yr <- do.call(joinStandData, args_4yr)  |> filter(!Plot_Name %in% "COLO-380") |> 
+stand_4yr <- do.call(joinStandData, args_4yr) |> 
   filter(EventID %in% evs_4yr)
 table(stand_4yr$PanelCode, stand_4yr$SampleYear)
 
@@ -505,7 +505,6 @@ write_to_shp(invspp, shp_name =
 # First compile plot-level disturbances that may include priority pests/pathogens
 disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  
   filter(EventID %in% evs_4yr) %>%
-  filter(!Plot_Name %in% "COLO-380") %>%
   filter(DisturbanceSummary != "None") %>%
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
@@ -514,6 +513,7 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%
                                 DisturbanceNote) ~ "HWA",
                           grepl("BBD|beech bark disease|Beech bark disease", DisturbanceNote) ~ "BBD",
                           grepl("GM|spongy|gypsy", DisturbanceNote) ~ "GM",
+                          grepl("Southern pine beetle|SPB|southern pine beetle", DisturbanceNote) ~ "SPB",
                           TRUE ~ NA_character_
   )) %>% filter(!is.na(pest)) %>% 
   select(Plot_Name, pest) %>% unique()
@@ -521,8 +521,8 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%
 
 # Next compile pest/pathogens from Tree Conditions
 treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live')) |> 
-  filter(EventID %in% evs_4yr) |> 
-  filter(!Plot_Name %in% "COLO-380") 
+  filter(EventID %in% evs_4yr) 
+
 table(treecond_4yr$PanelCode, treecond_4yr$SampleYear)
 
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
@@ -716,7 +716,7 @@ write.csv(inv_spp_final, paste0(new_path, "tables/", "Table_3_", park,
 
 #---- Early Detections -----
 taxa <- prepTaxa()
-spp_all <- do.call(sumSpeciesList, args = c(args_4yr))
+spp_all <- do.call(sumSpeciesList, args = c(args_4yr)) |> filter(EventID %in% evs_4yr)
 
 # Need to import ParkTaxonProtectedStatus table from local SQL database because it's not in the taxon view
 connect <- "Driver={SQL Server};server=localhost\\SQLEXPRESS;database=MIDN_Forest;trusted_connection=TRUE;ReadOnly=True"
