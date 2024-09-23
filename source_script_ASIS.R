@@ -21,7 +21,7 @@ VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"]
 
 park_crs = 26918
 
-num_plots = ifelse(to == 2023, 18, 24)
+num_plots = 24
 plot_size = 400
 
 args_all = list(park = park, from = from, to = to, QAQC = QAQC, locType = locType)
@@ -50,4 +50,4 @@ trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 # Source files
 # source('./scripts/forest_summary_code_ASIS.R')
 # source('./scripts/regen_debt_metrics_ASIS.R')
-# source('./scripts/tree_regen_stem_changes_by_species_loess_ASIS.R')
+# source('./scripts/tree_regen_stem_density_by_species_ASIS.R')
