@@ -22,9 +22,10 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to) |>
 mean_dbi <- mean(dbi$dbi)
 mean_dbi 
 
-dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
-dbi_prev <- mean(dbiprev$dbi)
-dbi_prev 
+# dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> 
+#   select(Plot_Name, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
+# dbi_prev <- mean(dbiprev$dbi)
+# dbi_prev 
 
 # DBI distribution plot
 dbi_all <- joinStandData(park = park, from = from, to = to) |> 
