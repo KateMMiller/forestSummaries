@@ -9,7 +9,7 @@ output:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
 params:
-  park: 'APCO' 
+  park: 'FRSP' 
 
 ---
 ```{r setup, include = FALSE, results = 'hide'}
@@ -43,13 +43,11 @@ from <<- as.numeric(midn_params$from[midn_params$park == park])
 from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
 to <<- as.numeric(midn_params$to[midn_params$park == park])
 cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
-from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
-to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
+# from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
+# to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
 QAQC <<- FALSE
 locType <<- 'VS'
-#panel_4yr_start <<- as.numeric(midn_params$panel_4yr[midn_params$park == park])
 #+++ NOTE: IF GET add_header_above error, need to update cycle_latest in MIDN_params.csv  +++
-#+
 park_long <- midn_names$LongName[midn_names$ParkCode == park]
 park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 network_long <- midn_names$Network_long[midn_names$ParkCode == park]
@@ -281,12 +279,12 @@ includeHTML("html_header.html")
 ```
 
 |       A. 
-```{r out.width = "92%", out.extra = 'style="margin-top:-60px;margin-left:20px;margin-bottom:-60px"'}
+```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
 include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
 ```
 
 |       B. 
-```{r out.width = "92%", out.extra = 'style="margin-top:-45px;margin-left:20px;margin-bottom:-50px"'}
+```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
 include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
 ```
 
@@ -305,7 +303,7 @@ cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_l
 includeHTML("html_header.html")
 ```
 <br>
-```{r out.width = "45%", out.extra = 'style="margin-left:130px; margin-top:-100px;margin-bottom:-100px;"'}
+```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
 include_graphics(paste0(new_path, "figures/Figure_2_Regen_Debt_table.svg"))
 ```
 
@@ -317,7 +315,7 @@ chronic regeneration failure. Sapling/Seedling Composition is the % of total ste
 ```
 <br>
 
-```{r out.width = "80%", out.extra = 'style="margin-left:100px;margin-top:-150px;margin-bottom:-30px;"'}
+```{r out.width = "80%", out.height = "40%", out.extra = 'style="margin-left:100px;margin-top:-25px;"'}
 include_graphics(paste0(new_path, "figures/", "Figure_3_", park, "_DBI_by_cycle.svg"))
 ```
 
@@ -337,7 +335,7 @@ cat(paste0("<p><b>Figure 3.</b> Deer browse impacts by cycle in ", park_long, " 
 includeHTML("html_header.html")
 ```
 
-```{r out.width = "98%"}
+```{r out.width = "98%", out.height = "95%"}
 include_graphics(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.svg"))
 ```
 
@@ -355,7 +353,7 @@ approximated a linear trend between consecutive sample events per panel.</p>", s
 includeHTML("html_header.html")
 ```
 
-```{r out.width = "98%"}
+```{r out.width = "98%", out.height = "95%"}
 include_graphics(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.svg"))
 ```
 
@@ -373,7 +371,7 @@ approximated a linear trend between consecutive sample events per panel.</p>", s
 includeHTML("html_header.html")
 ```
 
-```{r out.width = "85%"}
+```{r out.width = "98%", out.height = "50%"}
 include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"))
 ```
 
