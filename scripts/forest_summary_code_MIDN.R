@@ -84,7 +84,7 @@ write_to_shp(reg_size_4yr,
              shp_name = paste0(new_path, "shapefiles/", park, 
                                "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
 
-#---- Figure 1A Regen trends by size class ----
+#---- Figure 3A Regen trends by size class ----
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
@@ -188,10 +188,10 @@ reg_trend_plot <-
 
 reg_trend_plot
   
-ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"),
        height = 5.5, width = 7.5, units = 'in')
 
-#---- Figure 1B Diam. dist. trends by size class ----
+#---- Figure 3B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
 tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live')) |> filter(!Plot_Name %in% "COLO-380") 
@@ -290,7 +290,7 @@ dbh_trend_plot <-
 
 dbh_trend_plot
 
-ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')
 
 #---- Map 3 Regen by composition ----
@@ -334,6 +334,15 @@ names(sort(desc(colSums(reg_wide[,c(5:(ncol(reg_wide)-2))]))))
 write_to_shp(reg_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
+#Table of regen species and groups used in Map 3
+reg_spp <- reg_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>%
+  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                             spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                             spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                             TRUE ~ spp_grp)) %>% 
+  rename('Group: Map 3. Regeneration' = spp_grp) %>% select(-sppcode) %>% 
+  arrange(ScientificName)
+
 #---- Map 4 Tree canopy composition ----
 tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live')) |> filter(!Plot_Name %in% "COLO-380") 
 
@@ -367,6 +376,16 @@ tree_wide$logtot <- log(tree_wide$total + 1)
 names(tree_wide)
 write_to_shp(tree_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, ".shp"))
+
+#Table of tree species and groups used in Map 4
+tree_spp <- tree_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>%
+  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                             spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                             spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                             TRUE ~ spp_grp)) %>% 
+  rename('Group: Map 4. Tree Canopy' = spp_grp) %>% select(-sppcode) %>% 
+  arrange(ScientificName)
+
 
 #---- Map 5 Regen stocking index ----
 reg_4yr <- do.call(joinRegenData,
@@ -497,7 +516,7 @@ write_to_shp(invspp, shp_name =
 #---- Map 9 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
 disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name %in% "COLO-380") %>%
-  filter(DisturbanceLabel != "None") %>%
+  filter(DisturbanceSummary != "None") %>%
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -730,7 +749,7 @@ inv_spp_final <- inv_spp2 %>%  filter(ScientificName != 'None present') %>%
 write.csv(inv_spp_final, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
 
-#---- Early Detections -----
+#---- Table 4: Early Detections -----
 taxa <- prepTaxa()
 spp_all <- do.call(sumSpeciesList, args = c(args_4yr))
 
@@ -810,7 +829,13 @@ ed_all <- rbind(ised_spp, pest_eds2)
 ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) 
 write.csv(ed_all_final, paste0(new_path, 'tables/', park, "_early_detections.csv"), row.names = F)
 
-#---- CWD by cycle
+# Table 5: Tree species included in Map 3+4 -------------------------------
+
+grp_spp <- full_join(reg_spp,tree_spp, by = "ScientificName") %>% arrange(ScientificName)
+write.csv(grp_spp, paste0(new_path, "tables/", park, "_tree_species_in_Map3_4.csv"),
+          row.names = FALSE)
+
+# Map 12 + 13: CWD by cycle and rating ------------------------------------
 cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol) |> 
   filter(!Plot_Name %in% "COLO-380") 
 
@@ -830,3 +855,5 @@ apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
 
 max_cwd <- max(cwd_wide[,c(4:ncol(cwd_wide))])
 
+write_to_shp(cwd_wide, shp_name = 
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", ".shp"))

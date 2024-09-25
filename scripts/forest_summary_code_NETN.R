@@ -77,7 +77,7 @@ write_to_shp(reg_size_4yr,
              shp_name = paste0(new_path, "shapefiles/", park, 
                                "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
 
-#---- Figure 2A Regen trends by size class ----
+#---- Figure 3A Regen trends by size class ----
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
@@ -161,10 +161,10 @@ reg_trend_plot <-
 
 reg_trend_plot
   
-ggsave(paste0(new_path, "figures/", "Figure_2A_", park, "_regen_by_size_class_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')
 
-#---- Figure 2B Diam. dist. trends by size class ----
+#---- Figure 3B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
 tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live'))
@@ -260,7 +260,7 @@ dbh_trend_plot <-
 
 dbh_trend_plot
 
-ggsave(paste0(new_path, "figures/", "Figure_2B_", park, "_tree_dbh_dist_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
        height = 4.6, width = 7.8, units = 'in')
 
 #---- Map 3 Regen by composition ----
