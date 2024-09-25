@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------
-# Smoothed tree, sapling, seedling changes in abundance over time
+# Smoothed tree, sapling, seedling changes in abundance over time: NETN
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ trees <- left_join(trees1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear"))
 trees <- left_join(trees, prepTaxa() %>% select(ScientificName, CommonName), by = "ScientificName")
 table(trees$ScientificName)
 
-Acer_spp <- c('Acer', 'Acer rubrum', 'Acer saccharinum', 'Acer negundo') #'Acer saccharum',)
+Acer_spp <- c('Acer', 'Acer rubrum', 'Acer saccharinum', 'Acer negundo', 'Acer saccharum') # take Acer saccharum out for MABI
 Betula_spp <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea ',
             'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya_spp <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
@@ -36,8 +36,8 @@ Ulmus_spp <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
                   'Nyssa sylvatica', 
-                  'Tilia americana',# Turned off for MABI & SAGA
-                  #'Picea rubens', 
+                  'Tilia americana',# Take Tilia out for for MABI & SAGA
+                  'Picea rubens', # take PICRUB out for ACAD
                   'Platanus occidentalis', 
                   'Salix', 'Unknown Conifer',
                   'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
@@ -47,14 +47,14 @@ Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
                'Ostrya virginiana',
                'Sassafras albidum', 'Salix discolor', 'Viburnum prunifolium')
 
-Exotic_spp <- c(#'Acer platanoides',  #Turned off for SAGA ROVA
+Exotic_spp <- c('Acer platanoides',  #Take out  ACEPLA for SAGA ROVA
                 'Aesculus hippocastanum', 'Ailanthus altissima',
-                #'Crataegus',  # turned off for SARA
+                'Crataegus',  # Take out Crateagus for SARA
                 'Malus', 'Malus pumila', 'Morus alba',
                 'Photinia villosa', 'Prunus avium', 'Pyrus', 
-                'Picea abies', "Pinus sylvestris",  # turned off for MABI
+                'Picea abies', "Pinus sylvestris",  # Take out PICABI and PINSYL for MABI
                 'Alnus serrulata', 'Catalpa speciosa',
-                #'Rhamnus cathartica', # turned off for SARA
+                'Rhamnus cathartica', # Take out RHACAT for SARA
                 'Salix alba')
 
 if(park == "MORR"){
@@ -232,8 +232,8 @@ tree_stem_trends <-
                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
   facet_wrap(~spp_grp, scales = 'free_y') + 
   labs(y = "Trees (stems/ha)", x = "Year") +
-  scale_x_continuous(breaks = c(seq(2006, 2023, by = 3), 2023), 
-                     limits = c(2005, 2024)) +
+  scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
+                     limits = c(2005, to)) +
   theme_FHM() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
         legend.position = 'bottom')
@@ -294,8 +294,8 @@ tree_BA_trends <-
                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
   facet_wrap(~spp_grp, scales = 'free_y') + 
   labs(y = "Tree Basal Area (sq.m/ha)", x = "Year") +
-  scale_x_continuous(breaks = c(seq(2006, 2023, by = 3), 2023), 
-                     limits = c(2005, 2024)) +
+  scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
+                     limits = c(2005, to)) +
   theme_FHM() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
         legend.position = 'bottom')
@@ -323,27 +323,27 @@ net_stems <-
     "Acer saccharum (sugar maple)" = "#94da2f", #SAGA MABI only
     "Acer spp. (maple)" = "#54FF00",
     "Betula spp. (birch)" = "#38A800",
-    #"Carya spp. (hickory)" = "#FFFF00",
+    "Carya spp. (hickory)" = "#FFFF00",
     "Crataegus (hawthorns)" = "#9D0909", #SARA only
     "Carya cordiformis (bitternut hickory)" = "#FFFF00", #SAGA only
     "Fagus grandifolia (American beech)" = "#FFAA00",
     "Fraxinus spp. (ash)" = "#A87000",
-    #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
-    #"Larix decidua (European larch)" = "#C8CE00", # MABI only
-    #"Other Exotic spp." = "#FF0000", # off for MABI
+    "Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
+    "Larix decidua (European larch)" = "#C8CE00", # MABI only
+    "Other Exotic spp." = "#FF0000", # off for MABI
     "Other Native spp." = "#828282",
-    #"Picea abies (Norway spruce)" = "#C2037A",
+    "Picea abies (Norway spruce)" = "#C2037A",
     "Pinus spp. (pine)" = "#704489", #"#1D5104", # off for MORR 
-    #"Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
+    "Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
     "Populus spp. (poplar)" = "#CBCC7E", # off for MABI
-    #"Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
+    "Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
     "Quercus spp. (oak)" = "#C500FF",
-    #"Rhamnus cathartica (common buckthorn)" = "#FF7854", # SARA only
-    #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
+    "Rhamnus cathartica (common buckthorn)" = "#FF7854", # SARA only
+    "Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
     "Subcanopy spp." = "#FFBEE8",
-    #"Tilia americana (American basswood)" = "#53CEF2", # MABI only
-    "Tsuga canadensis (eastern hemlock)" = "#005CE6"#, # MABI/SAGA ROVA only
-    #"Ulmus spp. (elm)" = "#59538A" # off for MABI
+    "Tilia americana (American basswood)" = "#53CEF2", # MABI only
+    "Tsuga canadensis (eastern hemlock)" = "#005CE6", # MABI/SAGA ROVA only
+    "Ulmus spp. (elm)" = "#59538A" # off for MABI
   ),
   name = NULL) +
   scale_linetype_manual(values = c(
@@ -351,31 +351,31 @@ net_stems <-
     "Acer saccharum (sugar maple)" = "solid", #SAGA MABI only
     "Acer spp. (maple)" = "solid",
     "Betula spp. (birch)" = "dotted",
-    #"Carya spp. (hickory)" = "solid",
+    "Carya spp. (hickory)" = "solid",
     "Crataegus (hawthorns)" = "dotdash", #SARA only
     "Carya cordiformis (bitternut hickory)" = "solid", #SAGA only
     "Fagus grandifolia (American beech)" = "solid",
     "Fraxinus spp. (ash)" = "solid",
-    #"Liriodendron tulipifera (tuliptree)" = "solid", # off for MABI & SAGA
-    #"Larix decidua (European larch)" = "solid", # MABI only
-    #"Other Exotic spp." = "dotdash", # off for MABI
+    "Liriodendron tulipifera (tuliptree)" = "solid", # off for MABI & SAGA
+    "Larix decidua (European larch)" = "solid", # MABI only
+    "Other Exotic spp." = "dotdash", # off for MABI
     "Other Native spp." = "dotdash",
-    #"Picea abies (Norway spruce)" = "solid",
+    "Picea abies (Norway spruce)" = "solid",
     "Pinus spp. (pine)" = "solid", # off for MORR 
-    #"Pinus sylvestris (Scots pine)" = 'dotdash', #"#D94600", # MABI & MIMA only
+    "Pinus sylvestris (Scots pine)" = 'dotdash', #"#D94600", # MABI & MIMA only
     "Populus spp. (poplar)" = "solid", # off for MABI
-    #"Prunus spp. (cherry)" ="dotdash", # off for MORR & MABI 
+    "Prunus spp. (cherry)" ="dotdash", # off for MORR & MABI 
     "Quercus spp. (oak)" = "solid",
-    #"Rhamnus cathartica (common buckthorn)" = "dotted", # SARA only
-    #"Robinia pseudoacacia (black locust)" = "dotdash", #off for MABI
+    "Rhamnus cathartica (common buckthorn)" = "dotted", # SARA only
+    "Robinia pseudoacacia (black locust)" = "dotdash", #off for MABI
     "Subcanopy spp." = "solid",
-    #"Tilia americana (American basswood)" = "solid", # MABI only
-    "Tsuga canadensis (eastern hemlock)" = "solid"#, # MABI/SAGA ROVA only
-    #"Ulmus spp. (elm)" = "dotted" # off for MABI
+    "Tilia americana (American basswood)" = "solid", # MABI only
+    "Tsuga canadensis (eastern hemlock)" = "solid", # MABI/SAGA ROVA only
+     "Ulmus spp. (elm)" = "dotted" # off for MABI
   ),
   name = NULL) +
-  scale_x_continuous(breaks = c(seq(2006, 2023, by = 2), 2023), 
-                     limits = c(2006, 2023)) +
+  scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
+                     limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'none', # b/c shares page with 4B 
         legend.key.width = unit(1, 'cm'))
@@ -399,27 +399,27 @@ net_ba <-
     "Acer saccharum (sugar maple)" = "#94da2f", #SAGA MABI only
     "Acer spp. (maple)" = "#54FF00",
     "Betula spp. (birch)" = "#38A800",
-    #"Carya spp. (hickory)" = "#FFFF00",
+    "Carya spp. (hickory)" = "#FFFF00",
     "Crataegus (hawthorns)" = "#9D0909", #SARA only
     "Carya cordiformis (bitternut hickory)" = "#FFFF00", #SAGA only
     "Fagus grandifolia (American beech)" = "#FFAA00",
     "Fraxinus spp. (ash)" = "#A87000",
-    #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
-    #"Larix decidua (European larch)" = "#C8CE00", # MABI only
-    #"Other Exotic spp." = "#FF0000", # off for MABI
+    "Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
+    "Larix decidua (European larch)" = "#C8CE00", # MABI only
+    "Other Exotic spp." = "#FF0000", # off for MABI
     "Other Native spp." = "#828282",
-    #"Picea abies (Norway spruce)" = "#C2037A",
+    "Picea abies (Norway spruce)" = "#C2037A",
     "Pinus spp. (pine)" = "#704489", #"#1D5104", # off for MORR 
-    #"Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
+    "Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
     "Populus spp. (poplar)" = "#CBCC7E", # off for MABI
-    #"Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
+    "Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
     "Quercus spp. (oak)" = "#C500FF",
-    #"Rhamnus cathartica (common buckthorn)" = "#FF7854", # SARA only
-    #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
+    "Rhamnus cathartica (common buckthorn)" = "#FF7854", # SARA only
+    "Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
     "Subcanopy spp." = "#FFBEE8",
-    #"Tilia americana (American basswood)" = "#53CEF2", # MABI only
-    "Tsuga canadensis (eastern hemlock)" = "#005CE6"#, # MABI/SAGA ROVA only
-    #"Ulmus spp. (elm)" = "#59538A" # off for MABI
+    "Tilia americana (American basswood)" = "#53CEF2", # MABI only
+    "Tsuga canadensis (eastern hemlock)" = "#005CE6", # MABI/SAGA ROVA only
+    "Ulmus spp. (elm)" = "#59538A" # off for MABI
   ),
   name = NULL) +
   scale_linetype_manual(values = c(
@@ -427,30 +427,30 @@ net_ba <-
     "Acer saccharum (sugar maple)" = "solid", #SAGA MABI only
     "Acer spp. (maple)" = "solid",
     "Betula spp. (birch)" = "dotted",
-    #"Carya spp. (hickory)" = "solid",
+    "Carya spp. (hickory)" = "solid",
     "Crataegus (hawthorns)" = "dotdash", #SARA only
     "Carya cordiformis (bitternut hickory)" = "solid", #SAGA only
     "Fagus grandifolia (American beech)" = "solid",
     "Fraxinus spp. (ash)" = "solid",
-    #"Liriodendron tulipifera (tuliptree)" = "solid", # off for MABI & SAGA
-    #"Larix decidua (European larch)" = "solid", # MABI only
-    #"Other Exotic spp." = "dotdash", # off for MABI
+    "Liriodendron tulipifera (tuliptree)" = "solid", # off for MABI & SAGA
+    "Larix decidua (European larch)" = "solid", # MABI only
+    "Other Exotic spp." = "dotdash", # off for MABI
     "Other Native spp." = "dotdash",
-    #"Picea abies (Norway spruce)" = "solid",
+    "Picea abies (Norway spruce)" = "solid",
     "Pinus spp. (pine)" = "solid", # off for MORR 
-    #"Pinus sylvestris (Scots pine)" = 'dotdash', #"#D94600", # MABI & MIMA only
+    "Pinus sylvestris (Scots pine)" = 'dotdash', #"#D94600", # MABI & MIMA only
     "Populus spp. (poplar)" = "solid", # off for MABI
-    #"Prunus spp. (cherry)" ="dotdash", # off for MORR & MABI 
+    "Prunus spp. (cherry)" ="dotdash", # off for MORR & MABI 
     "Quercus spp. (oak)" = "solid",
-    #"Rhamnus cathartica (common buckthorn)" = "dotted", # SARA only
-    #"Robinia pseudoacacia (black locust)" = "dotdash", #off for MABI
+    "Rhamnus cathartica (common buckthorn)" = "dotted", # SARA only
+    "Robinia pseudoacacia (black locust)" = "dotdash", #off for MABI
     "Subcanopy spp." = "solid",
-    #"Tilia americana (American basswood)" = "solid", # MABI only
-    "Tsuga canadensis (eastern hemlock)" = "solid"#, # MABI/SAGA ROVA only
-    #"Ulmus spp. (elm)" = "dotted" # off for MABI
+    "Tilia americana (American basswood)" = "solid", # MABI only
+    "Tsuga canadensis (eastern hemlock)" = "solid", # MABI/SAGA ROVA only
+    "Ulmus spp. (elm)" = "dotted" # off for MABI
   ), name = NULL) +
-  scale_x_continuous(breaks = c(seq(2006, 2023, by = 2), 2023), 
-                     limits = c(2006, 2023)) +
+  scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
+                     limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom', 
         legend.key.width = unit(1, 'cm')) + 
@@ -471,7 +471,7 @@ head(reg)
 regtab <- as.data.frame(table(reg$ScientificName)) |> arrange(desc(Freq))
 regtab
 
-Acer_spp <- c('Acer', 'Acer saccharinum', 'Acer negundo', 'Acer rubrum')#, 'Acer saccharum')
+Acer_spp <- c('Acer', 'Acer saccharinum', 'Acer negundo', 'Acer rubrum', 'Acer saccharum') # remove ACE SAC for MABI
 Betula_spp <- c('Betula','Betula alleghaniensis', 'Betula lenta',  'Betula X cearulea',
                 'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
 Carya_spp <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
@@ -488,8 +488,8 @@ Ulmus_spp <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
 Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis',
                   'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
                   'Nyssa sylvatica', 'Unknown species',
-                  'Tilia americana',
-                  'Pinus', 'Picea rubens',
+                  'Tilia americana', # Remove Tilia for MABI
+                  'Pinus', 'Picea rubens', # Remove PICRUB for ACAD
                   'Platanus occidentalis', 
                   'Salix', 'Unknown Conifer', 'Unknown Tree - 02',
                   'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
@@ -499,9 +499,9 @@ Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
                'Ilex opaca', 'Juniperus virginiana', 
                'Ostrya virginiana',
                'Sassafras albidum', 'Salix discolor', 'Viburnum prunifolium')
-Exotic_spp <- c(#'Acer platanoides',  #Turned off for SAGA ROVA
+Exotic_spp <- c('Acer platanoides',  #Take out ACEPLA for SAGA ROVA
                 'Aesculus hippocastanum', 'Ailanthus altissima',
-                #'Crataegus', ' # Turned off for SARA
+                'Crataegus',  # Turned off for SARA
                 'Malus', 'Malus pumila', 'Morus alba',
                 'Photinia villosa', 'Prunus avium', 'Pyrus', 
                 'Picea abies', "Pinus sylvestris",  # turned off for MABI
@@ -517,14 +517,14 @@ head(plot_evs)
 reg_spp <- reg %>% left_join(., tlu_plants, by = c("TSN", "ScientificName")) %>%
   mutate(spp_grp = case_when(ScientificName %in% Acer_spp ~ "Acer spp. (maple)",
                              ScientificName %in% Betula_spp ~ "Betula spp. (birch)",
-                             #ScientificName %in% Carya_spp ~ "Carya spp. (hickory)",
+                             ScientificName %in% Carya_spp ~ "Carya spp. (hickory)",
                              ScientificName %in% Fraxinus_spp ~ "Fraxinus spp. (ash)",
                              ScientificName %in% Pinus_spp ~ "Pinus spp. (pine)",
-                             #ScientificName %in% Populus_spp ~ "Populus spp. (poplar)",
+                             ScientificName %in% Populus_spp ~ "Populus spp. (poplar)",
                              ScientificName %in% Prunus_spp ~ "Prunus spp. (cherry)",
                              ScientificName %in% Quercus_spp ~ "Quercus spp. (oak)",
                              ScientificName %in% Ulmus_spp ~ "Ulmus spp. (elm)",
-                             # ScientificName %in% c(Other_Native, Prunus_spp, Populus_spp) ~ "Other Native spp.",
+                             # ScientificName %in% c(Other_Native, Prunus_spp, Populus_spp) ~ "Other Native spp.", #if need to reduce number of species
                              ScientificName %in% c(Other_Native, Populus_spp) ~ "Other Native spp.",
                              ScientificName %in% Exotic_spp ~ "Other Exotic spp.",
                              ScientificName %in% Subcanopy ~ "Subcanopy spp.",
@@ -627,8 +627,8 @@ seed_trends <-
                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
   facet_wrap(~spp_grp, scales = 'free_y') + 
   labs(y = "Seedlings (stems/sq.m)", x = "Year") +
-  scale_x_continuous(breaks = c(seq(2006, 2023, by = 3), 2023), 
-                     limits = c(2005, 2024)) +
+  scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
+                     limits = c(2005, to)) +
   theme_FHM() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
         legend.position = 'bottom')
@@ -676,8 +676,8 @@ sap_trends <-
                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
   facet_wrap(~spp_grp, scales = 'free_y') + 
   labs(y = "Saplings (stems/sq.m)", x = "Year") +
-  scale_x_continuous(breaks = c(seq(2006, 2023, by = 3), 2023), 
-                     limits = c(2005, 2024)) +
+  scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
+                     limits = c(2005, to)) +
   theme_FHM() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom')
@@ -700,26 +700,26 @@ net_seeds <-
     "Acer saccharum (sugar maple)" = "#94da2f", #SAGA MABI only
     "Acer spp. (maple)" = "#54FF00",
     "Betula spp. (birch)" = "#38A800",
-    #"Carya spp. (hickory)" = "#FFFF00",
-    #"Crataegus (hawthorns)" = "#9D0909", #SARA only
+    "Carya spp. (hickory)" = "#FFFF00",
+    "Crataegus (hawthorns)" = "#9D0909", #SARA only
     "Carya cordiformis (bitternut hickory)" = "#FFFF00", #SAGA only
     "Fagus grandifolia (American beech)" = "#FFAA00",
     "Fraxinus spp. (ash)" = "#A87000",
-    #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
-    #"Larix decidua (European larch)" = "#C8CE00", # MABI only
-    #"Other Exotic spp." = "#FF0000", # off for MABI
+    "Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
+    "Larix decidua (European larch)" = "#C8CE00", # MABI only
+    "Other Exotic spp." = "#FF0000", # off for MABI
     "Other Native spp." = "#828282",
-    #"Picea abies (Norway spruce)" = "#C2037A",
+    "Picea abies (Norway spruce)" = "#C2037A",
     "Pinus spp. (pine)" = "#704489", #"#1D5104", # off for MORR 
-    #"Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
-    #"Populus spp. (poplar)" = "#CBCC7E", # off for MABI SAGA
+    "Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
+    "Populus spp. (poplar)" = "#CBCC7E", # off for MABI SAGA
     "Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
     "Quercus spp. (oak)" = "#C500FF",
-    #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
+    "Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
     "Subcanopy spp." = "#FFBEE8",
-    #"Tilia americana (American basswood)" = "#53CEF2", # MABI only
-    "Tsuga canadensis (eastern hemlock)" = "#005CE6"#, # MABI/SAGA ROVA only
-    #"Ulmus spp. (elm)" = "#59538A" # off for MABI
+    "Tilia americana (American basswood)" = "#53CEF2", # MABI only
+    "Tsuga canadensis (eastern hemlock)" = "#005CE6", # MABI/SAGA ROVA only
+    "Ulmus spp. (elm)" = "#59538A" # off for MABI
   ),
   name = NULL) +
     scale_linetype_manual(values = c(
@@ -727,30 +727,30 @@ net_seeds <-
       "Acer saccharum (sugar maple)" = 'solid',
       "Acer spp. (maple)" = "solid",
       "Betula spp. (birch)" = "dotted",
-      #"Carya spp. (hickory)" = "solid",
-      #"Crataegus (hawthorns)" = "dotdash", #SARA only
+      "Carya spp. (hickory)" = "solid",
+      "Crataegus (hawthorns)" = "dotdash", #SARA only
       "Carya cordiformis (bitternut hickory)" = "solid", #SAGA only
       "Fagus grandifolia (American beech)" = "solid",
       "Fraxinus spp. (ash)" = "solid",
-      #"Liriodendron tulipifera (tuliptree)" = "solid", # off for MABI & SAGA
-      #"Larix decidua (European larch)" = "solid", # MABI only
-      #"Other Exotic spp." = "dotdash", # off for MABI
+      "Liriodendron tulipifera (tuliptree)" = "solid", # off for MABI & SAGA
+      "Larix decidua (European larch)" = "solid", # MABI only
+      "Other Exotic spp." = "dotdash", # off for MABI
       "Other Native spp." = "dotdash",
-      #"Picea abies (Norway spruce)" = "solid",
+      "Picea abies (Norway spruce)" = "solid",
       "Pinus spp. (pine)" = "solid", # off for MORR 
-      #"Pinus sylvestris (Scots pine)" = 'dotdash', #"#D94600", # MABI & MIMA only
-      #"Populus spp. (poplar)" = "solid", # off for MABI
+      "Pinus sylvestris (Scots pine)" = 'dotdash', #"#D94600", # MABI & MIMA only
+      "Populus spp. (poplar)" = "solid", # off for MABI
       "Prunus spp. (cherry)" ="dotdash", # off for MORR & MABI 
       "Quercus spp. (oak)" = "solid",
-      #"Robinia pseudoacacia (black locust)" = "dotdash", #off for MABI
+      "Robinia pseudoacacia (black locust)" = "dotdash", #off for MABI
       "Subcanopy spp." = "solid",
-      #"Tilia americana (American basswood)" = "solid", # MABI only
-      "Tsuga canadensis (eastern hemlock)" = "solid"#, # MABI/SAGA ROVA only
-      #"Ulmus spp. (elm)" = "dotted" # off for MABI
+      "Tilia americana (American basswood)" = "solid", # MABI only
+      "Tsuga canadensis (eastern hemlock)" = "solid", # MABI/SAGA ROVA only
+      "Ulmus spp. (elm)" = "dotted" # off for MABI
     ),
     name = NULL) +
-  scale_x_continuous(breaks = c(seq(2006, 2023, by = 2), 2023), 
-                     limits = c(2006, 2023)) +
+  scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
+                     limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom', 
         legend.key.width = unit(1, 'cm')) + 
@@ -774,26 +774,26 @@ net_saps <-
     "Acer saccharum (sugar maple)" = "#94da2f", #SAGA MABI only
     "Acer spp. (maple)" = "#54FF00",
     "Betula spp. (birch)" = "#38A800",
-    #"Carya spp. (hickory)" = "#FFFF00",
-    #"Crataegus (hawthorns)" = "#9D0909", #SARA only
+    "Carya spp. (hickory)" = "#FFFF00",
+    "Crataegus (hawthorns)" = "#9D0909", #SARA only
     "Carya cordiformis (bitternut hickory)" = "#FFFF00", #SAGA only
     "Fagus grandifolia (American beech)" = "#FFAA00",
     "Fraxinus spp. (ash)" = "#A87000",
-    #"Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
-    #"Larix decidua (European larch)" = "#C8CE00", # MABI only
-    #"Other Exotic spp." = "#FF0000", # off for MABI
+    "Liriodendron tulipifera (tuliptree)" = "#73AAFF", # off for MABI & SAGA
+    "Larix decidua (European larch)" = "#C8CE00", # MABI only
+    "Other Exotic spp." = "#FF0000", # off for MABI
     "Other Native spp." = "#828282",
-    #"Picea abies (Norway spruce)" = "#C2037A",
+    "Picea abies (Norway spruce)" = "#C2037A",
     "Pinus spp. (pine)" = "#704489", #"#1D5104", # off for MORR 
-    #"Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
-    #"Populus spp. (poplar)" = "#CBCC7E", # off for MABI SAGA
+    "Pinus sylvestris (Scots pine)" = '#F57A7A', #"#D94600", # MABI & MIMA only
+    "Populus spp. (poplar)" = "#CBCC7E", # off for MABI SAGA
     "Prunus spp. (cherry)" ="#00E6A9", # off for MORR & MABI 
     "Quercus spp. (oak)" = "#C500FF",
-    #"Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
+    "Robinia pseudoacacia (black locust)" = "#CBCC7E", #off for MABI
     "Subcanopy spp." = "#FFBEE8",
-    #"Tilia americana (American basswood)" = "#53CEF2", # MABI only
-    "Tsuga canadensis (eastern hemlock)" = "#005CE6"#, # MABI/SAGA ROVA only
-    #"Ulmus spp. (elm)" = "#59538A" # off for MABI
+    "Tilia americana (American basswood)" = "#53CEF2", # MABI only
+    "Tsuga canadensis (eastern hemlock)" = "#005CE6", # MABI/SAGA ROVA only
+    "Ulmus spp. (elm)" = "#59538A" # off for MABI
   ),
   name = NULL) +
   scale_linetype_manual(values = c(
@@ -801,30 +801,30 @@ net_saps <-
     "Acer saccharum (sugar maple)" = 'solid',
     "Acer spp. (maple)" = "solid",
     "Betula spp. (birch)" = "dotted",
-    #"Carya spp. (hickory)" = "solid",
-    #"Crataegus (hawthorns)" = "dotdash", #SARA only
+    "Carya spp. (hickory)" = "solid",
+    "Crataegus (hawthorns)" = "dotdash", #SARA only
     "Carya cordiformis (bitternut hickory)" = "solid", #SAGA only
     "Fagus grandifolia (American beech)" = "solid",
     "Fraxinus spp. (ash)" = "solid",
-    #"Liriodendron tulipifera (tuliptree)" = "solid", # off for MABI & SAGA
-    #"Larix decidua (European larch)" = "solid", # MABI only
-    #"Other Exotic spp." = "dotdash", # off for MABI
+    "Liriodendron tulipifera (tuliptree)" = "solid", # off for MABI & SAGA
+    "Larix decidua (European larch)" = "solid", # MABI only
+    "Other Exotic spp." = "dotdash", # off for MABI
     "Other Native spp." = "dotdash",
-    #"Picea abies (Norway spruce)" = "solid",
+    "Picea abies (Norway spruce)" = "solid",
     "Pinus spp. (pine)" = "solid", # off for MORR 
-    #"Pinus sylvestris (Scots pine)" = 'dotdash', #"#D94600", # MABI & MIMA only
-    #"Populus spp. (poplar)" = "solid", # off for MABI
+    "Pinus sylvestris (Scots pine)" = 'dotdash', #"#D94600", # MABI & MIMA only
+    "Populus spp. (poplar)" = "solid", # off for MABI
     "Prunus spp. (cherry)" ="dotdash", # off for MORR & MABI 
     "Quercus spp. (oak)" = "solid",
-    #"Robinia pseudoacacia (black locust)" = "dotdash", #off for MABI
+    "Robinia pseudoacacia (black locust)" = "dotdash", #off for MABI
     "Subcanopy spp." = "solid",
-    #"Tilia americana (American basswood)" = "solid", # MABI only
-    "Tsuga canadensis (eastern hemlock)" = "solid"#, # MABI/SAGA ROVA only
-    #"Ulmus spp. (elm)" = "dotted" # off for MABI
+    "Tilia americana (American basswood)" = "solid", # MABI only
+    "Tsuga canadensis (eastern hemlock)" = "solid", # MABI/SAGA ROVA only
+    "Ulmus spp. (elm)" = "dotted" # off for MABI
   ),
   name = NULL) +
-  scale_x_continuous(breaks = c(seq(2006, 2023, by = 2), 2023), 
-                     limits = c(2006, 2023)) +
+  scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
+                     limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'none', 
         legend.key.width = unit(1, 'cm'))
@@ -843,19 +843,23 @@ shrubs <- do.call(joinMicroShrubData, args_vs) |> filter(SampleYear >= 2010)
 table(shrubs$ScientificName, shrubs$SampleYear)
 
 other_native <- c("Amphicarpaea bracteata", "Aronia melanocarpa", "Gaylussacia baccata",
-                  #"Hamamelis virginiana", # off for SAGA
+                  "Hamamelis virginiana", # off for SAGA
                   "Ilex verticillata", "Lyonia ligustrina", "Rosa",
                   "Spiraea alba", "Vaccinium angustifolium", "Vaccinium pallidum", 
-                  "Vaccinium stamineum", "Zanthoxylum americanum", 'Viburnum lantanoides')
+                  "Vaccinium stamineum", "Zanthoxylum americanum", 'Rhus typhina', 
+                  'Vaccinium corymbosum') # adjust per park
 corylus = c("Corylus americana", "Corylus cornuta")
-other_exotic <- c("Berberis thunbergii", "Celastrus orbiculatus", "Crataegus", "Viburnum lantana")
+other_exotic <- c("Crataegus", "Viburnum lantana", "Rhodotypos scandens", 
+                  'Viburnum dilatatum', 'Viburnum sieboldii',
+                  'Euonymus alatus')# adjust per park
 cornus <- c("Cornus", "Cornus amomum", "Cornus racemosa")
 rubus <- c("Rubus", "Rubus allegheniensis", "Rubus idaeus", "Rubus occidentalis", "Rubus odoratus")
-viburnum <- c("Viburnum dentatum", "Viburnum lentago")
+viburnum <- c("Viburnum dentatum", "Viburnum lentago", 'Viburnum lantanoides')
 vitis <- c("Vitis", "Vitis aestivalis", "Vitis riparia")
 lonicera <- c("Lonicera", "Lonicera - Exotic", "Lonicera morrowii")
 parth <- c("Parthenocissus", "Parthenocissus quinquefolia")
 natvines <- c(parth, vitis, "Toxicodendron radicans")
+ligustrum <- c("Ligustrum", "Ligustrum vulgare")
 
 table(shrubs$ScientificName)
 
@@ -863,14 +867,15 @@ shrubs <- left_join(shrubs, prepTaxa() |> select(ScientificName, CommonName), by
 
 shrubs <- shrubs %>% 
   mutate(spp_grp = case_when(ScientificName %in% c(other_native, viburnum, parth, natvines) ~ "Other Native spp.",
-                             #ScientificName %in% other_exotic ~ "Other Exotic spp.",
+                             ScientificName %in% other_exotic ~ "Other Exotic spp.", 
                              ScientificName %in% cornus ~ "Cornus spp. (dogwood)",
                              ScientificName %in% corylus ~ "Corylus spp. (hazelnut)",
                              ScientificName %in% rubus ~ "Rubus spp. (brambles)",
-                             #ScientificName %in% viburnum ~ "Viburnum spp. (arrowwood)",
-                             #ScientificName %in% vitis ~ "Vitis spp. (grape)",
+                             #ScientificName %in% viburnum ~ "Viburnum spp. (arrowwood)", # included in other_native
+                             #ScientificName %in% vitis ~ "Vitis spp. (grape)",#  included in other_native
                              ScientificName %in% lonicera ~ "Lonicera spp. (exotic honeysuckle)",
-                             #ScientificName %in% natvines ~ "Native vine spp.",
+                            # ScientificName %in% natvines ~ "Native vine spp.", # included in other_native
+                             ScientificName %in% ligustrum ~ "Ligustrum spp. (privet)",
                              TRUE ~ paste0(ScientificName, " (", CommonName, ")")))
 
 shrub_sum <- shrubs |> group_by(Plot_Name, SampleYear, spp_grp) |> 
@@ -955,8 +960,8 @@ shrub_trends <-
                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
   facet_wrap(~spp_grp, scales = 'free_y') + 
   labs(y = "Shrub % Cover", x = "Year") +
-  scale_x_continuous(breaks = c(seq(2010, 2023, by = 3), 2023), 
-                     limits = c(2009, 2024)) +
+  scale_x_continuous(breaks = c(seq(2010, to, by = 3), to), 
+                     limits = c(2009, to)) +
   theme_FHM() + 
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
         legend.position = 'bottom')
@@ -977,48 +982,56 @@ net_shrubs <-
   labs(x = NULL, y = "Shrub % Cover") +
   theme_FHM()+
   scale_color_manual(values = c(
- #   "Berberis thunbergii (Japanese barberry)" = "#4CE600",
-#    "Celastrus orbiculatus (oriental bittersweet)" = "#FFAA00",
-    #"Cornus spp. (dogwood)" = "#95DE34",
+  "Berberis thunbergii (Japanese barberry)" = "#4CE600",
+   "Celastrus orbiculatus (oriental bittersweet)" = "#FFAA00",
+    "Cornus spp. (dogwood)" = "#95DE34",
     "Cornus alternifolia (alternate-leaf dogwood)" = "#95de34",
     "Corylus spp. (hazelnut)" = "#57A588",
     "Hamamelis virginiana (American witchhazel)" = "#FFF000",
     "Lonicera spp. (exotic honeysuckle)" = "#0070FF",
-    #"Native vine spp." = "#308E33",
-    #"Other Exotic spp." = "#F9CF36",
+    "Native vine spp." = "#308E33",
+    "Other Exotic spp." = "#F9CF36",
     "Other Native spp." = "#828282",
-    #"Rhamnus cathartica (common buckthorn)" = "#FF7854",
-    #"Rosa multiflora (multiflora rose)" = "#BB3636",
-    #"Rubus spp. (brambles)" = "#DC91F6"#,
-    #"Toxicodendron radicans (eastern poison ivy)" = "#937648",
-    #"Viburnum spp. (arrowwood)" = "#57A588",
-    #"Vitis spp. (grape)" = "#8C62B4",
-    #"Zanthoxylum americanum (Common pricky-ash)" = "#B9C63A"
-    "Viburnum lantanoides (hobblebush)" = "#DC91F6"
+    "Rhamnus cathartica (common buckthorn)" = "#FF7854",
+    "Rosa multiflora (multiflora rose)" = "#BB3636",
+    "Rubus spp. (brambles)" = "#DC91F6",
+    "Toxicodendron radicans (eastern poison ivy)" = "#937648",
+    "Viburnum spp. (arrowwood)" = "#57A588",
+    "Vitis spp. (grape)" = "#8C62B4",
+    "Zanthoxylum americanum (Common pricky-ash)" = "#B9C63A",
+    "Viburnum lantanoides (hobblebush)" = "#DC91F6",
+    "Ligustrum spp. (privet)" = "#B9C63A",
+    "Lindera benzoin (northern spicebush)" = "#95de34",
+    "Lonicera japonica (Japanese honeysuckle)" = "#0070FF",
+    "Rubus phoenicolasius (wine raspberry)" = "#937648"
   ), name = NULL) +
   scale_linetype_manual(values = c(
- #   "Berberis thunbergii (Japanese barberry)" = "solid",
- #   "Celastrus orbiculatus (oriental bittersweet)" = "solid",
-    #"Cornus spp. (dogwood)" = "dotdash",
+   "Berberis thunbergii (Japanese barberry)" = "solid",
+   "Celastrus orbiculatus (oriental bittersweet)" = "solid",
+    "Cornus spp. (dogwood)" = "dotdash",
     "Cornus alternifolia (alternate-leaf dogwood)" = "solid",
     "Corylus spp. (hazelnut)" = "dotdash",
     "Hamamelis virginiana (American witchhazel)" = 'dotdash',
     "Lonicera spp. (exotic honeysuckle)" = "solid",
-    #"Native vine spp." = "dashed",
-    #"Other Exotic spp." = "solid",
+    "Native vine spp." = "dashed",
+    "Other Exotic spp." = "solid",
     "Other Native spp." = "dotdash",
- #   "Parthenocissus spp. (Virginia creeper)" = "dotted",
-    #"Rhamnus cathartica (common buckthorn)" = "solid",
-    #"Rosa multiflora (multiflora rose)" = "solid",
-    #"Rubus spp. (brambles)" = "dotdash"#,
-    #"Toxicodendron radicans (eastern poison ivy)" = "dotted",
-    #"Viburnum spp. (arrowwood)" = "dotdash",
-    #"Vitis spp. (grape)" = "dotdash",
- "Viburnum lantanoides (hobblebush)" = "solid"
-  #  "Zanthoxylum americanum (Common pricky-ash)" = "dotdash"
+    "Parthenocissus spp. (Virginia creeper)" = "dotted",
+    "Rhamnus cathartica (common buckthorn)" = "solid",
+    "Rosa multiflora (multiflora rose)" = "solid",
+    "Rubus spp. (brambles)" = "dotdash",
+    "Toxicodendron radicans (eastern poison ivy)" = "dotted",
+    "Viburnum spp. (arrowwood)" = "dotdash",
+    "Vitis spp. (grape)" = "dotdash",
+     "Viburnum lantanoides (hobblebush)" = "solid",
+   "Zanthoxylum americanum (Common pricky-ash)" = "dotdash",
+   "Ligustrum spp. (privet)" = "solid",
+   "Lindera benzoin (northern spicebush)" = "dotted",
+   "Lonicera japonica (Japanese honeysuckle)" = "dotted",
+   "Rubus phoenicolasius (wine raspberry)" = "dotdash"
   ), name = NULL) +
-  scale_x_continuous(breaks = c(seq(2010, 2023, by = 2), 2023), 
-                     limits = c(2009.9, 2023.1)) +
+  scale_x_continuous(breaks = c(seq(2010, to, by = 2), to), 
+                     limits = c(2009.9, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'bottom', 
         legend.key.width = unit(1, 'cm')) + 

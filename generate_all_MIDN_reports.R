@@ -6,12 +6,16 @@ library(rmarkdown)
 library(knitr)
 library(pagedown) # for chrome_print()
 
+# 20240923: chrome_print is failing to render a .pdf. Need to install servr package for fix:
+#devtools::install_github('yihui/servr')
+library(servr)
+
 rmd_path <- c("C:/NETN/R_Dev/forestSummaries/")
-out_path <- paste0(rmd_path, "/output/")
+out_path <- paste0(rmd_path, "output/")
 midn_params <- read.csv("MIDN_params.csv")
 report_path <- "C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/" #path where source script
 # puts output from data summaries.
-end_year = 2023
+end_year = 2024
 
 render_MIDN_reports <- function(park){
   
@@ -48,10 +52,9 @@ render_MIDN_reports <- function(park){
   }
 }
 
-render_MIDN_reports(park = "SAHI")
-
 pdf_print <- function(park){
-  report_dir <- paste0(report_path, park, "/", end_year, "/")
+#  report_dir <- paste0(report_path, park, "/", end_year, "/")
+  report_dir <- paste0(out_path)
   report_name <- paste0(park, "_Figures_and_Tables_", format(Sys.time(), "%b_%Y"))
   chrome_print(input = paste0(out_path, report_name, ".html"), 
                output = paste0(out_path, report_name, ".pdf"),
@@ -65,10 +68,13 @@ render_poss <- possibly(render_MIDN_reports, otherwise = "Error")
 print_poss <- possibly(pdf_print, otherwise = "Error")
 
 
-midn_parks <- sort(unique(midn_params$park))
-#"APCO" "BOWA" "COLO" "FRSP" "GETT" "GEWA" "HOFU" "PETE" "RICH" "SAHI" "THST" "VAFO"
+#midn_parks <- sort(unique(midn_params$park))
+midn_parks <- c("APCO", "ASIS", "BOWA", "COLO", "FRSP", "GETT",
+                "GEWA", "HOFU", "PETE", "RICH", "SAHI", "THST", "VAFO")
 purrr::walk(midn_parks, ~render_poss(park = .))
 purrr::walk(midn_parks, ~print_poss(.))
+
+pdf_print("APCO")
 
 # render_poss("SAHI")
 # print_poss("SAHI")

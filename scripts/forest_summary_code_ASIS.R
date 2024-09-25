@@ -15,9 +15,9 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 }
 
 #---- Plot event lists ----
-plotevs <- do.call(joinLocEvent, args_all) |> filter(!Plot_Name %in% "COLO-380") 
-plotevs_vs <- do.call(joinLocEvent, args_vs) |> filter(!Plot_Name %in% "COLO-380") 
-plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) |> filter(!Plot_Name %in% "COLO-380") 
+plotevs <- do.call(joinLocEvent, args_all) 
+plotevs_vs <- do.call(joinLocEvent, args_vs) 
+plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) 
 head(plotevs)
 
 #---- Table 1. Regen densities by plot and year ----
@@ -124,19 +124,19 @@ reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
 
 reg_trend_plot <- 
-  ggplot(reg_size_sum, aes(x = size_class, y = mean, color = size_class,#linetype = sign, 
-                         group = size_class))+ theme_FVM()+
-  geom_bar(stat = 'identity', aes(fill = size_class, color = 'DimGrey'))+
+  ggplot(reg_size_sum, aes(x = size_class, y = mean, #color = size_class,#linetype = sign, 
+                         group = size_class)) + theme_FVM() +
+  geom_bar(stat = 'identity', aes(fill = size_class), color = 'DimGrey') +
    geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2, linewidth = 0.5, 
-                 color = 'DimGrey', alpha = 0.8)+
-  labs(x  = "Cycle", y = bquote(Stems/m^2))+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5)+
-  scale_color_manual(values = reg_colors, name = "Size Class",
-                     labels = reg_labels)+
+                 color = 'DimGrey', alpha = 0.8) +
+  labs(x  = "Cycle", y = bquote(Stems/m^2)) +
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5) +
+  # scale_color_manual(values = reg_colors, name = "Size Class",
+  #                    labels = reg_labels) +
   scale_fill_manual(values = reg_colors, name = "Size Class",
-                    labels = reg_labels)+
+                    labels = reg_labels) +
   scale_x_discrete(name = "Size Class",
-                   labels = reg_labels)+ 
+                   labels = reg_labels) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
         legend.position = 'none')
 
@@ -161,6 +161,8 @@ tree_dbh_sum <- tree_dd |>
   summarize(mean = mean(density, na.rm = T),
             se = sd(density, na.rm = T)/sqrt(num_plots), 
             .groups = 'drop') # middle 50% of the data
+
+#+++++ ONCE MULTIPLE CYCLES ARE ADDED- REPLACE WITH CODE FROM forest_summary_code_MIDN.R for tree_dbh_sm +++++
 
 #head(tree_dbh_sum)
 
@@ -224,22 +226,23 @@ cycle_labs_tr = c("1" = ifelse(AIC_test$best_mod[AIC_test$cycle == 1] == 'linear
                                paste0(cycle_labs[4], "*"), cycle_labs[4]),
                   "5" = ifelse(AIC_test$best_mod[AIC_test$cycle == 5] == 'linear',
                                paste0(cycle_labs[5], "*"), cycle_labs[5]))
-
 dbh_trend_plot <- 
-  ggplot(tree_dbh_sum, aes(x = size_class, y = mean))+ theme_FVM()+
-  geom_bar(stat = 'identity', fill = "#81B082" , color = 'DimGrey')+
+  ggplot(tree_dbh_sum, aes(x = size_class, y = mean)) + theme_FVM() +
+  geom_bar(stat = 'identity', fill = "#81B082" , color = 'DimGrey') +
   geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2, linewidth = 0.5,
-                color = 'DimGrey', alpha = 0.8)+
-  labs(x  = "Cycle", y = "Stems/ha")+
+                color = 'DimGrey', alpha = 0.8) +
+  labs(x  = "Cycle", y = "Stems/ha") +
   facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 5)+
-  scale_color_manual(values = reg_colors, name = "DBH Size Class",
-                     labels = reg_labels)+
-  scale_fill_manual(values = reg_colors, name = "DBH Size Class",
-                    labels = reg_labels)+
+  # scale_color_manual(values = reg_colors, name = "DBH Size Class",
+  #                    labels = reg_labels)+
+  # scale_fill_manual(values = reg_colors, name = "DBH Size Class",
+  #                   labels = reg_labels)+
   scale_x_discrete(name = "DBH Size Class",
-                   labels = dbh_labels)+ 
+                   labels = dbh_labels) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
         legend.position = 'none')
+
+#+++++ ONCE MULTIPLE CYCLES ARE ADDED- REPLACE WITH CODE FROM forest_summary_code_MIDN.R for dbh_trend_plot +++++
 
 dbh_trend_plot
 
@@ -427,8 +430,8 @@ write_to_shp(invspp, shp_name =
 
 #---- Map 9 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
-disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name %in% "COLO-380") %>%
-  filter(DisturbanceLabel != "None") %>%
+disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  
+  filter(DisturbanceSummary != "None") %>%
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -436,6 +439,7 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name
                                 DisturbanceNote) ~ "HWA",
                           grepl("BBD|beech bark disease|Beech bark disease", DisturbanceNote) ~ "BBD",
                           grepl("GM|spongy|gypsy", DisturbanceNote) ~ "GM",
+                          grepl("Southern pine beetle|SPB|southern pine beetle", DisturbanceNote) ~ "SPB",
                           TRUE ~ NA_character_
   )) %>% filter(!is.na(pest)) %>% 
   select(Plot_Name, pest) %>% unique()
@@ -518,7 +522,6 @@ write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park,
 
 #---- Table 3 Invasive species by number of plots cycle
 inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>%
-  filter(!Plot_Name %in% "COLO-380") %>%
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,

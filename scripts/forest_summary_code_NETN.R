@@ -77,7 +77,7 @@ write_to_shp(reg_size_4yr,
              shp_name = paste0(new_path, "shapefiles/", park, 
                                "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
 
-#---- Figure 1A Regen trends by size class ----
+#---- Figure 3A Regen trends by size class ----
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
@@ -109,11 +109,35 @@ reg_smooth$size_class <- factor(reg_smooth$size_class,
                                            "seed_100_150cm", "seed_p150cm", 
                                            "sap_den"))
 
-cycle_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
+# Set up cycle labels for figures
+# netn1+2: SARA, MABI, SAGA, MIMA
+netn1_labs = c("1" = "Cycle 1: 2006 & 2008",
+               "2" = "Cycle 2: 2010 & 2012", 
+               "3" = "Cycle 3: 2014 & 2016", 
+               "4" = "Cycle 4: 2018 & 2022",
+               "5" = "Cycle 5: 2023")
+# netn2: MORR, ROVA, WEFA
+netn2_labs = c("1" = "Cycle 1: 2007 \u2013 2009",
+               "2" = "Cycle 2: 2011 \u2013 2013", 
+               "3" = "Cycle 3: 2015 \u2013 2017", 
+               "4" = "Cycle 4: 2019 \u2013 2022",
+               "5" = "Cycle 5: 2024") 
+
+ACAD_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
                "2" = "Cycle 2: 2010 \u2013 2013", 
                "3" = "Cycle 3: 2014 \u2013 2017", 
-               "4" = "Cycle 4: 2018 \u2013 2022",
-               "5" = "Cycle 5: 2023")
+               "4" = "Cycle 4: 2018 \u2013 2021",
+               "5" = "Cycle 5: 2022 \u2013 2024")
+
+cycle_labs <- switch(park,
+                     "SARA" = netn1_labs, 
+                     "MABI" = netn1_labs,
+                     "SAGA" = netn1_labs,
+                     "MIMA" = netn1_labs,
+                     "MORR" = netn2_labs,
+                     "ROVA" = netn2_labs,
+                     "WEFA" = netn2_labs,
+                     "ACAD" = ACAD_labs)
 
 reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
@@ -137,10 +161,10 @@ reg_trend_plot <-
 
 reg_trend_plot
   
-ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')
 
-#---- Figure 1B Diam. dist. trends by size class ----
+#---- Figure 3B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
 tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live'))
@@ -236,283 +260,347 @@ dbh_trend_plot <-
 
 dbh_trend_plot
 
-ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
        height = 4.6, width = 7.8, units = 'in')
 
 #---- Map 3 Regen by composition ----
-reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m'))
+reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m'))|> 
+                  filter(!ScientificName %in% c('None present', "Not Sampled")) # just selected park
 
-reg_spp <- do.call(joinRegenData, args = list(park = 'all', from = from_4yr, to = to))
+### Check dominant NETN species to pull out of standard groups ###
+#Run for each park every year and update list of exceptions below if necessary
+# !!! Must update tree_regen_stem_changes_by_species_loess.R as well!!!
+# reg_park <- do.call(joinRegenData, args = list(park = "MORR", from_4yr, to = to, units = 'sq.m'))|> 
+#                       filter(!ScientificName %in% c('None present', "Not Sampled")) # just selected park
+# 
+# dom_regspp <- reg_park %>% group_by(Plot_Name, ScientificName) %>% summarize(reg = sum(regen_den, na.rm = T)) %>% 
+#                            group_by(ScientificName) %>% summarize(reg = sum(reg, na.rm = T)) %>% arrange(desc(reg))
+# view(dom_regspp)
+###
 
-table(reg_spp$ScientificName, reg_spp$ParkUnit)
-table(reg_all$ScientificName)
+head(trspp_grps) # loaded in source_script_NETN.R. Use as default grouping.
 
-dom_regspp <- reg_all %>% group_by(Plot_Name, ScientificName) %>% summarize(reg = sum(regen_den, na.rm = T)) %>% 
-  group_by(ScientificName) %>% summarize(reg = sum(reg, na.rm = T)) %>% arrange(desc(reg))
+reg_grps <- left_join(reg_all, trspp_grps, by = c("ScientificName" = "Species"))
 
-dom_regspp
+if(nrow(reg_grps[which(is.na(reg_grps$spp_grp)),]) > 0){
+  warning("There's at least 1 NA in reg_spp_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
+head(reg_grps)
 
-Acer <- c('Acer rubrum', 'Acer saccharinum', 'Acer negundo', 'Acer saccharum') # Drop Acer saccharum for MABI
-Betula <- c('Betula','Betula alleghaniensis', 'Betula X cearulea ', #'Betula lenta',  #Drop for MIMA
-            'Betula papyrifera', 'Betula populifolia', 'Betula cordifolia')
-Carya <- c('Carya', 'Carya cordiformis', 'Carya glabra', 'Carya ovata', 'Carya tomentosa')
-Fraxinus <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', "Fraxinus nigra")
-Pinus <- c("Pinus resinosa", "Pinus") #, "Pinus strobus") # drop for MIMA
-Populus <- c('Populus', 'Populus deltoides', 'Populus grandidentata', 'Populus tremuloides')
-Prunus <- c('Prunus', 'Prunus serotina', 'Prunus virginiana')
-Quercus <- c('Quercus', 'Quercus (Red group)', 'Quercus (White group)',
-             'Quercus alba', 'Quercus bicolor', 'Quercus coccinea',
-             'Quercus montana', 'Quercus palustris', 'Quercus rubra',
-             'Quercus velutina')
-Ulmus <- c("Ulmus", "Ulmus americana", "Ulmus rubra")
-
-Other_Native <- c('Amelanchier',  'Amelanchier arborea', 'Amelanchier laevis', "Alnus serrulata", 
-                  'Celtis occidentalis', 'Cladrastis kentukea', 'Juglans nigra',
-                  'Nyssa sylvatica', 'Tilia americana', 'Picea rubens', 'Platanus occidentalis',
-                  'Salix', 'Salix discolor', 'Unknown Conifer', 'Sorbus decora',
-                  'Unknown Hardwood', 'Unknown Tree - 01', 'Unknown Tree - 03')
-
-Subcanopy <- c('Acer spicatum', 'Acer pensylvanicum',
-               'Carpinus caroliniana', 'Cornus florida', 
-                'Ilex opaca', 'Juniperus virginiana', 
-               'Ostrya virginiana',
-               'Sassafras albidum', 'Salix discolor', 'Viburnum prunifolium')
-
-if(park == "ROVA"){
-Exotic_spp <- c('Aesculus hippocastanum', 'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
-                'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "Pinus sylvestris",
-                'Rhamnus cathartica', 'Salix alba')
-} else if(park %in% c("MABI", "SAGA")){ # so Acer platanoides is split
-Exotic_spp <- c('Aesculus hippocastanum', 'Ailanthus altissima', 
-                "Alnus serrulata", "Cladrastis kentukea", 
-                'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
-                'Photinia villosa', 'Prunus avium', 'Pyrus',  'Robinia pseudoacacia',
-                'Rhamnus cathartica', 'Salix alba')
-} else if(park %in% c("MIMA")){ # so Acer platanoides is split
-  Exotic_spp <- c('Aesculus hippocastanum', 'Ailanthus altissima', 
-                  "Cladrastis kentukea", 'Catalpa speciosa',
-                  'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
-                  'Photinia villosa', 'Prunus avium', 'Pyrus',  
-                  'Rhamnus cathartica', 'Robinia pseudoacacia', 'Salix alba')
-} else {
-Exotic_spp <- c('Acer platanoides', 'Aesculus hippocastanum', 'Ailanthus altissima',
-                'Crataegus', 'Malus', 'Malus pumila', 'Morus alba',
-                'Photinia villosa', 'Prunus avium', 'Pyrus', 'Picea abies', "Pinus sylvestris",
-                'Rhamnus cathartica', 'Salix alba')
+#Park specific exceptions to default groupings
+if(park == "MORR"){
+  reg_grps <- reg_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Ilex opaca" ~ "SUBCAN",
+                               ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Ilex opaca" ~ "Subcanopy",
+                               ScientificName == "Nyssa sylvatica" ~ "Other Native",
+                               TRUE ~ spp_grp))
   
+} 
+  if(park == "ROVA"){
+    reg_grps <- reg_grps %>% 
+      mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
+                                 ScientificName == "Acer platanoides" ~ "ACEPLA",
+                                 ScientificName == "Betula lenta" ~ "BETSPP",
+                                 ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
+                                 ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
+                                 TRUE ~ sppcode)) %>% 
+      mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                                 ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                                 ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                                 ScientificName == "Nyssa sylvatica" ~ "Other Native",
+                                 ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
+                                 TRUE ~ spp_grp))
+  } 
+if(park == "WEFA"){
+  reg_grps <- reg_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer saccharum" ~ "ACESAC3",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (Sugar maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Nyssa sylvatica" ~ "Other Native",
+                               TRUE ~ spp_grp))
 }
-table(reg_all$ScientificName)
-
-if(park == "ROVA"){
-  reg_all <- reg_all %>% 
-    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               ScientificName %in% Betula ~ "BETSPP",
-                               ScientificName %in% Carya ~ "CARSPP",
-                               ScientificName %in% Fraxinus ~ "FRASPP",
-                               ScientificName %in% Pinus ~ "PINSPP",
-                               ScientificName %in% Populus ~ "POPSPP",
-                               ScientificName %in% Prunus ~ "PRUSPP",
-                               ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Ulmus) ~ "OTHNAT",
-                               ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
-                               ScientificName %in% Subcanopy ~ "SUBCAN",
-                               TRUE ~ toupper(paste0(
-                                 substr(word(ScientificName, 1), 1, 3), 
-                                 substr(word(ScientificName, 2), 1, 3))))) 
-} else if(park == "MABI"){
-  reg_all <- reg_all %>% 
-    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               ScientificName %in% Betula ~ "BETSPP",
-                               ScientificName %in% Fraxinus ~ "FRASPP",
-                               ScientificName %in% Pinus ~ "PINSPP",
-                               ScientificName %in% Prunus ~ "PRUSPP",
-                               ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Ulmus, Populus, Carya) ~ "OTHNAT",
-                               ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
-                               ScientificName %in% Subcanopy ~ "SUBCAN",
-                               TRUE ~ toupper(paste0(
-                                 substr(word(ScientificName, 1), 1, 3), 
-                                 substr(word(ScientificName, 2), 1, 3))))) 
-} else if(park == "SAGA"){
-  reg_all <- reg_all %>% 
-    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               ScientificName %in% Betula ~ "BETSPP",
-                               ScientificName %in% Fraxinus ~ "FRASPP",
-                               ScientificName %in% Pinus ~ "PINSPP",
-                               ScientificName %in% Prunus ~ "PRUSPP",
-                               ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Populus, Prunus) ~ "OTHNAT",
-                               ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
-                               ScientificName %in% Subcanopy ~ "SUBCAN",
-                               TRUE ~ toupper(paste0(
-                                 substr(word(ScientificName, 1), 1, 3), 
-                                 substr(word(ScientificName, 2), 1, 3)))))  
-  
-} else if(park == "MIMA"){
-  reg_all <- reg_all %>% 
-    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               #ScientificName %in% Betula ~ "BETSPP",
-                               ScientificName %in% Carya ~ "CARSPP",
-                               ScientificName %in% Fraxinus ~ "FRASPP",
-                               #ScientificName %in% Pinus ~ "PINSPP",
-                               ScientificName %in% Prunus ~ "PRUSPP",
-                               ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Populus, Betula, 
-                                                     Pinus) ~ "OTHNAT",
-                               ScientificName %in% c(Exotic_spp) ~ "EXOTIC",
-                               ScientificName %in% Subcanopy ~ "SUBCAN",
-                               ScientificName %in% Ulmus ~ "ULMSPP",
-                               TRUE ~ toupper(paste0(
-                                 substr(word(ScientificName, 1), 1, 3), 
-                                 substr(word(ScientificName, 2), 1, 3)))))  
-} else {
-reg_all <- reg_all %>% 
-  mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                             ScientificName %in% Betula ~ "BETSPP",
-                             ScientificName %in% Carya ~ "CARSPP",
-                             ScientificName %in% Fraxinus ~ "FRASPP",
-                             ScientificName %in% Pinus ~ "PINSPP",
-                             ScientificName %in% Populus ~ "POPSPP",
-                             ScientificName %in% Prunus ~ "PRUSPP",
-                             ScientificName %in% Quercus ~ "QUESPP",
-                             ScientificName %in% Ulmus ~ "ULMSPP",
-                             ScientificName %in% Other_Native ~ "OTHNAT",
-                             ScientificName %in% Exotic_spp ~ "EXOTIC",
-                             ScientificName %in% Subcanopy ~ "SUBCAN",
-                             TRUE ~ toupper(paste0(
-                               substr(word(ScientificName, 1), 1, 3), 
-                               substr(word(ScientificName, 2), 1, 3))))) 
+if(park == "SARA"){
+  reg_grps <- reg_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Populus" ~ "POPSPP",
+                               ScientificName == "Populus grandidentata" ~ "POPSPP",
+                               ScientificName == "Populus tremuloides" ~ "POPSPP",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Populus" ~ "Populus spp. (aspen)",
+                               ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
+                               ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+                               TRUE ~ spp_grp))
 }
-table(reg_all$spp_grp)
+if(park == "MABI"){
+  reg_grps <- reg_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer saccharum" ~ "ACESAC3",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Picea abies" ~ "EXOPLA",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (Sugar maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Picea abies" ~ "Exotic plantation spp.",
+                               TRUE ~ spp_grp))
+} 
+if(park == "SAGA"){
+  reg_grps <- reg_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Pinus strobus" ~ "PINSTR",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
+                               TRUE ~ spp_grp))
+} 
+if(park == "MIMA"){
+  reg_grps <- reg_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Cladrastis kentukea" ~ "OTHEXO",
+                               ScientificName == "Juniperus virginiana" ~ "OTHNAT",
+                               ScientificName == "Pinus strobus" ~ "PINSTR",
+                               ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               ScientificName == "Cladrastis kentukea" ~ "Other Exotic",
+                               ScientificName == "Juniperus virginiana" ~ "Other Native",
+                               ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
+                               ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
+                               TRUE ~ spp_grp))
+}
+if(park == "ACAD"){
+  reg_grps <- reg_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Abies balsamea" ~ "ABIBAL",
+                               ScientificName == "Larix laricina" ~ "OTHCON",
+                               ScientificName == "Picea" ~ "PICSPP",
+                               ScientificName == "Picea glauca" ~ "PICSPP",
+                               ScientificName == "Picea mariana" ~ "PICSPP",
+                               ScientificName == "Picea rubens" ~ "PICSPP",
+                               ScientificName == "Populus" ~ "POPSPP",
+                               ScientificName == "Populus grandidentata" ~ "POPSPP",
+                               ScientificName == "Populus tremuloides" ~ "POPSPP",
+                               ScientificName == "Thuja occidentalis" ~ "OTHCON",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
+                               ScientificName == "Larix laricina" ~ "Other Conifer",
+                               ScientificName == "Picea" ~ "Picea spp. (spruce)",
+                               ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
+                               ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
+                               ScientificName == "Picea glauca" ~ "Picea spp. (spruce)",
+                               ScientificName == "Populus" ~ "Populus spp. (aspen)",
+                               ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
+                               ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+                               ScientificName == "Thuja occidentalis" ~ "Other Conifer",
+                               TRUE ~ spp_grp))
+}
 
-reg_wide <- reg_all %>% group_by(Plot_Name, spp_grp) %>% 
+reg_wide <- reg_grps %>% group_by(Plot_Name, PlotCode, sppcode) %>% 
   summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
-  left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
-            ., by = "Plot_Name") %>% arrange(spp_grp) %>% 
-  pivot_wider(names_from = spp_grp, values_from = regen_den, values_fill = 0) %>% 
+  left_join(plotevs %>% select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate) %>% unique(),
+            ., by = c("Plot_Name", "PlotCode")) %>% arrange(sppcode) %>% 
+  pivot_wider(names_from = sppcode, values_from = regen_den, values_fill = 0) %>% 
   arrange(Plot_Name)
-
-table(reg_all$ScientificName, reg_all$spp_grp)
 
 reg_wide <- if("NONPRE" %in% names(reg_wide)){reg_wide %>% select(-NONPRE)}else{reg_wide} 
 
-reg_wide$total <- rowSums(reg_wide[,4:ncol(reg_wide)])
+reg_wide$total <- rowSums(reg_wide[,5:ncol(reg_wide)])
 reg_wide$logtot <- log(reg_wide$total + 1)
 
-names(sort(desc(colSums(reg_wide[,c(4:(ncol(reg_wide)-2))]))))
+names(sort(desc(colSums(reg_wide[,c(5:(ncol(reg_wide)-2))]))))
 
 
 write_to_shp(reg_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
+#Table of regen species and groups used in Map 3
+reg_spp <- reg_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>%
+                        mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                                                   spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                                                   spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                                                    TRUE ~ spp_grp)) %>% 
+                        rename('Group: Map 3. Regeneration' = spp_grp) %>% select(-sppcode) %>% 
+                        arrange(ScientificName)
+
+
 #---- Map 4 Tree canopy composition ----
-trees_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
+tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
 
-#table(joinTreeData(from = 2019, to = 2022)$ScientificName, joinTreeData(from = 2019, to = 2022)$ParkUnit)
+### Check dominant NETN species to pull out of standard groups ###
+#Run for each park every year and update list of exceptions below if necessary 
+#!!! must update tree_regen_stem_changes_by_species_loess.R as well!!!
+# trees_park <- do.call(joinTreeData, args = list(park = "ACAD", from_4yr, to = to, status = 'live')) # just selected park
+# 
+# dom_trspp <- trees_park %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>% 
+#   group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
+# 
+# view(dom_trspp)
+###
 
-table(trees_4yr$ScientificName)
+tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
+  filter(!ScientificName %in% c("None present", "Not Sampled"))
 
-dom_trspp <- trees_4yr %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>% 
-  group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
-
-dom_trspp
-
+if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
+  warning("There's at least 1 NA in tree_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
+head(tree_grps)
+#Park specific exceptions to default groupings
+if(park == "MORR"){
+  tree_grps <- tree_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Ilex opaca" ~ "SUBCAN",
+                               ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Ilex opaca" ~ "Subcanopy",
+                               ScientificName == "Nyssa sylvatica" ~ "Other Native",
+                               TRUE ~ spp_grp))
+} 
 if(park == "ROVA"){
-trees_4yr <- trees_4yr %>% 
-  mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                             ScientificName %in% Betula ~ "BETSPP",
-                             ScientificName %in% Carya ~ "CARSPP",
-                             ScientificName %in% Fraxinus ~ "FRASPP",
-                             ScientificName %in% Pinus ~ "PINSPP",
-                             ScientificName %in% Populus ~ "POPSPP",
-#                             ScientificName %in% Prunus ~ "PRUSPP",
-                             ScientificName %in% Quercus ~ "QUESPP",
-                             ScientificName %in% c(Other_Native, Ulmus, Prunus) ~ "OTHNAT",
-                             ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
-                             ScientificName %in% Subcanopy ~ "SUBCAN",
-                             TRUE ~ toupper(paste0(
-                               substr(word(ScientificName, 1), 1, 3), 
-                               substr(word(ScientificName, 2), 1, 3))))) 
-} else if(park == "MABI"){
-  trees_4yr <- trees_4yr %>% 
-    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               ScientificName %in% Betula ~ "BETSPP",
-                               ScientificName %in% Carya ~ "CARSPP",
-                               ScientificName %in% Fraxinus ~ "FRASPP",
-                               ScientificName %in% Pinus ~ "PINSPP",
-                               ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Ulmus, Prunus, Populus,
-                                                     "Tilia americana", "Picea rubens") ~ "OTHNAT",
-                               ScientificName %in% 
-                                 c(Exotic_spp, "Robinia pseudoacacia", 
-                                   "Larix decidua", "Pinus sylvestris") ~ "EXOTIC",
-                               ScientificName %in% Subcanopy ~ "SUBCAN",
-                               TRUE ~ toupper(paste0(
-                                 substr(word(ScientificName, 1), 1, 3), 
-                                 substr(word(ScientificName, 2), 1, 3))))) 
-} else if(park == "SAGA"){
-  trees_4yr <- trees_4yr %>% 
-    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               ScientificName %in% Betula ~ "BETSPP",
-                               ScientificName %in% Fraxinus ~ "FRASPP",
-                               ScientificName %in% Pinus ~ "PINSPP",
-                               ScientificName %in% Prunus ~ "PRUSPP",
-                               ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Populus, Prunus) ~ "OTHNAT",
-                               ScientificName %in% c(Exotic_spp, "Robinia pseudoacacia") ~ "EXOTIC",
-                               ScientificName %in% Subcanopy ~ "SUBCAN",
-                               TRUE ~ toupper(paste0(
-                                 substr(word(ScientificName, 1), 1, 3), 
-                                 substr(word(ScientificName, 2), 1, 3)))))  
-} else if(park == "MIMA"){
-  trees_4yr <- trees_4yr %>% 
-    mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                               #ScientificName %in% Betula ~ "BETSPP",
-                               ScientificName %in% Carya ~ "CARSPP",
-                               ScientificName %in% Fraxinus ~ "FRASPP",
-                               #ScientificName %in% Pinus ~ "PINSPP",
-                               ScientificName %in% Prunus ~ "PRUSPP",
-                               ScientificName %in% Quercus ~ "QUESPP",
-                               ScientificName %in% c(Other_Native, Populus, 
-                                                     'Betula populifolia', 'Pinus rigida', 
-                                                     'Pinus') ~ "OTHNAT",
-                               ScientificName %in% c(Exotic_spp) ~ "EXOTIC",
-                               ScientificName %in% Subcanopy ~ "SUBCAN",
-                               ScientificName %in% Ulmus ~ "ULMSPP",
-                               TRUE ~ toupper(paste0(
-                                 substr(word(ScientificName, 1), 1, 3), 
-                                 substr(word(ScientificName, 2), 1, 3)))))  
-} else {
-trees_4yr <- trees_4yr %>% 
-  mutate(spp_grp = case_when(ScientificName %in% Acer ~ "ACESPP",
-                             ScientificName %in% Betula ~ "BETSPP",
-                             ScientificName %in% Carya ~ "CARSPP",
-                             ScientificName %in% Fraxinus ~ "FRASPP",
-                             ScientificName %in% Pinus ~ "PINSPP",
-                             ScientificName %in% Populus ~ "POPSPP",
-                             ScientificName %in% Prunus ~ "PRUSPP",
-                             ScientificName %in% Quercus ~ "QUESPP",
-                             ScientificName %in% Ulmus ~ "ULMSPP",
-                             ScientificName %in% Other_Native ~ "OTHNAT",
-                             ScientificName %in% Exotic_spp ~ "EXOTIC",
-                             ScientificName %in% Subcanopy ~ "SUBCAN",
-                             TRUE ~ toupper(paste0(
-                               substr(word(ScientificName, 1), 1, 3), 
-                               substr(word(ScientificName, 2), 1, 3))))) 
+  tree_grps <- tree_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
+                               ScientificName == "Pinus resinosa" ~ "PINRES",
+                               ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Nyssa sylvatica" ~ "Other Native",
+                               ScientificName == "Pinus resinosa" ~ "Pinus resinosa (red pine)",
+                               ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
+                               TRUE ~ spp_grp))
+} 
+if(park == "WEFA"){
+  tree_grps <- tree_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (Sugar maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Nyssa sylvatica" ~ "Other Native",
+                               TRUE ~ spp_grp))
+} 
+if(park == "SARA"){
+  tree_grps <- tree_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Pinus strobus" ~ "PINSTR",
+                               ScientificName == "Populus" ~ "POPSPP",
+                               ScientificName == "Populus grandidentata" ~ "POPSPP",
+                               ScientificName == "Populus tremuloides" ~ "POPSPP",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
+                               ScientificName == "Populus" ~ "Populus spp. (aspen)",
+                               ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
+                               ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+                               TRUE ~ spp_grp))
+}
+if(park == "MABI"){
+  tree_grps <- tree_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer saccharum" ~ "ACESAC3",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Larix decidua" ~ "EXOPLA",
+                               ScientificName == "Picea abies" ~ "EXOPLA",
+                               ScientificName == "Pinus sylvestris" ~ "EXOPLA",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (Sugar maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Larix decidua" ~ "Exotic plantation spp.",
+                               ScientificName == "Picea abies" ~ "Exotic plantation spp.",
+                               ScientificName == "Pinus sylvestris" ~ "Exotic plantation spp.",
+                               TRUE ~ spp_grp))
+} 
+if(park == "SAGA"){
+  tree_grps <- tree_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Pinus strobus" ~ "PINSTR",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
+                               TRUE ~ spp_grp))
+} 
+if(park == "MIMA"){
+  tree_grps <- tree_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Cladrastis kentukea" ~ "OTHEXO",
+                               ScientificName == "Juniperus virginiana" ~ "OTHNAT",
+                               ScientificName == "Pinus strobus" ~ "PINSTR",
+                               ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               ScientificName == "Cladrastis kentukea" ~ "Other Exotic",
+                               ScientificName == "Juniperus virginiana" ~ "Other Native",
+                               ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
+                               ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
+                               TRUE ~ spp_grp))
+}
+if(park == "ACAD"){
+  tree_grps <- tree_grps %>% 
+    mutate(sppcode = case_when(ScientificName == "Abies balsamea" ~ "ABIBAL",
+                               ScientificName == "Larix laricina" ~ "OTHCON",
+                               ScientificName == "Picea" ~ "PICSPP",
+                               ScientificName == "Picea glauca" ~ "PICSPP",
+                               ScientificName == "Picea mariana" ~ "PICSPP",
+                               ScientificName == "Picea rubens" ~ "PICSPP",
+                               ScientificName == "Picea rubens" ~ "PICSPP",
+                               ScientificName == "Populus" ~ "POPSPP",
+                               ScientificName == "Populus grandidentata" ~ "POPSPP",
+                               ScientificName == "Populus tremuloides" ~ "POPSPP",
+                               ScientificName == "Thuja occidentalis" ~ "OTHCON",
+                               TRUE ~ sppcode)) %>% 
+    mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
+                               ScientificName == "Larix laricina" ~ "Other Conifer",
+                               ScientificName == "Picea" ~ "Picea spp. (spruce)",
+                               ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
+                               ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
+                               ScientificName == "Picea glauca" ~ "Picea spp. (spruce)",
+                               ScientificName == "Populus" ~ "Populus spp. (aspen)",
+                               ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
+                               ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+                               ScientificName == "Thuja occidentalis" ~ "Other Conifer",
+                               TRUE ~ spp_grp))
 }
 
-tree_wide <- trees_4yr %>% group_by(Plot_Name, spp_grp) %>% 
+tree_wide <- tree_grps %>% group_by(Plot_Name, PlotCode, sppcode) %>% 
   summarize(BAm2ha = sum(BA_cm2, na.rm = TRUE)/400, .groups = 'drop') %>% 
-  left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
-            ., by = "Plot_Name") %>% arrange(spp_grp) %>% 
-  pivot_wider(names_from = spp_grp, values_from = BAm2ha, values_fill = 0) 
+  left_join(plotevs %>% select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate) %>% unique(),
+            ., by = c("Plot_Name", "PlotCode")) %>% arrange(sppcode) %>% 
+  pivot_wider(names_from = sppcode, values_from = BAm2ha, values_fill = 0) 
 
-tree_wide$total <- rowSums(tree_wide[,4:ncol(tree_wide)])
+tree_wide$total <- rowSums(tree_wide[,5:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
 
 names(tree_wide)
 write_to_shp(tree_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, ".shp"))
+
+#Table of tree species and groups used in Map 4
+tree_spp <- tree_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>%
+  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                             spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                             spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                             TRUE ~ spp_grp)) %>% 
+  rename('Group: Map 4. Tree Canopy' = spp_grp) %>% select(-sppcode) %>% 
+  arrange(ScientificName)
 
 #---- Map 5 Regen stocking index ----
 reg_4yr <- do.call(joinRegenData,
@@ -571,11 +659,15 @@ invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive'
   select(ScientificName) %>% unique() %>% arrange(ScientificName)
 
 Ligustrum = c("Ligustrum", "Ligustrum obtusifolium", "Ligustrum vulgare")
-Lonicera = c("Lonicera - Exotic", "Lonicera morrowii", "Lonicera X bella")
+Lonicera = c("Lonicera - Exotic", "Lonicera morrowii", "Lonicera X bella", "Lonicera", 
+             "Lonicera maackii")
 Vincetoxicum = c("Vincetoxicum", "Vincetoxicum hirundinaria", "Vincetoxicum nigrum",
                  "Vincetoxicum rossicum")
+Elaeagnus = c("Elaeagnus", "Elaeagnus angustifolia", "Elaeagnus umbellata")
+Euonymus = c("Euonymus", "Euonymus alatus", "Euonymus atropurpureus", "Euonymus fortunei")
+Centaurea = c("Centaurea", "Centaurea jacea", "Centaurea stoebe")
 
-#sort(unique(invspp_4yr$ScientificName))
+sort(unique(invspp_4yr$ScientificName))
 
 invspp1 <- do.call(joinQuadSpecies, 
                    #args = list(from = 2017, to = 2022, speciesType = 'invasive')) %>% 
@@ -588,6 +680,9 @@ invspp1 <- do.call(joinQuadSpecies,
            ScientificName %in% Ligustrum ~ "Ligustrum",
            ScientificName %in% Lonicera ~ "Lonicera - Exotic",
            ScientificName %in% Vincetoxicum ~ "Vincetoxicum",
+           ScientificName %in% Elaeagnus ~ "Elaeagnus",
+           ScientificName %in% Euonymus ~"Euonymus",
+           ScientificName %in% Centaurea ~"Centaurea",
            TRUE ~ ScientificName)) %>% 
   arrange(Plot_Name, ScientificName)
 
@@ -605,14 +700,14 @@ topspp <- invspp1 %>% left_join(plotspp_df, ., by = c('Plot_Name', 'ScientificNa
   group_by(ScientificName) %>% 
   summarize(avg_cov = mean(quad_avg_cov, na.rm = T),
             num_plots = sum(present), .groups = 'drop') %>% 
-  arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
-  #arrange(desc(avg_cov)) %>% slice(1:12) %>% select(ScientificName)
+  #arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
+  arrange(desc(avg_cov)) %>% slice(1:10) %>% select(ScientificName) # going with top 10 by avg cover for 2024
 
 # Prep for shapefile
 invspp <- invspp1 %>% 
   mutate(ScientificName = case_when(
     ScientificName %in% topspp$ScientificName ~ ScientificName, 
-    ScientificName == "None present" ~ "None present", 
+    is.na(ScientificName) ~ "None present", #None present is coming through as NA now
     TRUE ~ "Other invasive")) %>% 
   group_by(Plot_Name, ScientificName) %>% 
   summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% 
@@ -640,7 +735,7 @@ write_to_shp(invspp, shp_name =
 #---- Map 9 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
 disturb <- do.call(joinStandDisturbance, args = args_4yr) %>% 
-  filter(DisturbanceLabel != "None") %>% 
+  filter(DisturbanceSummary != "None") %>% 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -669,6 +764,16 @@ treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>%
 
 
 # Compile notes from visit that could contain mentions of pests
+#Review notes for false positives first, remove from final table below
+vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>% 
+  mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ Notes,
+                          grepl("Emerald|emerald|EAB", Notes) ~ Notes,
+                          grepl("Red pine scale|RPS|red pine scale", Notes) ~ Notes,
+                          grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
+                                Notes) ~ Notes,
+                          grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ Notes,
+                          grepl("GM|spongy|gypsy", Notes) ~ Notes,
+                          TRUE ~ NA_character_)) %>% filter(!is.na(pest)) 
 
 vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ "BLD",
@@ -747,13 +852,15 @@ inv_plots_wide <- inv_plots %>% pivot_wider(names_from = cycle,
 write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park, 
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
-#---- Table 3 Invasive species by number of plots cycle
+# Table 3 Exotic species by number of plots cycle -------------------------
+#for 2024 including all exotic species found in plots instead of only invasives
 inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
-  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
+  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
+  arrange(cycle) %>% # moved arrange() b/c cycle_1 was coming out last instead of first
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
-
+  
 centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Centaurea", ScientificName)) %>% 
   mutate(present = 1) %>% 
@@ -799,14 +906,18 @@ vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic
 
 colSums(vincetoxicum[,-1])
 
-
-inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
+inv_spp2 <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName, InvasiveNETN),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything())
+
+inv_spp <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
+                         mutate(InvasiveNETN = case_when(InvasiveNETN == 'TRUE' ~ 'Yes',
+                                                         InvasiveNETN =='FALSE' ~ 'No')) %>% 
+                         relocate(InvasiveNETN, .after = CommonName)
 
 write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
 
-#---- Early Detections -----
+#---- Table 4: Early Detections -----
 taxa <- prepTaxa()
 spp_all <- do.call(sumSpeciesList, args = c(args_4yr))
 
@@ -841,37 +952,75 @@ ised_taxon <- left_join(ised_taxon2, taxa %>% select(TaxonID, TSN, ScientificNam
 
 ised_join <- left_join(spp_all, ised_taxon, by = c("TSN", "ScientificName", "ParkUnit" = "Unit")) %>% 
   filter(IsEarlyDetection == 1) %>% 
-  select(-SampleYear, -cycle, -TSN, BA_cm2, -DBH_mean, -stock, -shrub_pct_freq,
+  select(-cycle, -TSN, BA_cm2, -DBH_mean, -stock, -shrub_pct_freq,
          -quad_pct_freq, -IsEarlyDetection) %>% 
   arrange(Plot_Name, ScientificName) %>% 
   left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% filter(!is.na(ScientificName)) %>% 
-  select(Plot_Name, X, Y, ScientificName, quad_avg_cov)
+  select(Plot_Name, SampleYear, X, Y, ScientificName, quad_avg_cov)
 
 write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_species.csv"),
           row.names = FALSE)
-
-#---- Invasive Detections for MABI/SAGA/ACAD ---- 
-taxa <- prepTaxa()
-
-spp_inv <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive')) |> 
-  select(Plot_Name, SampleYear, quad_avg_cov, ScientificName) |> 
-  filter(!ScientificName %in% "None present")
-
-spp_inv2 <- left_join(spp_inv, plotevs_4yr |> select(Plot_Name, X = xCoordinate, Y = yCoordinate),
-                      by = "Plot_Name")
 
 #---- ED Pests ----
 priority_pests <- c("ALB", "BLD", "EAB", "EHS", "HWA", "RPS", "SLF", "SOD", "SPB", "SW")
 
 pest_eds <- pests_wide %>% select(Plot_Name, SampleYear, X, Y, any_of(priority_pests)) 
 
-if(nrow(pest_eds) > 0){
-pest_eds$num_pres <- rowSums(pest_eds[5:ncol(pest_eds)])
-pest_eds <- pest_eds |> filter(num_pres >= 1)
-write.csv(pest_eds, paste0(new_path, 'tables/', park, "_pest_detections.csv"), row.names = F)
+if(ncol(pest_eds) >= 5){
+  pest_eds$num_pres <- rowSums(pest_eds[5:ncol(pest_eds)])
+  pest_eds <- pest_eds |> filter(num_pres >= 1)
+  write.csv(pest_eds, paste0(new_path, 'tables/', park, "_pest_detections.csv"), row.names = F)
 }
 
+#---- ED all species ----
+ised_spp <- left_join(ised_join, 
+                      prepTaxa() |> select(ScientificName, CommonName, Tree, Shrub, Vine, Herbaceous, Graminoid),
+                      by = "ScientificName") |> 
+  mutate(type = case_when(Tree == 1 ~ 'tree', 
+                          Shrub == 1 ~ 'shrub',
+                          Vine == 1 ~ 'shrub',
+                          Graminoid == 1 ~ 'graminoid',
+                          Herbaceous == 1 ~ 'herbaceous',
+                          TRUE ~ "UNK")) |> 
+  select(-Tree, -Shrub, -Vine, -Herbaceous, -Graminoid)|> arrange(type, ScientificName)
+
+pest_names <- read.csv("tree_conditions_table.csv")
+
+ed_all <-
+  if(ncol(pest_eds) >= 5){
+    pest_pres <- names(pest_eds[names(pest_eds) %in% priority_pests])
+    pest_eds_long <- pest_eds |> select(-num_pres) |> 
+      pivot_longer(cols = all_of(pest_pres), 
+                   names_to = "pest", values_to = "pres") |> 
+      select(-pres) 
+    
+    pest_eds2 <- left_join(pest_eds_long, pest_names, by = c("pest" = "Code")) |> 
+      select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')|> arrange(ScientificName)
+    
+    ed_all <- rbind(ised_spp, pest_eds2)
+  } else {ised_spp}
+
+ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) 
+
+write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
+
+
+# Table 5: Tree species included in Map 3+4 -------------------------------
+
+grp_spp <- full_join(reg_spp,tree_spp, by = "ScientificName") %>% arrange(ScientificName)
+write.csv(grp_spp, paste0(new_path, "tables/", "Table_5_", park, "_tree_species_in_Map3_4.csv"),
+          row.names = FALSE)
+
+#---- Invasive Detections for MABI/SAGA/ACAD ---- 
+taxa <- prepTaxa()
+
+spp_invD <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive')) |> 
+  select(Plot_Name, SampleYear, quad_avg_cov, ScientificName) |> 
+  filter(!ScientificName %in% "None present")
+
+spp_invD2 <- left_join(spp_invD, plotevs_4yr |> select(Plot_Name, X = xCoordinate, Y = yCoordinate),
+                      by = "Plot_Name")
 #---- Rubus cover for MABI -----
 if(park == "MABI"){
 rubus <- do.call(joinQuadSpecies, args = args_vs) %>% filter(grepl("Rubus", ScientificName))
@@ -890,8 +1039,8 @@ write_to_shp(rubus_wide, shp_name =
 
 }
 
-#---- CWD by cycle
-if(park %in% c("MABI", "SAGA", "MIMA")){
+
+# Map 12 + 13: CWD by cycle and rating ------------------------------------
 cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol)
 
 cwd <- cwd1 %>% group_by(Plot_Name, cycle) %>% 
@@ -906,13 +1055,14 @@ cwd_wide <- cwd %>% pivot_wider(names_from = cycle,
                                 names_prefix = "cycle_",
                                 values_fill = 0) 
 
-
 apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
 
 max_cwd <- max(cwd_wide[,c(4:ncol(cwd_wide))])
 
 # Need to fudge b/c splitting across cycles for ArcMap charts to be
 # on the same scale
+
+# not sure is this is needed?
 if(park == 'MABI' & to == 2023){
 cwd_wide <- 
 rbind(cwd_wide,
@@ -925,7 +1075,6 @@ rbind(cwd_wide,
 write_to_shp(cwd_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", ".shp"))
 
-}
 
 #---- MABI Only: plot harvest history -----
 if(park == "MABI"){

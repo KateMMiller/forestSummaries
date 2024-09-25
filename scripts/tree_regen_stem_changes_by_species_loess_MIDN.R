@@ -1,5 +1,5 @@
 #-------------------------------------------------------------------
-# Smoothed tree, sapling, seedling changes in abundance over time
+# Smoothed tree, sapling, seedling changes in abundance over time: MIDN
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
 span <- 4/5 #roughly linear between timesteps
@@ -144,11 +144,11 @@ net_ba_year # No decline in BA over time
 table(tree_stem_smooth3$spp_grp)
 # Colors to start with. Can change them per park if needed
 cols = c(
-  "Acer rubrum (red maple)" = "#00c990",
+  "Acer rubrum (red maple)" = "#38A800",
   "Acer spp. (maple)" = "#00FF00",
   "Ailanthus altissima (tree-of-heaven)" = "#FF00C5",
-  "Betula lenta (black birch)" = "#38A800",
-  "Betula spp. (black birch)" = "#05e689", # Either use BETLEN or BETSPP
+  "Betula lenta (black birch)" = "#fffac8",
+  "Betula spp. (black birch)" = "#fffac8", # Either use BETLEN or BETSPP
   "Carya spp. (hickory)" = "#911eb4",
   "Fagus grandifolia (American beech)" = "#FFAA00",
   "Fraxinus spp. (ash)" = "#A87000",
@@ -157,17 +157,17 @@ cols = c(
   "Liquidambar styraciflua (sweetgum)" = "#FFFF00",
   "Liriodendron tulipifera (tulip poplar)" = "#4363d8",
   "Nyssa sylvatica (black gum)" = "#000075",
-  "Other Exotic" = "#ca0020",
-  "Other Native" = "#828282",
+  "Other exotic spp." = "#ca0020",
+  "Other native canopy spp." = "#d9d9d9",
   "Pinus spp. (pine)" = "#5A462B",
-  # "Pinus strobus (eastern white pine)" = "#5A1111",
-  # "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
-  # "Pinus virginiana (Virginia pine)" = "#E5740D",
+  "Pinus strobus (eastern white pine)" = "#5A1111",
+  "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
+  "Pinus virginiana (Virginia pine)" = "#E5740D",
   "Prunus spp. (native cherry)" ="#00E6A9", 
   "Pyrus calleryana (Bradford pear)" = "#cd4a8f",
-  "Quercus spp. (oak)" = "#23984F",
+  "Quercus spp. (oak)" = "#0E5D2C",
   "Robinia pseudoacacia (black locust)" = "#efdf00",
-  "Subcanopy" = "#ffa8b4",
+  "Other native subcanopy spp." = "#ffa8b4",
   "Tsuga canadensis (eastern hemlock)" = "#9bd2ef",
   "Ulmus spp. (native elm)" = "#59538A", 
   "Unknown spp." = "#CACACA")
@@ -461,7 +461,7 @@ Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica',
 frax <- do.call(joinTreeData, c(args_vs, status = 'live')) |> filter(ScientificName %in% Fraxinus_spp)
 head(frax)
 
-frax_sum <- frax |> group_by(Plot_Name, cycle) |> 
+frax_sum <- frax |> group_by(Plot_Name, PlotCode, cycle) |> 
   summarize(num_stems = sum(num_stems), 
             sppcode = "FRAXSPP",
             .groups = 'drop')
@@ -473,10 +473,10 @@ fraxspp_wide <- frax_sum |>
               values_fill = 0)
 
 plots <- do.call(joinLocEvent, args = args_vs) |> 
-  select(Plot_Name, X = xCoordinate, Y = yCoordinate) |> unique()
+  select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate) |> unique()
 
-fraxspp <- left_join(plots, fraxspp_wide, by = "Plot_Name") |> unique()
-fraxspp[,4:ncol(fraxspp)][is.na(fraxspp[,4:ncol(fraxspp)])] <- 0
+fraxspp <- left_join(plots, fraxspp_wide, by = c("Plot_Name", "PlotCode")) |> unique()
+fraxspp[,5:ncol(fraxspp)][is.na(fraxspp[,5:ncol(fraxspp)])] <- 0
 head(fraxspp)
 
 
