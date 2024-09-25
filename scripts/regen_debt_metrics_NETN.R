@@ -15,11 +15,52 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to) |> #filter(IsStunted
   select(Plot_Name, dbi = Deer_Browse_Index)
 
 mean_dbi <- mean(dbi$dbi)
-mean_dbi # SARA = 4.22; SAGA 3.47; 2.6 ACAD
+mean_dbi # MORR: 4.071
 
 dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index)
 dbi_prev <- mean(dbiprev$dbi)
-dbi_prev # SARA = 4.125; SAGA = 3.38; 2.6 ACAD 
+dbi_prev # MORR: 4.179 
+
+# DBI distribution plot
+dbi_all <- joinStandData(park = park, from = from, to = to) |> 
+  select(Plot_Name, cycle, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
+
+dbi_sum <- dbi_all |> group_by(cycle, dbi) |> 
+  summarize(num_plots = sum(!is.na(dbi)), .groups = 'drop') |>
+  filter(!(is.na(dbi)))
+
+# pivot_wider(names_from = dbi, values_from = num_plots, names_glue = "DBI_{.name}", values_fill = 0)
+
+# Update to include all DBI values (1 and 2 lumped)
+dbi_grid <- expand.grid(cycle = unique(dbi_sum$cycle), dbi = 2:5)
+dbi_grid$dbi_fac <- factor(dbi_grid$dbi, levels = c(2, 3, 4, 5), labels = c("Low", "Medium", "High", "Very High"))
+
+dbi_sum2 <- left_join(dbi_grid, dbi_sum, by = c("cycle", "dbi"))
+dbi_sum2$num_plots[is.na(dbi_sum2$num_plots)] <- 0
+
+dbi_plot <- 
+  ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac)) +
+  geom_bar(position = 'fill', stat = 'identity', na.rm = T, color = '#696969') +
+  theme_FHM() +
+  # scale_color_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
+  #                               "High" = "#f94b24", "Very High" = "#a60808"),
+  #                    labels = c("Low", "Medium", "High", "Very High"), 
+  #                    name = "Deer Browse Impact") +
+  scale_fill_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
+                               "High" = "#f94b24", "Very High" = "#a60808"),
+                    labels = c("Low", "Medium", "High", "Very High"), 
+                    name = "Deer Browse Impact") +
+  scale_y_continuous(breaks = c(0, 0.25, 0.50, 0.75, 1.00), labels = c(0, 25, 50, 75, 100)) +
+  labs(y = "Proportion of Plots")
+
+# svg(paste0(new_path, "figures/", "Figure_6_", park, "_DBI_by_cycle.svg"),
+#     height = 6.15, width = 8)
+# dbi_plot
+# dev.off()
+
+figpath <- paste0(path, park, "/", to, '/figures/')
+ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
+
 
 # Regen densities
 reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') 
@@ -48,6 +89,11 @@ reg_tot <- reg |> group_by(Plot_Name) |>
     sap_tot = sum(sap_den, na.rm = T),
     seed_tot = sum(seed_den, na.rm = T)
   )
+
+if(length(unique(reg_tot$Plot_Name)) < num_plots & !park %in% "COLO"){
+  warning(paste0("Regen debt metrics don't include the total number of plots for ", park, 
+                 ". Compare total number of plots = ", num_plots, " regen debt plot tally = ", 
+                 length(unique(reg_tot$Plot_Name))))}
 
 length(unique(reg_tot$Plot_Name))
 
@@ -288,8 +334,9 @@ results_plot <-
 
 results_plot
 
-path <- paste0("C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/", 
-               park, "/", to, '/figures/')
-ggsave(paste0(path, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 5.5, units = 'in')
+ggsave(paste0(new_path, "figures/", "Figure_1_", park, "_Regen_Debt_table", ".svg"), height = 6, width = 5.5, units = 'in')
 
+debt_final <- debt_final |> mutate(park = park)
+
+write.csv(debt_final, paste0(new_path, "tables/Regen_Debt_table.csv"), row.names= F)
 # Now open svg and make the Regen Debt Status fill white, "#FFFFFF", and font size 13 instead of 11.
