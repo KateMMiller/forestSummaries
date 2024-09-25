@@ -15,15 +15,16 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 }
 
 #---- Plot event lists ----
-plotevs <- do.call(joinLocEvent, args_all) |> filter(!Plot_Name %in% "COLO-380") 
-plotevs_vs <- do.call(joinLocEvent, args_vs) |> filter(!Plot_Name %in% "COLO-380") 
-plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) |> filter(!Plot_Name %in% "COLO-380") 
-head(plotevs)
+plotevs <- do.call(joinLocEvent, args_all) 
+plotevs_vs <- do.call(joinLocEvent, args_vs) 
+plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) 
+# head(plotevs)
+# plotevs_4yr
 
 #---- Table 1. Regen densities by plot and year ----
 reg <- do.call(joinRegenData, 
                args = c(args_all, speciesType = 'native', 
-                        canopyForm = 'canopy', units = 'sq.m')) |> filter(!Plot_Name %in% "COLO-380") 
+                        canopyForm = 'canopy', units = 'sq.m')) 
 
 
 reg_cycle_table <- reg %>% group_by(Plot_Name, cycle) %>% 
@@ -127,19 +128,19 @@ reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
 
 reg_trend_plot <- 
-  ggplot(reg_size_sum, aes(x = size_class, y = mean, color = size_class,#linetype = sign, 
-                         group = size_class))+ theme_FVM()+
-  geom_bar(stat = 'identity', aes(fill = size_class, color = 'DimGrey'))+
-   geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2, linewidth = 0.5, 
-                 color = 'DimGrey', alpha = 0.8)+
-  labs(x  = "Cycle", y = bquote(Stems/m^2))+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5)+
-  scale_color_manual(values = reg_colors, name = "Size Class",
-                     labels = reg_labels)+
+  ggplot(reg_size_sum, aes(x = size_class, y = mean, #color = size_class,#linetype = sign, 
+                         group = size_class)) + theme_FVM() +
+  geom_bar(stat = 'identity', aes(fill = size_class), color = 'DimGrey') +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), width = 0.2, linewidth = 0.5, 
+                 color = 'DimGrey', alpha = 0.8) +
+  labs(x  = "Cycle", y = bquote(Stems/m^2)) +
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5) +
+  # scale_color_manual(values = reg_colors, name = "Size Class",
+  #                    labels = reg_labels)+
   scale_fill_manual(values = reg_colors, name = "Size Class",
-                    labels = reg_labels)+
+                    labels = reg_labels) +
   scale_x_discrete(name = "Size Class",
-                   labels = reg_labels)+ 
+                   labels = reg_labels) + 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
         legend.position = 'none')
 
@@ -235,10 +236,10 @@ dbh_trend_plot <-
                 color = 'DimGrey', alpha = 0.8)+
   labs(x  = "Cycle", y = "Stems/ha")+
   facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 5)+
-  scale_color_manual(values = reg_colors, name = "DBH Size Class",
-                     labels = reg_labels)+
-  scale_fill_manual(values = reg_colors, name = "DBH Size Class",
-                    labels = reg_labels)+
+  # scale_color_manual(values = reg_colors, name = "DBH Size Class",
+  #                    labels = reg_labels)+
+  # scale_fill_manual(values = reg_colors, name = "DBH Size Class",
+  #                   labels = reg_labels)+
   scale_x_discrete(name = "DBH Size Class",
                    labels = dbh_labels)+ 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
@@ -431,7 +432,7 @@ write_to_shp(invspp, shp_name =
 #---- Map 9 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
 disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name %in% "COLO-380") %>%
-  filter(DisturbanceLabel != "None") %>%
+  filter(DisturbanceSummary!= "None") %>%
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -439,6 +440,7 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name
                                 DisturbanceNote) ~ "HWA",
                           grepl("BBD|beech bark disease|Beech bark disease", DisturbanceNote) ~ "BBD",
                           grepl("GM|spongy|gypsy", DisturbanceNote) ~ "GM",
+                          grepl("Southern pine beetle|SPB|southern pine beetle", DisturbanceNote) ~ "SPB",
                           TRUE ~ NA_character_
   )) %>% filter(!is.na(pest)) %>% 
   select(Plot_Name, pest) %>% unique()
