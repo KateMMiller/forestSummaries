@@ -291,12 +291,12 @@ if(park == "MORR"){
   reg_grps <- reg_grps %>% 
     mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
                                ScientificName == "Betula lenta" ~ "BETSPP",
-                               ScientificName == "Ilex opaca" ~ "OTHNAT",
+                               ScientificName == "Ilex opaca" ~ "SUBCAN",
                                ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
-                               ScientificName == "Ilex opaca" ~ "Other Native",
+                               ScientificName == "Ilex opaca" ~ "Subcanopy",
                                ScientificName == "Nyssa sylvatica" ~ "Other Native",
                                TRUE ~ spp_grp))
   
@@ -456,12 +456,12 @@ if(park == "MORR"){
   tree_grps <- tree_grps %>% 
     mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
                                ScientificName == "Betula lenta" ~ "BETSPP",
-                               ScientificName == "Ilex opaca" ~ "OTHNAT",
+                               ScientificName == "Ilex opaca" ~ "SUBCAN",
                                ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
-                               ScientificName == "Ilex opaca" ~ "Other Native",
+                               ScientificName == "Ilex opaca" ~ "Subcanopy",
                                ScientificName == "Nyssa sylvatica" ~ "Other Native",
                                TRUE ~ spp_grp))
 } 
