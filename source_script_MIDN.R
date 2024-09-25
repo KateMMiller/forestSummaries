@@ -13,7 +13,7 @@ library(tidyverse)
 library(sf)
 
 
-if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'}
+#if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'}
 #Kate's path: C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
 
 #park = "FRSP"
@@ -24,22 +24,22 @@ importData()
 
 # assign params to global env. for source files to find. Makes iterating easier.
 #temp: so can run individual parks w/ .rmd file
-park <<- 'GETT'
-midn_names <- read.csv("MIDN_MetaData.csv")
-midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
-path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'
-from <<- as.numeric(midn_params$from[midn_params$park == park])
-from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
-to <<- as.numeric(midn_params$to[midn_params$park == park])
-cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
-from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
-to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
-QAQC <<- FALSE
-locType <<- 'VS'
-
-park_long <- midn_names$LongName[midn_names$ParkCode == park]
-park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
-network_long <- midn_names$Network_long[midn_names$ParkCode == park]
+# park <<- 'GETT'
+# midn_names <- read.csv("MIDN_MetaData.csv")
+# midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
+# #path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'
+# from <<- as.numeric(midn_params$from[midn_params$park == park])
+# from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
+# to <<- as.numeric(midn_params$to[midn_params$park == park])
+# cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
+# from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
+# to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
+# QAQC <<- FALSE
+# locType <<- 'VS'
+# 
+# park_long <- midn_names$LongName[midn_names$ParkCode == park]
+# park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
+# network_long <- midn_names$Network_long[midn_names$ParkCode == park]
 
 
 
