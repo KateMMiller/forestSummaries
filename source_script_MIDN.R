@@ -44,7 +44,7 @@ importData()
 
 
 # Downgrade Fraxinus to subcanopy species
-VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"] <- TRUE
+VIEWS_MIDN_NCBN$Taxa_MIDN_NCBN$IsCanopyExclusion[VIEWS_MIDN_NCBN$Taxa_MIDN_NCBN$Genus == "Fraxinus"] <- TRUE
 
 park_crs = ifelse(park %in% c("APCO", "BOWA"), 26917, 26918)
 
