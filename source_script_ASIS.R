@@ -17,7 +17,7 @@ if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summa
 importData()
 
 # Downgrade Fraxinus to subcanopy species
-VIEWS_MIDN$Taxa_MIDN$IsCanopyExclusion[VIEWS_MIDN$Taxa_MIDN$Genus == "Fraxinus"] <- TRUE
+VIEWS_MIDN_NCBN$Taxa_MIDN_NCBN$IsCanopyExclusion[VIEWS_MIDN_NCBN$Taxa_MIDN_NCBN$Genus == "Fraxinus"] <- TRUE
 
 park_crs = 26918
 
