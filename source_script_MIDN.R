@@ -6,6 +6,10 @@
 # Note that the stocking index calculated in both the summary code and regen debt code is on the 
 # McWilliams 100 point scale, not the 1m2 scale that MIDN used to use.
 
+# Make sure packages are updated
+#devtools::install_github("KateMMiller/forestMIDN")
+#devtools::install_github("KateMMiller/forestTrends")
+
 # Imports/Libraries
 library(forestMIDN)
 library(forestTrends)
@@ -13,30 +17,29 @@ library(tidyverse)
 library(sf)
 
 
-#if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'}
-#Kate's path: C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
+if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'} #ces path
+# if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'} #kmm path
 
-#park = "FRSP"
-if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'}
 
+# Make sure local copy of DB is current or connect to server
 importData()
 
-
 # assign params to global env. for source files to find. Makes iterating easier.
-#temp: so can run individual parks w/ .rmd file
-# park <<- 'GETT'
+# temp: so can run individual parks w/ .rmd file
+##Comment out before running for all parks##
+#assign params to global env. for source files to find. Makes iterating easier.
+
 # midn_names <- read.csv("MIDN_MetaData.csv")
 # midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
-# #path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'
+# park <<- "THST"
 # from <<- as.numeric(midn_params$from[midn_params$park == park])
 # from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
 # to <<- as.numeric(midn_params$to[midn_params$park == park])
 # cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
-# from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
-# to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
+# 
 # QAQC <<- FALSE
 # locType <<- 'VS'
-# 
+# #+++ NOTE: IF GET add_header_above error, need to update cycle_latest in MIDN_params.csv  +++
 # park_long <- midn_names$LongName[midn_names$ParkCode == park]
 # park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 # network_long <- midn_names$Network_long[midn_names$ParkCode == park]
@@ -95,3 +98,4 @@ trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 # source('./scripts/forest_summary_code_MIDN.R')
 # source('./scripts/regen_debt_metrics_MIDN.R')
 # source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R')
+
