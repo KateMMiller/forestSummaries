@@ -421,7 +421,7 @@ names(sort(desc(colSums(reg_wide[,c(5:(ncol(reg_wide)-2))]))))
 write_to_shp(reg_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
-#Table of regen species and groups used in Map 3
+#Table of regen species and groups used in Map 3 (Table 5)
 reg_spp <- reg_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>%
                         mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
                                                    spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
@@ -593,7 +593,7 @@ names(tree_wide)
 write_to_shp(tree_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, ".shp"))
 
-#Table of tree species and groups used in Map 4
+#Table of tree species and groups used in Map 4 (Table 5)
 tree_spp <- tree_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>%
   mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
                              spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
@@ -629,7 +629,7 @@ write_to_shp(dbi, shp_name =
          paste0(new_path, "shapefiles/", park, "_dbi_cycle_", cycle_latest, ".shp"))
 
 
-#---- Map 7 Invasive % Cover by Cycle ----
+#---- Map 9 Invasive % Cover by Cycle ----
 invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive')) %>% 
   select(Plot_Name, cycle, ScientificName, quad_avg_cov) %>% 
   group_by(Plot_Name, cycle) %>% summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% 
@@ -653,7 +653,7 @@ covsum <- left_join(allcov, invspp, by = "ScientificName") %>%
   summarize(avgcov = sum(quad_avg_cov, na.rm = TRUE), .groups = 'drop') %>% 
   group_by(InvasiveNETN) %>% summarize(avg_cov = sum(avgcov)/29)
 
-#---- Map 8 Invasive % Cover by Species ----
+#---- Map 10 Invasive % Cover by Species ----
 # Lump some species in the same genus
 invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive') %>% 
   select(ScientificName) %>% unique() %>% arrange(ScientificName)
@@ -686,7 +686,7 @@ invspp1 <- do.call(joinQuadSpecies,
            TRUE ~ ScientificName)) %>% 
   arrange(Plot_Name, ScientificName)
 
-# Determine 12 most common invasives in a park by cover
+# Determine 10 most common invasives in a park by plot frequency
 plotspp_df <- data.frame(expand.grid(unique(invspp1$Plot_Name), 
                                      unique(invspp1$ScientificName), 
                                      stringsAsFactors = FALSE)) %>% 
@@ -700,8 +700,8 @@ topspp <- invspp1 %>% left_join(plotspp_df, ., by = c('Plot_Name', 'ScientificNa
   group_by(ScientificName) %>% 
   summarize(avg_cov = mean(quad_avg_cov, na.rm = T),
             num_plots = sum(present), .groups = 'drop') %>% 
-  #arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
-  arrange(desc(avg_cov)) %>% slice(1:10) %>% select(ScientificName) # going with top 10 by avg cover for 2024
+  #arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) 
+  arrange(desc(avg_cov)) %>% slice(1:10) %>% select(ScientificName) # going with top 10 by average cover for 2024
 
 # Prep for shapefile
 invspp <- invspp1 %>% 
@@ -732,7 +732,7 @@ invspp$totcov = rowSums(invspp[,4:ncol(invspp)])
 write_to_shp(invspp, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_species.shp"))
 
-#---- Map 9 Tree Pests/Diseases ----
+#---- Map 8 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
 disturb <- do.call(joinStandDisturbance, args = args_4yr) %>% 
   filter(DisturbanceSummary != "None") %>% 
@@ -830,7 +830,7 @@ write_to_shp(pests_wide, shp_name =
                paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
 
 
-#---- Map 10 Canopy Cover ----
+#---- Map 7 Canopy Cover ----
 cancov <- do.call(joinStandData, args = args_all) %>% 
   select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure)
 
@@ -965,7 +965,15 @@ write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_s
 #---- ED Pests ----
 priority_pests <- c("ALB", "BLD", "EAB", "EHS", "HWA", "RPS", "SLF", "SOD", "SPB", "SW")
 
-pest_eds <- pests_wide %>% select(Plot_Name, SampleYear, X, Y, any_of(priority_pests)) 
+pest_eds <- pests_wide %>% select(Plot_Name, SampleYear, X, Y, any_of(priority_pests)) # pulling in pests even if they = 0, creates false positive in .shp
+
+#Remove Priority Pest columns w/ 0 detections
+if(ncol(pest_eds) >= 5){
+  pest_eds1 <- pest_eds %>% select(5:ncol(pest_eds)) %>% select(where(~any(. != 0)))
+  pest_eds <- cbind(pest_eds |> select(Plot_Name, SampleYear, X, Y,),
+                    pest_eds1) 
+} 
+#Confirm final plot list matches pest_eds
 
 if(ncol(pest_eds) >= 5){
   pest_eds$num_pres <- rowSums(pest_eds[5:ncol(pest_eds)])
@@ -992,16 +1000,18 @@ ed_all <-
     pest_pres <- names(pest_eds[names(pest_eds) %in% priority_pests])
     pest_eds_long <- pest_eds |> select(-num_pres) |> 
       pivot_longer(cols = all_of(pest_pres), 
-                   names_to = "pest", values_to = "pres") |> 
-      select(-pres) 
+                   names_to = "pest", values_to = "pres") #|> 
+    #select(-pres) #including this line includes every pest found in the park for every plot with  1+ pest, whether or not it's present
     
     pest_eds2 <- left_join(pest_eds_long, pest_names, by = c("pest" = "Code")) |> 
-      select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')|> arrange(ScientificName)
+      select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')|> arrange(ScientificName)|>
+      filter(pres == 1) |> select(-pres)
     
     ed_all <- rbind(ised_spp, pest_eds2)
   } else {ised_spp}
 
-ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) 
+ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) |> 
+  distinct() # was getting duplicates if pest was recorded as a condition and in a note
 
 write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
 
@@ -1053,7 +1063,7 @@ cwd$cwd_vol[is.na(cwd$cwd_vol)] <- 0
 cwd_wide <- cwd %>% pivot_wider(names_from = cycle, 
                                 values_from = cwd_vol, 
                                 names_prefix = "cycle_",
-                                values_fill = 0) 
+                                values_fill = NA) 
 
 apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
 
@@ -1062,7 +1072,7 @@ max_cwd <- max(cwd_wide[,c(4:ncol(cwd_wide))])
 # Need to fudge b/c splitting across cycles for ArcMap charts to be
 # on the same scale
 
-# not sure is this is needed?
+# not sure is this is needed? - ces
 if(park == 'MABI' & to == 2023){
 cwd_wide <- 
 rbind(cwd_wide,
@@ -1074,6 +1084,19 @@ rbind(cwd_wide,
 
 write_to_shp(cwd_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", ".shp"))
+
+# Map 13: CWD Rating ------------------------------------------------------
+#added this for MIDN so CWD rating covers most recent sample. Have to test for NETN
+cwd_4yr1 <- joinCWDData(from = from_4yr, to = to) %>% select(Plot_Name, CWD_Vol) 
+
+cwd_4yr <- cwd_4yr1 %>% group_by(Plot_Name) %>% 
+  summarize(cwd_vol = sum(CWD_Vol, na.rm = T), .groups = 'drop') %>% 
+  left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate), 
+            ., by = c("Plot_Name"))
+
+write_to_shp(cwd_4yr, shp_name = 
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_for_rating_", ".shp"))
+
 
 
 #---- MABI Only: plot harvest history -----
