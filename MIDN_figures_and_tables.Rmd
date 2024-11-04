@@ -281,7 +281,7 @@ includeHTML("html_header.html")
 ```
 <br>
 ```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1_Regen_Debt_table.svg"))
+include_graphics(paste0(new_path, "figures/Figure_1_Regen_Debt_table.png"))
 ```
 
 ```{r results = 'asis'}
@@ -293,7 +293,7 @@ chronic regeneration failure. Sapling/Seedling Composition is the % of total ste
 <br>
 
 ```{r out.width = "80%", out.height = "40%", out.extra = 'style="margin-left:100px;margin-top:-25px;"'}
-include_graphics(paste0(new_path, "figures/", "Figure_2_", park, "_DBI_by_cycle.svg"))
+include_graphics(paste0(new_path, "figures/", "Figure_2_", park, "_DBI_by_cycle.png"))
 ```
 
 ```{r results = 'asis'}
@@ -313,12 +313,12 @@ includeHTML("html_header.html")
 
 |       A. 
 ```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
-include_graphics(paste0(new_path, "figures/Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"))
+include_graphics(paste0(new_path, "figures/Figure_3A_", park, "_regen_by_size_class_by_cycle.png"))
 ```
 
 |       B. 
 ```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
-include_graphics(paste0(new_path, "figures/Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"))
+include_graphics(paste0(new_path, "figures/Figure_3B_", park, "_tree_dbh_dist_by_cycle.png"))
 ```
 
 ```{r results = 'asis'}
@@ -337,7 +337,7 @@ includeHTML("html_header.html")
 ```
 
 ```{r out.width = "98%", out.height = "95%"}
-include_graphics(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.svg"))
+include_graphics(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.png"))
 ```
 
 ```{r results = 'asis'}
@@ -355,7 +355,7 @@ includeHTML("html_header.html")
 ```
 
 ```{r out.width = "98%", out.height = "95%"}
-include_graphics(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.svg"))
+include_graphics(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.png"))
 ```
 
 ```{r results = 'asis'}
@@ -373,7 +373,7 @@ includeHTML("html_header.html")
 ```
 
 ```{r out.width = "98%", out.height = "50%"}
-include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"))
+include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.png"))
 ```
 
 ```{r results = 'asis'}
