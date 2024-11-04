@@ -177,8 +177,8 @@ tab2_kab(park)
 ```
 ```{r include = F, eval = T, results = 'hide'}
 # Table 3 setup
-tab3_cols <- c("Latin Name", "Common Name", gsub("cycle_", "Cycle ", 
-                                                 names(inv_spp_final[,3:ncol(inv_spp_final)])))
+tab3_cols <- c("Latin Name", "Common Name", "Invasive", gsub("cycle_", "Cycle ", 
+                                                 names(inv_spp_final[,4:ncol(inv_spp_final)])))
 
 inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
 
@@ -233,41 +233,17 @@ margin-bottom: 10px;
 
 <!-- Start of page 1 -->
 <br>
-```{r results = 'asis'}
-includeHTML("html_header.html")
-```
-
-|       A. 
-```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
-```
-
-|       B. 
-```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
-```
-
-```{r results = 'asis'}
-cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, "). ",
-    paste(cycle_labs, collapse = "; "), ". ", 
-    
-    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are +/- 1 SE. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
-```
-
-<!-- Start of page 2 -->
-
-### {.page-break-before}
 
 ```{r results = 'asis'}
 includeHTML("html_header.html")
 ```
 <br>
 ```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
-include_graphics(paste0(new_path, "figures/Figure_2_Regen_Debt_table.svg"))
+include_graphics(paste0(new_path, "figures/Figure_1_Regen_Debt_table.svg"))
 ```
 
 ```{r results = 'asis'}
-cat("<p><b>Figure 2.</b> Regeneration Debt status for the most recent 4-year census (",
+cat("<p><b>Figure 1.</b> Regeneration Debt status for the most recent 4-year census (",
     from_4yr, " \U2013 ", to, ") in ", park_long, " (", park, "). ", " Flat Tree Diam. Dist. stands for Flat
 Tree Diameter Distribution. If TRUE, the density of small trees is lower than expected due to
 chronic regeneration failure. Sapling/Seedling Composition is the % of total stems composed of native canopy-forming species. Sorenson is a measure of how closely the regen. layer matches canopy composition. For more details on metric calculations, thresholds and assessment of status, see <a href ='https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.2837'>Miller et al. 2023</a>.</p>", sep = "")
@@ -275,7 +251,7 @@ chronic regeneration failure. Sapling/Seedling Composition is the % of total ste
 <br>
 
 ```{r out.width = "80%", out.height = "40%", out.extra = 'style="margin-left:100px;margin-top:-25px;"'}
-include_graphics(paste0(new_path, "figures/", "Figure_3_", park, "_DBI_by_cycle.svg"))
+include_graphics(paste0(new_path, "figures/", "Figure_2_", park, "_DBI_by_cycle.svg"))
 ```
 
 ```{r results = 'asis'}
@@ -285,6 +261,31 @@ cat(paste0("<p><b>Figure 3.</b> Deer browse impacts by cycle in ", park_long, " 
 
 ```
 <br>
+
+<!-- Start of page 2 -->
+
+### {.page-break-before}
+
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
+include_graphics(paste0(new_path, "figures/Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"))
+```
+
+|       B. 
+```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
+include_graphics(paste0(new_path, "figures/Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, "). ",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    
+    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are +/- 1 SE. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
+```
 
 <!-- Start of page 3 -->
 

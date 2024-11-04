@@ -174,8 +174,8 @@ tab2_kab(park)
 ```
 ```{r include = F, eval = T, results = 'hide'}
 # Table 3 setup
-tab3_cols <- c("Latin Name", "Common Name", gsub("cycle_", "Cycle ", 
-                                                 names(inv_spp_final[,3:ncol(inv_spp_final)])))
+tab3_cols <- c("Latin Name", "Common Name", "Invasive", gsub("cycle_", "Cycle ", 
+                                                 names(inv_spp_final[,4:ncol(inv_spp_final)])))
 
 inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
 
@@ -235,30 +235,6 @@ margin-bottom: 10px;
 
 <!-- Start of page 1 -->
 <br>
-```{r results = 'asis'}
-includeHTML("html_header.html")
-```
-
-|       A. 
-```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
-```
-
-|       B. 
-```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
-```
-
-```{r results = 'asis'}
-cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, "). ",
-    paste(cycle_labs, collapse = "; "), ". ", 
-    
-    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are +/- 1 SE. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
-```
-
-<!-- Start of page 2 -->
-
-### {.page-break-before}
 
 ```{r results = 'asis'}
 includeHTML("html_header.html")
@@ -287,6 +263,31 @@ cat(paste0("<p><b>Figure 3.</b> Ungulate browse impacts in cycle 1 in ", park_lo
 
 ```
 <br>
+
+<!-- Start of page 2 -->
+
+### {.page-break-before}
+
+```{r results = 'asis'}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
+include_graphics(paste0(new_path, "figures/Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"))
+```
+
+|       B. 
+```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
+include_graphics(paste0(new_path, "figures/Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 1.</b> Stem density distributions by cycle in ", park_long, " (", park, "). ",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    
+    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are +/- 1 SE. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
+```
 
 <!-- Start of page 3 -->
 
