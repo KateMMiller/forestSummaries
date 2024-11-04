@@ -534,7 +534,8 @@ centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive'
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")  |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Centaurea", CommonName = "knapweed") 
+  mutate(ScientificName = "Centaurea", CommonName = "knapweed") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(centaurea))
 centaurea[miss_cy] <- 0
@@ -547,7 +548,8 @@ lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")  |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Lonicera - Exotic", CommonName = "honeysuckle - exotic") 
+  mutate(ScientificName = "Lonicera - Exotic", CommonName = "honeysuckle - exotic") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(lonicera))
 lonicera[miss_cy] <- 0
@@ -560,7 +562,8 @@ euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Euonymus", CommonName = "burningbush") 
+  mutate(ScientificName = "Euonymus", CommonName = "burningbush") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(euonymus))
 euonymus[miss_cy] <- 0
@@ -573,7 +576,8 @@ ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive'
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Ligustrum", CommonName = "privet") 
+  mutate(ScientificName = "Ligustrum", CommonName = "privet") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(ligustrum))
 ligustrum[miss_cy] <- 0
@@ -586,7 +590,8 @@ vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasi
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Vincetoxicum", CommonName = "swallowwort") 
+  mutate(ScientificName = "Vincetoxicum", CommonName = "swallowwort") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(vincetoxicum))
 vincetoxicum[miss_cy] <- 0
@@ -599,7 +604,8 @@ elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive'
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Elaeagnus", CommonName = "exotic olive") 
+  mutate(ScientificName = "Elaeagnus", CommonName = "exotic olive") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(elaeagnus))
 elaeagnus[miss_cy] <- 0
@@ -612,12 +618,13 @@ wisteria <- do.call(sumSpeciesList, args = c(args_all)) %>%
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Wisteria", CommonName = "exotic wisteria") 
+  mutate(ScientificName = "Wisteria", CommonName = "exotic wisteria") |> 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(wisteria))
 wisteria[miss_cy] <- 0
 
-inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
+inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName, InvasiveMIDN),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything()) |> 
   filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", "Elaeagnus",
                                 "Euonymus alatus", "Euonymus", "Euonymus atropurpureus",
@@ -629,13 +636,19 @@ inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName)
                                 "Vincetoxicum hirundinaria", 
                                 "Wisteria", "Wisteria florubunda", "Wisteria sinensis"))
 
-inv_spp_final <- rbind(inv_spp, centaurea, lonicera, euonymus, 
-                       ligustrum, vincetoxicum, elaeagnus) %>% 
-  mutate(num = rowSums(.[3:ncol(.)])) |> 
+inv_spp2 <- rbind(inv_spp, centaurea, lonicera, euonymus, 
+                  ligustrum, vincetoxicum, elaeagnus, wisteria) %>% 
+  relocate(InvasiveMIDN, .after = CommonName) %>% 
+  mutate(num = rowSums(.[4:ncol(.)])) |> 
   filter(num > 0) |> select(-num) |> arrange(ScientificName)
 
-inv_spp_final <- inv_spp_final[, c("ScientificName", "CommonName", 
-                                   sort(names(inv_spp_final[,3:ncol(inv_spp_final)])))]
+inv_spp2 <- inv_spp2[, c("ScientificName", "CommonName", "InvasiveMIDN",
+                         sort(names(inv_spp2[,4:ncol(inv_spp2)])))]
+
+inv_spp_final <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
+  mutate(InvasiveMIDN = case_when(InvasiveMIDN == '1' ~ 'Yes',
+                                  InvasiveMIDN =='0' ~ 'No',
+                                  TRUE ~ InvasiveMIDN)) 
 
 write.csv(inv_spp_final, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
