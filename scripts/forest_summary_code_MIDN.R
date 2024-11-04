@@ -946,7 +946,10 @@ if(ncol(pest_eds) >= 5){
     #select(-pres) #including this line includes every pest found in the park for every plot with  1+ pest, whether or not it's present
   
   pest_eds2 <- left_join(pest_eds_long, pest_names, by = c("pest" = "Code")) |> 
-    select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')|> arrange(ScientificName)|>
+    select(-pest) |> 
+    mutate(quad_avg_cov = NA_real_, 
+           type = 'pest')|> 
+    arrange(ScientificName)|>
     filter(pres == 1) |> select(-pres)
   
 ed_all <- rbind(ised_spp, pest_eds2)
