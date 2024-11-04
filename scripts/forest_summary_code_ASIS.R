@@ -394,7 +394,7 @@ topspp <- invspp1 %>% left_join(plotspp_df, ., by = c('Plot_Name', 'ScientificNa
             num_plots = sum(present), 
             avg_cov = sum_cov/num_plots,
             .groups = 'drop') %>% 
-  arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
+  arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) 
   #arrange(desc(avg_cov)) %>% slice(1:12) %>% select(ScientificName)
 
 # Prep for shapefile
@@ -696,6 +696,14 @@ priority_pests <- c("ALB", "BLD", "EAB", "EHS", "HWA", "RPS", "SLF", "SOD", "SPB
 
 pest_eds <- pests_wide %>% select(Plot_Name, SampleYear, X, Y, any_of(priority_pests)) 
 
+#Remove Priority Pest columns w/ 0 detections
+if(ncol(pest_eds) >= 5){
+  pest_eds1 <- pest_eds %>% select(5:ncol(pest_eds)) %>% select(where(~any(. != 0)))
+  pest_eds <- cbind(pest_eds |> select(Plot_Name, SampleYear, X, Y,),
+                    pest_eds1) 
+} 
+#Confirm final plot list matches pest_eds
+
 if(ncol(pest_eds) >= 5){
 pest_eds$num_pres <- rowSums(pest_eds[5:ncol(pest_eds)])
 pest_eds <- pest_eds |> filter(num_pres >= 1)
@@ -721,17 +729,28 @@ if(ncol(pest_eds) >= 5){
   pest_pres <- names(pest_eds[names(pest_eds) %in% priority_pests])
   pest_eds_long <- pest_eds |> select(-num_pres) |> 
     pivot_longer(cols = all_of(pest_pres), 
-                names_to = "pest", values_to = "pres") |> 
-    select(-pres) 
+                names_to = "pest", values_to = "pres") #|> 
+    #select(-pres) 
   
   pest_eds2 <- left_join(pest_eds_long, pest_names, by = c("pest" = "Code")) |> 
-    select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')|> arrange(ScientificName)
+    select(-pest) |> 
+    mutate(quad_avg_cov = NA_real_, 
+                            type = 'pest')|> 
+    arrange(ScientificName) |> 
+    filter(pres == 1) |> select(-pres)
   
 ed_all <- rbind(ised_spp, pest_eds2)
 } else {ised_spp}
 
 ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) 
-write.csv(ed_all_final, paste0(new_path, 'tables/', park, "_early_detections.csv"), row.names = F)
+write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
+
+# Table 5: Tree species included in Map 3+4 -------------------------------
+
+grp_spp <- full_join(reg_spp,tree_spp, by = "ScientificName") %>% arrange(ScientificName)
+write.csv(grp_spp, paste0(new_path, "tables/", 'Table_5_', park, "_tree_species_in_Map3_4.csv"),
+          row.names = FALSE)
+
 
 #---- CWD by cycle
 cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol) |> 
