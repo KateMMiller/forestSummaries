@@ -61,8 +61,8 @@ dbi_plot
 # dev.off()
 
 figpath <- paste0(path, park, "/", to, '/figures/')
-ggsave(paste0(figpath, "Figure_3_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
-
+ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
+ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.png"), height = 6.15, width = 8, units = 'in', dpi = 600)
 
 # Regen densities
 # reg is all spp. reg$NatCan is used for metrics that only include native canopy forming spp.
@@ -345,7 +345,8 @@ results_plot
 
 figpath2 <- paste0(path, park, "/", to, '/figures/') # not hard coded
 
-ggsave(paste0(figpath2, "Figure_2_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+ggsave(paste0(figpath2, "Figure_1_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+ggsave(paste0(figpath2, "Figure_1_Regen_Debt_table.png"), height = 6, width = 4.5, units = 'in', dpi = 600)
 
 debt_final <- debt_final |> mutate(park = park)
 
