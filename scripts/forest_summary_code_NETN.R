@@ -1050,8 +1050,9 @@ write_to_shp(rubus_wide, shp_name =
 }
 
 
-# Map 12 + 13: CWD by cycle and rating ------------------------------------
-cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol)
+# Map 11: CWD by cycle ------------------------------------
+cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol) |> 
+  filter(!Plot_Name %in% "COLO-380") 
 
 cwd <- cwd1 %>% group_by(Plot_Name, cycle) %>% 
   summarize(cwd_vol = sum(CWD_Vol, na.rm = T), .groups = 'drop') %>% 
@@ -1063,31 +1064,18 @@ cwd$cwd_vol[is.na(cwd$cwd_vol)] <- 0
 cwd_wide <- cwd %>% pivot_wider(names_from = cycle, 
                                 values_from = cwd_vol, 
                                 names_prefix = "cycle_",
-                                values_fill = NA) 
+                                values_fill = NA) # Better for mapping if unsampled plots are NA not 0
 
 apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
 
 max_cwd <- max(cwd_wide[,c(4:ncol(cwd_wide))])
 
-# Need to fudge b/c splitting across cycles for ArcMap charts to be
-# on the same scale
-
-# not sure is this is needed? - ces
-if(park == 'MABI' & to == 2023){
-cwd_wide <- 
-rbind(cwd_wide,
-      data.frame(Plot_Name = "MABI-XXX", X = 699991, Y = 4834089,
-                 cycle_1 = max_cwd,  cycle_2 = max_cwd, 
-                 cycle_3 = max_cwd,  cycle_4 = max_cwd,
-                 cycle_5 = max_cwd))
-}
-
 write_to_shp(cwd_wide, shp_name = 
-               paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", ".shp"))
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", to, ".shp"))
 
-# Map 13: CWD Rating ------------------------------------------------------
-#added this for MIDN so CWD rating covers most recent sample. Have to test for NETN
-cwd_4yr1 <- joinCWDData(from = from_4yr, to = to) %>% select(Plot_Name, CWD_Vol) 
+# Map 12: CWD Rating ------------------------------------------------------
+cwd_4yr1 <- joinCWDData(from = from_4yr, to = to) %>% select(Plot_Name, CWD_Vol) |> 
+  filter(!Plot_Name %in% "COLO-380") 
 
 cwd_4yr <- cwd_4yr1 %>% group_by(Plot_Name) %>% 
   summarize(cwd_vol = sum(CWD_Vol, na.rm = T), .groups = 'drop') %>% 
@@ -1095,7 +1083,42 @@ cwd_4yr <- cwd_4yr1 %>% group_by(Plot_Name) %>%
             ., by = c("Plot_Name"))
 
 write_to_shp(cwd_4yr, shp_name = 
-               paste0(new_path, "shapefiles/", park, "_CWD_vol_for_rating_", ".shp"))
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_for_rating_", to, ".shp"))
+
+#----- Map 13: Number of Ash tree stems over time ------
+Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', 
+                  'Fraxinus nigra', 'Fraxinus profunda')
+
+frax <- do.call(joinTreeData, c(args_vs, status = 'live')) |> filter(ScientificName %in% Fraxinus_spp)
+head(frax)
+
+frax_sum <- frax |> group_by(Plot_Name, PlotCode, cycle) |> 
+  summarize(num_stems = sum(num_stems), 
+            sppcode = "FRAXSPP",
+            .groups = 'drop')
+
+head(frax_sum)
+
+fraxspp_wide <- frax_sum |> 
+  pivot_wider(names_from = cycle, values_from = num_stems, names_glue = "{'FRAX'}_{cycle}",
+              values_fill = 0)
+
+plots <- do.call(joinLocEvent, args = args_vs) |> 
+  select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate) |> unique()
+
+fraxspp <- left_join(plots, fraxspp_wide, by = c("Plot_Name", "PlotCode")) |> unique()
+fraxspp[,5:ncol(fraxspp)][is.na(fraxspp[,5:ncol(fraxspp)])] <- 0
+head(fraxspp)
+
+
+write_to_shp <- function(data, x = "X", y = "Y", shp_name){
+  st_write(st_as_sf(data, coords = c(x, y), crs = park_crs),
+           shp_name, delete_layer = TRUE)#FALSE)
+}
+
+write_to_shp(fraxspp, 
+             shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle_", to, ".shp" ))
+
 
 
 
