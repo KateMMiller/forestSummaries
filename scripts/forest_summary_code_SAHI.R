@@ -17,9 +17,17 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 #---- Plot event lists ----
 plotevs <- do.call(joinLocEvent, args_all) 
 plotevs_vs <- do.call(joinLocEvent, args_vs) 
-plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to)) 
+plotevs_4yr1 <- plotevs %>% filter(between(SampleYear, from_4yr, to)) 
 # head(plotevs)
 # plotevs_4yr
+
+# Take the highest sample year when multiple panels were sampled within a year
+# and only one of those panels is the most recent visit to that plot. 
+plotevs_4yr <- plotevs_4yr1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |> 
+  slice_max(SampleYear) |> ungroup()
+
+# vector of the EventIDs that represent the most recent visit to each plot
+evs_4yr <- plotevs_4yr$EventID
 
 #---- Table 1. Regen densities by plot and year ----
 reg <- do.call(joinRegenData, 
@@ -67,14 +75,13 @@ write_to_shp(reg_cycle,
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
 reg_size <- reg %>% group_by(Plot_Name, SampleYear) |> 
-  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T)
+  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T) 
 
 reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
                              left_join(plotevs_4yr %>% select(Plot_Name, xCoordinate, yCoordinate),
-                                       ., by = 'Plot_Name')
+                                       ., by = 'Plot_Name') |> data.frame()
 
 reg_size_4yr[, reg_sz_cols][reg_size_4yr[is.na(reg_size_4yr[,reg_sz_cols])]] <- 0
-head(reg_size_4yr)
 
 colnames(reg_size_4yr) <- c("Plot_Name", "X", "Y", "SampleYear", 
                              "s15_30", "s30_100", "s100_150", "s150p", "sap") #abbr. for shapefile
@@ -146,8 +153,10 @@ reg_trend_plot <-
 
 reg_trend_plot
   
-ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"),
        height = 5.5, width = 7.5, units = 'in')
+ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.png"),
+       height = 5.5, width = 7.5, units = 'in', dpi = 600)
 
 #---- Figure 1B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
@@ -247,12 +256,24 @@ dbh_trend_plot <-
 
 dbh_trend_plot
 
-ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')
+ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.png"),
+       height = 5, width = 7.5, units = 'in', dpi = 600)
 
 #---- Map 3 Regen by composition ----
 reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m')) |> 
   filter(!ScientificName %in% c('None present', "Not Sampled")) |> filter(!Plot_Name %in% "COLO-380") 
+
+### Check dominant MIDN species to pull out of standard groups ###
+#Run for each park every year and update list of exceptions below if necessary
+# !!! Must update tree_regen_stem_changes_by_species_loess.R as well!!!
+reg_park <- do.call(joinRegenData, args = list(park = park, from_4yr, to = to, units = 'sq.m'))|>
+  filter(!ScientificName %in% c('None present', "Not Sampled")) # just selected park
+
+dom_regspp <- reg_park %>% group_by(Plot_Name, ScientificName) %>% summarize(reg = sum(regen_den, na.rm = T)) %>%
+  group_by(ScientificName) %>% summarize(reg = sum(reg, na.rm = T)) %>% arrange(desc(reg))
+###
 
 head(trspp_grps) # loaded in source_script_MIDN.R. Use as a first cut for grouping.
 
@@ -261,6 +282,14 @@ reg_grps <- left_join(reg_all, trspp_grps, by = c("ScientificName" = "Species"))
 if(nrow(reg_grps[which(is.na(reg_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in reg_spp_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 head(reg_grps)
+
+if(park == "SAHI"){
+  reg_grps <- reg_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               TRUE ~ spp_grp))
+}
 
 reg_wide <- reg_grps %>% group_by(Plot_Name, sppcode) %>% 
   summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
@@ -280,8 +309,26 @@ names(sort(desc(colSums(reg_wide[,c(4:(ncol(reg_wide)-2))]))))
 write_to_shp(reg_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
+#Table of regen species and groups used in Map 3 (Table 5)
+reg_spp <- reg_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>%
+  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                             spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                             spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                             TRUE ~ spp_grp)) %>% 
+  rename('Group: Map 3. Regeneration' = spp_grp) %>% select(-sppcode) %>% 
+  arrange(ScientificName)
+
 #---- Map 4 Tree canopy composition ----
 tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live')) |> filter(!Plot_Name %in% "COLO-380") 
+
+### Check dominant NETN species to pull out of standard groups ###
+#Run for each park every year and update list of exceptions below if necessary 
+#!!! must update tree_regen_stem_changes_by_species_loess.R as well!!!
+trees_park <- do.call(joinTreeData, args = list(park = park, from_4yr, to = to, status = 'live')) # just selected park
+
+dom_trspp <- trees_park %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>%
+  group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
+###
 
 tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
   filter(!ScientificName %in% c("None present", "Not Sampled"))
@@ -289,6 +336,15 @@ tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species"
 if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in tree_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 head(tree_grps)
+
+
+if(park == "SAHI"){
+  tree_grps <- tree_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               TRUE ~ spp_grp))
+}
 
 tree_wide <- tree_grps %>% group_by(Plot_Name, sppcode) %>% 
   summarize(BAm2ha = sum(BA_cm2, na.rm = TRUE)/400, .groups = 'drop') %>% 
@@ -302,6 +358,15 @@ tree_wide$logtot <- log(tree_wide$total + 1)
 names(tree_wide)
 write_to_shp(tree_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, ".shp"))
+
+#Table of tree species and groups used in Map 4 (Table 5)
+tree_spp <- tree_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>%
+  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                             spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                             spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                             TRUE ~ spp_grp)) %>% 
+  rename('Group: Map 4. Tree Canopy' = spp_grp) %>% select(-sppcode) %>% 
+  arrange(ScientificName)
 
 #---- Map 5 Regen stocking index ----
 reg_4yr <- do.call(joinRegenData,
@@ -330,9 +395,8 @@ write_to_shp(dbi, shp_name =
          paste0(new_path, "shapefiles/", park, "_dbi_cycle_", cycle_latest, ".shp"))
 
 
-#---- Map 7 Invasive % Cover by Cycle ----
+#---- Map 9 Invasive % Cover by Cycle ----
 invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive')) %>% 
-  filter(!Plot_Name %in% "COLO-380") %>%
   select(Plot_Name, cycle, ScientificName, quad_avg_cov) %>% 
   group_by(Plot_Name, cycle) %>% summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate, cycle),
@@ -344,9 +408,10 @@ invcov_wide <- invcov %>% pivot_wider(names_from = cycle, values_from = quad_cov
 write_to_shp(invcov_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_cycle.shp"))
 
-#---- Map 8 Invasive % Cover by Species ----
+#---- Map 10 Invasive % Cover by Species ----
 # Lump some species in the same genus
 invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive') %>% 
+  filter(EventID %in% evs_4yr) %>%
   select(ScientificName) %>% unique() %>% arrange(ScientificName)
 
 table(invspp_4yr$ScientificName)
@@ -379,7 +444,7 @@ invspp1 <- do.call(joinQuadSpecies,
            TRUE ~ ScientificName)) %>% 
   arrange(Plot_Name, ScientificName)
 
-# Determine 12 most common invasives in a park by cover
+# Determine 10 most common invasives in a park by cover
 plotspp_df <- data.frame(expand.grid(unique(invspp1$Plot_Name), 
                                      unique(invspp1$ScientificName), 
                                      stringsAsFactors = FALSE)) %>% 
@@ -395,8 +460,8 @@ topspp <- invspp1 %>% left_join(plotspp_df, ., by = c('Plot_Name', 'ScientificNa
             num_plots = sum(present), 
             avg_cov = sum_cov/num_plots,
             .groups = 'drop') %>% 
-  arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) #MIMA only
-  #arrange(desc(avg_cov)) %>% slice(1:12) %>% select(ScientificName)
+  #arrange(desc(num_plots)) %>% slice(1:10) %>% select(ScientificName) 
+  arrange(desc(avg_cov)) %>% slice(1:10) %>% select(ScientificName)
 
 # Prep for shapefile
 invspp <- invspp1 %>% 
@@ -429,7 +494,7 @@ invspp$totcov = rowSums(invspp[,4:ncol(invspp)])
 write_to_shp(invspp, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_species.shp"))
 
-#---- Map 9 Tree Pests/Diseases ----
+#---- Map 8 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
 disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name %in% "COLO-380") %>%
   filter(DisturbanceSummary!= "None") %>%
@@ -462,21 +527,31 @@ treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>%
 
 
 # Compile notes from visit that could contain mentions of pests
+#Review notes for false positives first, remove from final table below
+vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>% 
+  mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ Notes,
+                          grepl("Emerald|emerald|EAB", Notes) ~ Notes,
+                          grepl("Red pine scale|RPS|red pine scale", Notes) ~ Notes,
+                          grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
+                                Notes) ~ Notes,
+                          grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ Notes,
+                          grepl("GM|spongy|gypsy", Notes) ~ Notes,
+                          TRUE ~ NA_character_)) %>% filter(!is.na(pest)) 
 
-# vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
-#   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ "BLD",
-#                           grepl("Emerald|emerald|EAB", Notes) ~ "EAB",
-#                           grepl("Red pine scale|RPS|red pine scale", Notes) ~ "RPS",
-#                           grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
-#                                 Notes) ~ "HWA",
-#                           grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ "BBD",
-#                           grepl("GM|spongy|gypsy", Notes) ~ "GM",
-#                           TRUE ~ NA_character_
-#   )) %>% filter(!is.na(pest)) %>% 
-#   select(Plot_Name, pest) %>% unique()
+vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
+  mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ "BLD",
+                          grepl("Emerald|emerald|EAB", Notes) ~ "EAB",
+                          grepl("Red pine scale|RPS|red pine scale", Notes) ~ "RPS",
+                          grepl("HWA|hemlock woolly adelgid|EHS|Hemlock woolly adelgid|wooly", 
+                                Notes) ~ "HWA",
+                          grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ "BBD",
+                          grepl("GM|spongy|gypsy", Notes) ~ "GM",
+                          TRUE ~ NA_character_
+  )) %>% filter(!is.na(pest)) %>% 
+  select(Plot_Name, pest) %>% unique()
 
 # Combine detections to 1 shapefile
-pest_detects <- rbind(treepests, disturb) %>% #, vnotes) %>% 
+pest_detects <- rbind(treepests, disturb, vnotes) %>% 
   left_join(plotevs_4yr %>% select(Plot_Name, SampleYear, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% 
   select(Plot_Name, SampleYear, X, Y, everything()) %>% unique() %>%  
@@ -497,7 +572,7 @@ pests_wide$none <- rowSums(pests_wide[,5:ncol(pests_wide)])
 write_to_shp(pests_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
 
-#---- Map 10 Canopy Cover ----
+#---- Map 7 Canopy Cover ----
 cancov <- do.call(joinStandData, args = args_all) %>% 
   select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure) |> 
   filter(!Plot_Name %in% "COLO-380")
@@ -523,7 +598,6 @@ write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park,
 
 #---- Table 3 Invasive species by number of plots cycle
 inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>%
-  filter(!Plot_Name %in% "COLO-380") %>%
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
@@ -536,7 +610,8 @@ centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive'
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")  |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Centaurea", CommonName = "knapweed") 
+  mutate(ScientificName = "Centaurea", CommonName = "knapweed") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(centaurea))
 centaurea[miss_cy] <- 0
@@ -549,7 +624,8 @@ lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")  |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Lonicera - Exotic", CommonName = "honeysuckle - exotic") 
+  mutate(ScientificName = "Lonicera - Exotic", CommonName = "honeysuckle - exotic") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(lonicera))
 lonicera[miss_cy] <- 0
@@ -562,7 +638,8 @@ euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Euonymus", CommonName = "burningbush") 
+  mutate(ScientificName = "Euonymus", CommonName = "burningbush") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(euonymus))
 euonymus[miss_cy] <- 0
@@ -575,7 +652,8 @@ ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive'
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Ligustrum", CommonName = "privet") 
+  mutate(ScientificName = "Ligustrum", CommonName = "privet") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(ligustrum))
 ligustrum[miss_cy] <- 0
@@ -588,7 +666,8 @@ vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasi
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Vincetoxicum", CommonName = "swallowwort") 
+  mutate(ScientificName = "Vincetoxicum", CommonName = "swallowwort") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(vincetoxicum))
 vincetoxicum[miss_cy] <- 0
@@ -601,7 +680,8 @@ elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive'
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Elaeagnus", CommonName = "exotic olive") 
+  mutate(ScientificName = "Elaeagnus", CommonName = "exotic olive") %>% 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(elaeagnus))
 elaeagnus[miss_cy] <- 0
@@ -614,12 +694,13 @@ wisteria <- do.call(sumSpeciesList, args = c(args_all)) %>%
               names_prefix = "cycle_") |> 
   select(-Plot_Name) |> 
   summarize_if(is.numeric, sum) |> 
-  mutate(ScientificName = "Wisteria", CommonName = "exotic wisteria") 
+  mutate(ScientificName = "Wisteria", CommonName = "exotic wisteria") |> 
+  mutate(InvasiveMIDN = 'Yes')
 
 miss_cy <- setdiff(names(inv_spp1), names(wisteria))
 wisteria[miss_cy] <- 0
 
-inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
+inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName, InvasiveMIDN),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything()) |> 
   filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", "Elaeagnus",
                                 "Euonymus alatus", "Euonymus", "Euonymus atropurpureus",
@@ -631,16 +712,22 @@ inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName)
                                 "Vincetoxicum hirundinaria", 
                                 "Wisteria", "Wisteria florubunda", "Wisteria sinensis"))
 
-inv_spp_final <- rbind(inv_spp, centaurea, lonicera, euonymus, 
-                       ligustrum, vincetoxicum, elaeagnus) %>% 
-  mutate(num = rowSums(.[3:ncol(.)])) |> 
+inv_spp2 <- rbind(inv_spp, centaurea, lonicera, euonymus, 
+                  ligustrum, vincetoxicum, elaeagnus, wisteria) %>% 
+  relocate(InvasiveMIDN, .after = CommonName) %>% 
+  mutate(num = rowSums(.[4:ncol(.)])) |> 
   filter(num > 0) |> select(-num) |> arrange(ScientificName)
 
-inv_spp_final <- inv_spp_final[, c("ScientificName", "CommonName", 
-                                   sort(names(inv_spp_final[,3:ncol(inv_spp_final)])))]
+inv_spp2 <- inv_spp2[, c("ScientificName", "CommonName", "InvasiveMIDN",
+                         sort(names(inv_spp2[,4:ncol(inv_spp2)])))]
+
+inv_spp_final <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
+  mutate(InvasiveMIDN = case_when(InvasiveMIDN == '1' ~ 'Yes',
+                                  InvasiveMIDN =='0' ~ 'No',
+                                  TRUE ~ InvasiveMIDN)) 
 
 write.csv(inv_spp_final, paste0(new_path, "tables/", "Table_3_", park,
-                          "_num_invspp_by_cycle.csv"), row.names = FALSE)
+                                "_num_invspp_by_cycle.csv"), row.names = FALSE)
 
 #---- Early Detections -----
 taxa <- prepTaxa()
@@ -681,9 +768,17 @@ write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_s
           row.names = FALSE)
 
 #---- ED Pests ----
-priority_pests <- c("ALB", "BLD", "EAB", "EHS", "HWA", "RPS", "SLF", "SOD", "SPB", "SW")
+priority_pests <- c("ALB", "BLD", "BBD", "DOG", "EAB", "EHS", "HWA", "RPS", "SLF", "SOD", "SPB", "SW")
 
 pest_eds <- pests_wide %>% select(Plot_Name, SampleYear, X, Y, any_of(priority_pests)) 
+
+#Remove Priority Pest columns w/ 0 detections
+if(ncol(pest_eds) >= 5){
+  pest_eds1 <- pest_eds %>% select(5:ncol(pest_eds)) %>% select(where(~any(. != 0)))
+  pest_eds <- cbind(pest_eds |> select(Plot_Name, SampleYear, X, Y,),
+                    pest_eds1) 
+} 
+#Confirm final plot list matches pest_eds
 
 if(ncol(pest_eds) >= 5){
 pest_eds$num_pres <- rowSums(pest_eds[5:ncol(pest_eds)])
@@ -710,17 +805,28 @@ if(ncol(pest_eds) >= 5){
   pest_pres <- names(pest_eds[names(pest_eds) %in% priority_pests])
   pest_eds_long <- pest_eds |> select(-num_pres) |> 
     pivot_longer(cols = all_of(pest_pres), 
-                names_to = "pest", values_to = "pres") |> 
-    select(-pres) 
+                names_to = "pest", values_to = "pres") #|> 
+    #select(-pres) 
   
   pest_eds2 <- left_join(pest_eds_long, pest_names, by = c("pest" = "Code")) |> 
-    select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')|> arrange(ScientificName)
+    select(-pest) |> 
+    mutate(quad_avg_cov = NA_real_, 
+           type = 'pest')|> 
+    arrange(ScientificName) |> 
+    filter(pres == 1) |> select(-pres)
   
 ed_all <- rbind(ised_spp, pest_eds2)
 } else {ised_spp}
 
 ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) 
-write.csv(ed_all_final, paste0(new_path, 'tables/', park, "_early_detections.csv"), row.names = F)
+write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
+
+# Table 5: Tree species included in Map 3+4 -------------------------------
+
+grp_spp <- full_join(reg_spp,tree_spp, by = "ScientificName") %>% arrange(ScientificName)
+write.csv(grp_spp, paste0(new_path, "tables/", 'Table_5_', park, "_tree_species_in_Map3_4.csv"),
+          row.names = FALSE)
+
 
 #---- CWD by cycle
 cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol) |> 
@@ -741,4 +847,16 @@ cwd_wide <- cwd %>% pivot_wider(names_from = cycle,
 apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
 
 max_cwd <- max(cwd_wide[,c(4:ncol(cwd_wide))])
+
+# Map 13: CWD Rating ------------------------------------------------------
+cwd_4yr1 <- joinCWDData(from = from_4yr, to = to) %>% select(Plot_Name, CWD_Vol) |> 
+  filter(!Plot_Name %in% "COLO-380") 
+
+cwd_4yr <- cwd_4yr1 %>% group_by(Plot_Name) %>% 
+  summarize(cwd_vol = sum(CWD_Vol, na.rm = T), .groups = 'drop') %>% 
+  left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate), 
+            ., by = c("Plot_Name"))
+
+write_to_shp(cwd_4yr, shp_name = 
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_for_rating_", ".shp"))
 

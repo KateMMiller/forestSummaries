@@ -12,9 +12,25 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
-if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'}
+#if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'}
+if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'} #ces path
 
 importData()
+
+# midn_names <- read.csv("MIDN_MetaData.csv")
+# midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
+# park <<- 'ASIS'
+# from <<- as.numeric(midn_params$from[midn_params$park == park])
+# from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
+# to <<- as.numeric(midn_params$to[midn_params$park == park])
+# cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
+# 
+# QAQC <<- FALSE
+# locType <<- 'VS'
+# #+++ NOTE: IF GET add_header_above error, need to update cycle_latest in MIDN_params.csv  +++
+# park_long <- midn_names$LongName[midn_names$ParkCode == park]
+# park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
+# network_long <- midn_names$Network_long[midn_names$ParkCode == park]
 
 # Downgrade Fraxinus to subcanopy species
 VIEWS_MIDN_NCBN$Taxa_MIDN_NCBN$IsCanopyExclusion[VIEWS_MIDN_NCBN$Taxa_MIDN_NCBN$Genus == "Fraxinus"] <- TRUE
@@ -29,7 +45,7 @@ args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = lo
 args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 
 # Set up file structure
-park <- "ASIS"
+#park <- "ASIS"
 
 if(!dir.exists(paste0(path, park))){dir.create(paste0(path, park))}
 
@@ -37,7 +53,7 @@ new_path = paste0(path, park, "/", as.character(to), "/")
 
 if(!dir.exists(new_path)){dir.create(new_path)}
 
-folders <- c("GIS_projects", "figures", "map_exports", "shapefiles", "tables")
+folders <- c("ArcPro_projects", "figures", "map_exports", "shapefiles", "tables")
 
 invisible(lapply(folders, function(x) {
   if(!dir.exists(paste0(new_path, x))){dir.create(paste0(new_path, x))}

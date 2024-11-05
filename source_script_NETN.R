@@ -41,7 +41,7 @@ args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = lo
 args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 
 # Set up file structure
-#path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
+#path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' #kmm path
 path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/NETN/' #ces file path
 
 invisible(lapply(park, function(x) {

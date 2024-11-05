@@ -2,6 +2,7 @@
 # Smoothed tree, sapling, seedling changes in abundance over time
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
+library(ggpubr)
 span <- 4/5 #roughly linear between timesteps
 #span = 4/5
 
@@ -224,6 +225,8 @@ net_stems <-
 net_stems
 ggsave(paste0(new_path, "figures/", "Figure_5A_", park, "_smoothed_tree_stems_by_species_cycle.svg"),
        height = 6.15, width = 8, units = 'in')
+ggsave(paste0(new_path, "figures/", "Figure_5A_", park, "_smoothed_tree_stems_by_species_cycle.png"),
+       height = 6.15, width = 8, units = 'in', dpi = 600)
 
 
 net_ba <- 
@@ -248,10 +251,17 @@ net_ba
 ggsave(paste0(new_path, "figures/", "Figure_5B_", park, "_smoothed_BA_by_species_cycle.svg"),
     height = 6.15, width = 8)
 
+ggsave(paste0(new_path, "figures/", "Figure_5B_", park, "_smoothed_BA_by_species_cycle.png"),
+       height = 6.15, width = 8, dpi = 600)
+
 ggarrange(net_stems, net_ba, common.legend = T, legend = 'right', nrow = 2, labels = c("A.", "B.")) 
 
 ggsave(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.svg"),
        height = 11, width = 9.5)
+
+ggsave(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.png"),
+       height = 11, width = 9.5, dpi = 600)
+
 
 #----- Similar figures for seedlings and saplings -----
 reg1 <- do.call(joinRegenData, c(args_all, units = 'sq.m')) |> 
@@ -387,7 +397,8 @@ net_seeds
 
 ggsave(paste0(new_path, "figures/", "Figure_4A_", park, "_net_seedlings_by_species_cycle.svg"),
     height = 6.15, width = 8)
-
+ggsave(paste0(new_path, "figures/", "Figure_4A_", park, "_net_seedlings_by_species_cycle.png"),
+       height = 6.15, width = 8, dpi = 600)
 
 net_saps <- 
   ggplot(sap_smooth3, 
@@ -409,11 +420,15 @@ net_saps
 
 ggsave(paste0(new_path, "figures/", "Figure_4B_", park, "_net_saplings_by_species_cycle.svg"),
     height = 6.15, width = 8)
+ggsave(paste0(new_path, "figures/", "Figure_4B_", park, "_net_saplings_by_species_cycle.png"),
+       height = 6.15, width = 8, dpi = 600)
 
 ggarrange(net_seeds, net_saps, common.legend = T, legend = 'right', nrow = 2, labels = c("A.", "B."))
 
 ggsave(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.svg"),
        height = 11, width = 9.5)
+ggsave(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.png"),
+       height = 11, width = 9.5, dpi = 600)
        
 #----- Trends in invasive guilds over time -----
 guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
@@ -453,6 +468,8 @@ guild_plot <-
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
     height = 4.6, width = 8)
 
+ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.png"),
+       height = 4.6, width = 8, dpi = 600)
 
 #----- Number of Ash tree stems over time ------
 Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', 

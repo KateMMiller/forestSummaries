@@ -137,3 +137,6 @@ full_plot
 ggsave(paste0(new_path, "figures/", "Figure_4_", park, "_tree_sapling_regen_by_species.svg"),
        height = 5.5, width = 7.5, units = 'in')
 
+ggsave(paste0(new_path, "figures/", "Figure_4_", park, "_tree_sapling_regen_by_species.png"),
+       height = 5.5, width = 7.5, units = 'in', dpi = 600)
+
