@@ -2,6 +2,7 @@
 # Smoothed tree, sapling, seedling changes in abundance over time: MIDN
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
+library(ggpubr)
 span <- 4/5 #roughly linear between timesteps
 #span = 4/5
 
