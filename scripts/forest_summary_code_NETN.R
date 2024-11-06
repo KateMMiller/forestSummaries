@@ -52,8 +52,18 @@ reg_cycle <- reg %>% group_by(Plot_Name, cycle) %>%
 
 max(reg_cycle[,4:ncol(reg_cycle)])
 
-write_to_shp(reg_cycle, 
-             shp_name = paste0(new_path, "shapefiles/", park, "_regen_by_cycle_", to, ".shp" ))
+reg_cycle_incom <- reg_cycle %>% filter_at(vars(last_col()), all_vars(is.na(.)))
+reg_cycle_com <- reg_cycle %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
+
+
+if(nrow(reg_cycle_incom) >0){
+  write_to_shp(reg_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_cycle_incomplete", ".shp" ))
+}
+
+write_to_shp(reg_cycle_com, 
+             shp_name = paste0(new_path, "shapefiles/", park, "_regen_by_cycle", ".shp" ))
+
 
 #---- Map 2 regen by size class ----
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
@@ -639,6 +649,15 @@ invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive'))
 
 invcov_wide <- invcov %>% pivot_wider(names_from = cycle, values_from = quad_cov)
 
+invcov_cycle_incom <- invcov_wide %>% filter_at(vars(last_col()), all_vars(is.na(.)))
+incov_cycle_com <- invcov_wide %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
+
+
+if(nrow(invcov_cycle_incom) >0){
+  write_to_shp(invcov_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_inv_cover_by_cycle_incomplete_", ".shp" ))
+}
+
 write_to_shp(invcov_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_cycle.shp"))
 
@@ -835,6 +854,15 @@ cancov <- do.call(joinStandData, args = args_all) %>%
   select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure)
 
 cancov_wide <- cancov %>% pivot_wider(names_from = cycle, values_from = CrownClos)
+
+cancov_cycle_incom <- cancov_wide %>% filter_at(vars(last_col()), all_vars(is.na(.)))
+cancov_cycle_com <- cancov_wide %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
+
+
+if(nrow(cancov_cycle_incom) >0){
+  write_to_shp(cancov_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_canopy_cover_incomplete", ".shp" ))
+}
 
 write_to_shp(cancov_wide, shp_name = paste0(new_path, "shapefiles/", park, "_canopy_cover.shp"))
 
@@ -1070,6 +1098,14 @@ apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
 
 max_cwd <- max(cwd_wide[,c(4:ncol(cwd_wide))])
 
+cwd_cycle_incom <- cwd_wide %>% filter_at(vars(last_col()), all_vars(is.na(.)))
+cwd_cycle_com <- cwd_wide %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
+
+if(nrow(cwd_cycle_incom) >0){
+  write_to_shp(cwd_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_CWD_vol_by_cycle_incomplete", ".shp" ))
+}
+
 write_to_shp(cwd_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", to, ".shp"))
 
@@ -1110,11 +1146,15 @@ fraxspp <- left_join(plots, fraxspp_wide, by = c("Plot_Name", "PlotCode")) |> un
 fraxspp[,5:ncol(fraxspp)][is.na(fraxspp[,5:ncol(fraxspp)])] <- 0
 head(fraxspp)
 
+frax_cycle_incom <- fraxspp %>% filter_at(vars(last_col()), all_vars(is.na(.)))
+frax_cycle_com <- fraxspp %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
 
-write_to_shp <- function(data, x = "X", y = "Y", shp_name){
-  st_write(st_as_sf(data, coords = c(x, y), crs = park_crs),
-           shp_name, delete_layer = TRUE)#FALSE)
+
+if(nrow(frax_cycle_incom) >0){
+  write_to_shp(frax_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_ash_trees_by_cycle_incomplete", ".shp" ))
 }
+
 
 write_to_shp(fraxspp, 
              shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle_", to, ".shp" ))
