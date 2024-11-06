@@ -11,7 +11,7 @@ library(pagedown) # for chrome_print()
 library(servr)
 
 rmd_path <- c("C:/NETN/R_Dev/forestSummaries/") # location where .RMD lives (make sure ends with /)
-if(!dir.exists(paste0(path, "output"))){dir.create(paste0(path, "output"))}
+if(!dir.exists(paste0(rmd_path, "output"))){dir.create(paste0(rmd_path, "output"))}
 out_path <- paste0(rmd_path, "output/") # make sure there's an output folder in path above
 midn_params <- read.csv("MIDN_params.csv")
 report_path <- "C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/" #path where source script
