@@ -805,9 +805,10 @@ if(nrow(pests_no) >0){
   write_to_shp(pests_no, 
                shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections_", cycle_latest, "_no_pests", ".shp" ))
 }
-
+if(nrow(pests_wide) >0){
 write_to_shp(pests_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
+}
 
 #---- Map 7 Canopy Cover ----
 cancov <- do.call(joinStandData, args = args_all) %>% filter(SampleYear != 2007) %>% 
@@ -1192,6 +1193,7 @@ if(nrow(frax_cycle_incom) >0){
                shp_name = paste0(new_path,  "shapefiles/", park, "_ash_trees_by_cycle_incomplete", ".shp" ))
 }
 
+if(nrow(frax_cycle_com) >0){
 write_to_shp(frax_cycle_com, 
              shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle", ".shp" ))
-
+}

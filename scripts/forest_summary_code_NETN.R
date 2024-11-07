@@ -928,9 +928,10 @@ if(nrow(pests_no) >0){
                shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections_", cycle_latest, "_no_pests", ".shp" ))
 }
 
-write_to_shp(pests_wide, shp_name = 
-               paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
-
+if(nrow(pests_wide) >0){
+  write_to_shp(pests_wide, shp_name = 
+                 paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
+}
 
 #---- Map 7 Canopy Cover ----
 cancov <- do.call(joinStandData, args = args_all) %>% 
@@ -1274,8 +1275,11 @@ if(nrow(frax_cycle_incom) >0){
                shp_name = paste0(new_path,  "shapefiles/", park, "_ash_trees_by_cycle_incomplete", ".shp" ))
 }
 
-write_to_shp(frax_cycle_com, 
-             shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle", ".shp" ))
+
+if(nrow(frax_cycle_com) >0){
+  write_to_shp(frax_cycle_com, 
+               shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle", ".shp" ))
+}
 
 
 #---- MABI Only: plot harvest history -----
