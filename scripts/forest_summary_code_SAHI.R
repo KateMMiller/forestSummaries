@@ -68,6 +68,18 @@ names(reg_cycle)
 
 max(reg_cycle[,4:ncol(reg_cycle)])
 
+reg_no <- reg_cycle|> rowwise() |> mutate(tot_reg = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+  filter(tot_reg == 0)
+
+no_reg <- reg_no$Plot_Name
+
+reg_cycle <- reg_cycle|> filter(!(Plot_Name %in% no_reg)) #check total # of plots in all dfs is right
+
+if(nrow(reg_no) >0){
+  write_to_shp(reg_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_cycle_no_reg", ".shp" ))
+}
+
 write_to_shp(reg_cycle, 
              shp_name = paste0(new_path, "shapefiles/", park, "_regen_by_cycle_", to, ".shp" ))
 
@@ -88,6 +100,20 @@ colnames(reg_size_4yr) <- c("Plot_Name", "X", "Y", "SampleYear",
 
 reg_size_4yr$total <- rowSums(reg_size_4yr[,5:ncol(reg_size_4yr)])
 
+size_no <- reg_size_4yr |> filter(total == 0)
+
+no_size <- size_no$Plot_Name
+
+reg_size_4yr <- reg_size_4yr|> filter(!(Plot_Name %in% no_size)) #check total # of plots in all dfs is right
+
+if(nrow(size_no) >0){
+  write_to_shp(size_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_size_class_cycle", cycle_latest, "_no_reg", ".shp" ))
+}
+
+write_to_shp(reg_size_4yr, 
+             shp_name = paste0(new_path, "shapefiles/", park, 
+                               "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
 write_to_shp(reg_size_4yr, 
              shp_name = paste0(new_path, "shapefiles/", park, 
                                "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
@@ -305,6 +331,16 @@ reg_wide$logtot <- log(reg_wide$total + 1)
 
 names(sort(desc(colSums(reg_wide[,c(4:(ncol(reg_wide)-2))]))))
 
+regcomp_no <- reg_wide |> filter(total == 0)
+
+no_regcomp <- regcomp_no$Plot_Name
+
+reg_wide <- reg_wide|> filter(!(Plot_Name %in% no_regcomp)) #check total # of plots in all dfs is right
+
+if(nrow(regcomp_no) >0){
+  write_to_shp(regcomp_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, "_no_reg", ".shp" ))
+}
 
 write_to_shp(reg_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
@@ -356,6 +392,18 @@ tree_wide$total <- rowSums(tree_wide[,4:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
 
 names(tree_wide)
+
+treecomp_no <- tree_wide |> filter(total == 0)
+
+no_treecomp <- treecomp_no$Plot_Name
+
+tree_wide <- tree_wide|> filter(!(Plot_Name %in% no_treecomp)) #check total # of plots in all dfs is right
+
+if(nrow(treecomp_no) >0){
+  write_to_shp(treecomp_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, "_no_trees", ".shp" ))
+}
+
 write_to_shp(tree_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, ".shp"))
 
@@ -403,7 +451,23 @@ invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive'))
             ., by = c("Plot_Name", "cycle")) %>% 
   mutate(quad_cov = replace_na(quad_cov, 0))
 
-invcov_wide <- invcov %>% pivot_wider(names_from = cycle, values_from = quad_cov)
+invcov_wide <- invcov %>% pivot_wider(names_from = cycle, 
+                                      values_from = quad_cov, 
+                                      names_prefix = "cycle_",
+                                      values_fill = NA)
+
+invcov_no <- invcov_wide |> rowwise() |> mutate(tot_invcov = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+  filter(tot_invcov == 0)
+
+no_invcov <- invcov_no$Plot_Name
+
+invcov_wide <- invcov_wide |> filter(!(Plot_Name %in% no_invcov)) #check total # of plots in all dfs is right
+
+if(nrow(invcov_no) >0){
+  write_to_shp(invcov_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_inv_cover_by_cycle_no_invcov", ".shp" ))
+}
+
 
 write_to_shp(invcov_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_cycle.shp"))
@@ -491,6 +555,17 @@ if("NONPRE" %in% names(invspp)){invspp <- invspp |> select(-NONPRE)}
 
 invspp$totcov = rowSums(invspp[,4:ncol(invspp)])
 
+invspp_no <- invspp |> filter(totcov == 0)
+
+no_invs <- invspp_no$Plot_Name
+
+invspp <- invspp|> filter(!(Plot_Name %in% no_invs)) #check total # of plots in all dfs is right
+
+if(nrow(invspp_no) >0){
+  write_to_shp(invspp_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_inv_cover_by_species_no_invasives", ".shp" ))
+}
+
 write_to_shp(invspp, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_species.shp"))
 
@@ -569,15 +644,43 @@ pests_wide <- pest_detects %>%
 if(ncol(pests_wide) > 4){
 pests_wide$none <- rowSums(pests_wide[,5:ncol(pests_wide)])
 } else {pests_wide$none <- 0}
-write_to_shp(pests_wide, shp_name = 
-               paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
 
+pests_no <- pests_wide |> filter(none == 0)
+
+no_pests <- pests_no$Plot_Name
+
+pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) #check total # of plots in all dfs is right
+
+if(nrow(pests_no) >0){
+  write_to_shp(pests_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections_", cycle_latest, "_no_pests", ".shp" ))
+}
+
+if(nrow(pests_wide) >0){
+  write_to_shp(pests_wide, shp_name = 
+                 paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
+}
 #---- Map 7 Canopy Cover ----
 cancov <- do.call(joinStandData, args = args_all) %>% 
   select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure) |> 
   filter(!Plot_Name %in% "COLO-380")
 
-cancov_wide <- cancov %>% pivot_wider(names_from = cycle, values_from = CrownClos)
+cancov_wide <- cancov %>% pivot_wider(names_from = cycle, 
+                                      values_from = CrownClos, 
+                                      names_prefix = "cycle_",
+                                      values_fill = NA)
+
+cancov_no <- cancov_wide |> rowwise() |> mutate(tot_cancov = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+  filter(tot_cancov == 0)
+
+no_cancov <- cancov_no$Plot_Name
+
+cancov_wide <- cancov_wide |> filter(!(Plot_Name %in% no_cancov)) #check total # of plots in all dfs is right
+
+if(nrow(cancov_no) >0){
+  write_to_shp(cancov_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_canopy_cover_by_no_cancov", ".shp" ))
+}
 
 write_to_shp(cancov_wide, shp_name = paste0(new_path, "shapefiles/", park, "_canopy_cover.shp"))
 
@@ -828,7 +931,7 @@ write.csv(grp_spp, paste0(new_path, "tables/", 'Table_5_', park, "_tree_species_
           row.names = FALSE)
 
 
-#---- CWD by cycle
+# Map 11: CWD by cycle ------------------------------------
 cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol) |> 
   filter(!Plot_Name %in% "COLO-380") 
 
@@ -836,19 +939,32 @@ cwd <- cwd1 %>% group_by(Plot_Name, cycle) %>%
   summarize(cwd_vol = sum(CWD_Vol, na.rm = T), .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate), 
             ., by = c("Plot_Name", "cycle"))
-  
+
 cwd$cwd_vol[is.na(cwd$cwd_vol)] <- 0
 
 cwd_wide <- cwd %>% pivot_wider(names_from = cycle, 
                                 values_from = cwd_vol, 
                                 names_prefix = "cycle_",
-                                values_fill = 0) 
+                                values_fill = NA) # Better for mapping if unsampled plots are NA not 0
 
 apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
 
 max_cwd <- max(cwd_wide[,c(4:ncol(cwd_wide))])
+cwd_no <- cwd_wide |> rowwise() |> mutate(tot_cwd = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+  filter(tot_cwd == 0)
 
-# Map 13: CWD Rating ------------------------------------------------------
+no_cwd <- cwd_no$Plot_Name
+
+cwd_wide <- cwd_wide |> filter(!(Plot_Name %in% no_cwd))
+
+if(nrow(cwd_no) >0){
+  write_to_shp(cwd_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_cwd_vol_by_cycle_no_cwd", ".shp" ))
+}
+write_to_shp(cwd_wide, shp_name = 
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", to, ".shp"))
+
+# Map 12: CWD Rating ------------------------------------------------------
 cwd_4yr1 <- joinCWDData(from = from_4yr, to = to) %>% select(Plot_Name, CWD_Vol) |> 
   filter(!Plot_Name %in% "COLO-380") 
 
@@ -858,5 +974,45 @@ cwd_4yr <- cwd_4yr1 %>% group_by(Plot_Name) %>%
             ., by = c("Plot_Name"))
 
 write_to_shp(cwd_4yr, shp_name = 
-               paste0(new_path, "shapefiles/", park, "_CWD_vol_for_rating_", ".shp"))
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_for_rating_", to, ".shp"))
 
+#----- Map 13: Number of Ash tree stems over time ------
+Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', 
+                  'Fraxinus nigra', 'Fraxinus profunda')
+
+frax1 <- do.call(joinTreeData, c(args_vs, status = 'live')) |> filter(ScientificName %in% Fraxinus_spp)|> 
+  filter(!Plot_Name %in% "COLO-380") 
+
+frax2 <- frax1 %>% group_by(Plot_Name, PlotCode, cycle) %>% 
+  summarize(num_stems = sum(num_stems),
+            sppcode = "FRAXSPP",
+            .groups = 'drop') 
+
+frax_plotevs <- plotevs %>% select(Plot_Name, PlotCode, cycle, X = xCoordinate, Y = yCoordinate) 
+
+frax <- left_join(frax_plotevs, frax2 |> select(-sppcode), by = c("Plot_Name", "PlotCode", "cycle")) %>%
+  arrange(cycle, Plot_Name, PlotCode) 
+
+frax$num_stems[is.na(frax$num_stems)] <- 0
+
+frax_wide <- frax %>% pivot_wider(names_from = cycle, 
+                                  values_from = num_stems, 
+                                  names_prefix = "cycle_",
+                                  values_fill = NA) # Better for mapping if unsampled plots are NA not 0
+
+
+frax_no <- frax_wide |> rowwise() |> mutate(tot_stems = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+  filter(tot_stems == 0)
+no_ash <- frax_no$Plot_Name
+
+frax_wide <- frax_wide |> filter(!(Plot_Name %in% no_ash)) # No. of plots in no_ash + frax_wide should = tot plots for park
+
+if(nrow(frax_no) >0){
+  write_to_shp(frax_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_ash_trees_by_cycle_no_ash", ".shp" ))
+}
+
+if(nrow(frax_wide) >0){
+  write_to_shp(frax_wide, 
+               shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle", ".shp" ))
+}
