@@ -253,9 +253,11 @@ table td{
   font-size: 10px;
 /*  margin-right: 4px;
   margin-left: 4px; */
+  
   @bottom-left{
-    content: "October 2023"
-  }
+     content: "November 2024";
+  } 
+  
   @bottom-right{
     content: "Page " counter(page) ' of ' counter(pages);
   }
