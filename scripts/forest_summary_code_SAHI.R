@@ -571,8 +571,10 @@ write_to_shp(invspp, shp_name =
 
 #---- Map 8 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
-disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name %in% "COLO-380") %>%
-  filter(DisturbanceSummary!= "None") %>%
+disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  
+  filter(EventID %in% evs_4yr) %>%
+  
+  filter(DisturbanceSummary != "None") %>%
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -588,18 +590,19 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  filter(!Plot_Name
 
 # Next compile pest/pathogens from Tree Conditions
 treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live')) |> 
-  filter(!Plot_Name %in% "COLO-380") 
+  filter(EventID %in% evs_4yr) 
+
+table(treecond_4yr$PanelCode, treecond_4yr$SampleYear)
 
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
            "SB", "SLF", "SOD", "SPB", "SW")
 
-treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>% 
+treepests <- treecond_4yr %>% select(Plot_Name, PlotCode, all_of(pests)) %>% 
   #group_by(Plot_Name) %>% summarize(across(all_of(pests), ~ifelse(sum(.x) > 0, 1, 0))) %>% 
-  group_by(Plot_Name) %>% summarize_at(vars(all_of(pests)), ~ifelse(sum(.x) > 0, 1, 0)) %>% 
-  pivot_longer(-Plot_Name, names_to = "pest", values_to = 'tree_cond') %>% 
+  group_by(Plot_Name, PlotCode) %>% summarize_at(vars(all_of(pests)), ~ifelse(sum(.x) > 0, 1, 0)) %>% 
+  pivot_longer(-c(Plot_Name, PlotCode), names_to = "pest", values_to = 'tree_cond') %>% 
   filter(tree_cond > 0) %>% 
-  arrange(Plot_Name) %>% unique() %>% select(Plot_Name, pest)
-
+  arrange(Plot_Name) %>% unique() %>% select(Plot_Name, PlotCode, pest)
 
 # Compile notes from visit that could contain mentions of pests
 #Review notes for false positives first, remove from final table below
@@ -637,28 +640,91 @@ pests_wide <- pest_detects %>%
   pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
   select(-None)
 
-# if(park == "MABI"){
-# pests_wide$EAB[pests_wide$Plot_Name == "MABI-013" & pests_wide$SampleYear == 2022] <- 0
-# # Tree note said "No EAB", but was picked up in query for positive EAB detections
-# }
-if(ncol(pests_wide) > 4){
-pests_wide$none <- rowSums(pests_wide[,5:ncol(pests_wide)])
-} else {pests_wide$none <- 0}
+# if(ncol(pests_wide) > 5){
+# pests_wide$none <- rowSums(pests_wide[,6:ncol(pests_wide)])
+# } else {pests_wide$none <- 0}
 
-pests_no <- pests_wide |> filter(none == 0)
+if(park == "FRSP"){
+  pests_wide$BLD[pests_wide$Plot_Name == "FRSP-058" & pests_wide$SampleYear == 2023] <- 0
+  # Tree note said "possible BLD", but not confirmed and unlikely
+}
+
+if(park == "FRSP"){
+  pests_wide$BLD[pests_wide$Plot_Name == "FRSP-291" & pests_wide$SampleYear == 2022] <- 0
+  # Tree note said "not BLD", but was picked up in query for positive BLD detections
+}
+
+if(park == "FRSP"){
+  pests_wide$BBD[pests_wide$Plot_Name == "FRSP-316" & pests_wide$SampleYear == 2022] <- 0
+  # Tree note said "not BBD", but was picked up in query for positive BBD detections
+}
+
+if(park == "VAFO"){
+  pests_wide$BLD[pests_wide$Plot_Name == "VAFO-240" & pests_wide$SampleYear == 2023] <- 0
+  # Tree note said "No BLD", but was picked up in query for positive BLD detections
+}
+
+if(park == "COLO"){
+  pests_wide$BBD[pests_wide$Plot_Name == "COLO-342" & pests_wide$SampleYear == 2024] <- 0
+  pests_wide$BBD[pests_wide$Plot_Name == "COLO-351" & pests_wide$SampleYear == 2022] <- 0
+  # Tree note said "No BBD", but was picked up in query for positive BBD detections
+}# COLO-344 2022 has notes for "No EAB" on some trees but other trees on plot did have EAB so not added here
+
+if(park == "RICH"){
+  pests_wide$BLD[pests_wide$Plot_Name == "RICH-019" & pests_wide$SampleYear == 2023] <- 0
+  pests_wide$BLD[pests_wide$Plot_Name == "RICH-020" & pests_wide$SampleYear == 2023] <- 0
+  # Crew suspected BLD, but state forester confirmed it was not
+}
+pests_wide$totpests = rowSums(pests_wide[,6:ncol(pests_wide)], na.rm = T)
+
+pests_no <- pests_wide |> filter(totpests == 0)
 
 no_pests <- pests_no$Plot_Name
 
-pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) #check total # of plots in all dfs is right
+pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) |> select(-totpests) #check total # of plots in all dfs is right
 
 if(nrow(pests_no) >0){
   write_to_shp(pests_no, 
-               shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections_", cycle_latest, "_no_pests", ".shp" ))
+               shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_no_pests", ".shp" ))
 }
+if(ncol(pests_wide) >5){
+  pest.1 <- pests_wide %>% filter(.[[6]] > 0)
+  if(nrow(pest.1) >0){
+    write_to_shp(pest.1, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.1", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >6){
+  pest.2 <- pests_wide %>% filter(.[[7]] > 0)
+  if(nrow(pest.2) >0){
+    write_to_shp(pest.2, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.2", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >7){
+  pest.3 <- pests_wide %>% filter(.[[8]] > 0)
+  if(nrow(pest.3) >0){
+    write_to_shp(pest.3, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.3", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >8){
+  pest.4 <- pests_wide %>% filter(.[[9]] > 0)
+  if(nrow(pest.4) >0){
+    write_to_shp(pest.4, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.4", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >9){
+  pest.5 <- pests_wide %>% filter(.[[10]] > 0)
+  if(nrow(pest.5) >0){
+    write_to_shp(pest.5, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.5", ".shp" ))
+  }}
 
 if(nrow(pests_wide) >0){
   write_to_shp(pests_wide, shp_name = 
-                 paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
+                 paste0(new_path, "shapefiles/", park, "_pest_detections", "_all", ".shp"))
 }
 #---- Map 7 Canopy Cover ----
 cancov <- do.call(joinStandData, args = args_all) %>% 

@@ -759,9 +759,9 @@ pests_wide <- pest_detects %>%
   pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
   select(-None)
 
-if(ncol(pests_wide) > 5){
-pests_wide$none <- rowSums(pests_wide[,6:ncol(pests_wide)])
-} else {pests_wide$none <- 0}
+# if(ncol(pests_wide) > 5){
+# pests_wide$none <- rowSums(pests_wide[,6:ncol(pests_wide)])
+# } else {pests_wide$none <- 0}
 
 if(park == "FRSP"){
   pests_wide$BLD[pests_wide$Plot_Name == "FRSP-058" & pests_wide$SampleYear == 2023] <- 0
@@ -794,20 +794,56 @@ if(park == "RICH"){
   pests_wide$BLD[pests_wide$Plot_Name == "RICH-020" & pests_wide$SampleYear == 2023] <- 0
   # Crew suspected BLD, but state forester confirmed it was not
 }
+pests_wide$totpests = rowSums(pests_wide[,6:ncol(pests_wide)], na.rm = T)
 
-pests_no <- pests_wide |> filter(none == 0)
+pests_no <- pests_wide |> filter(totpests == 0)
 
 no_pests <- pests_no$Plot_Name
 
-pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) #check total # of plots in all dfs is right
+pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) |> select(-totpests) #check total # of plots in all dfs is right
 
 if(nrow(pests_no) >0){
   write_to_shp(pests_no, 
-               shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections_", cycle_latest, "_no_pests", ".shp" ))
+               shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_no_pests", ".shp" ))
 }
+if(ncol(pests_wide) >5){
+  pest.1 <- pests_wide %>% filter(.[[6]] > 0)
+  if(nrow(pest.1) >0){
+    write_to_shp(pest.1, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.1", ".shp" ))
+}}
+
+if(ncol(pests_wide) >6){
+  pest.2 <- pests_wide %>% filter(.[[7]] > 0)
+  if(nrow(pest.2) >0){
+    write_to_shp(pest.2, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.2", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >7){
+  pest.3 <- pests_wide %>% filter(.[[8]] > 0)
+  if(nrow(pest.3) >0){
+    write_to_shp(pest.3, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.3", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >8){
+  pest.4 <- pests_wide %>% filter(.[[9]] > 0)
+  if(nrow(pest.4) >0){
+    write_to_shp(pest.4, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.4", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >9){
+  pest.5 <- pests_wide %>% filter(.[[10]] > 0)
+  if(nrow(pest.5) >0){
+    write_to_shp(pest.5, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.5", ".shp" ))
+  }}
+
 if(nrow(pests_wide) >0){
 write_to_shp(pests_wide, shp_name = 
-               paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
+               paste0(new_path, "shapefiles/", park, "_pest_detections", "_all", ".shp"))
 }
 
 #---- Map 7 Canopy Cover ----
@@ -1089,7 +1125,7 @@ write.csv(ed_all_final, paste0(new_path, 'tables/', 'Table_4_', park, "_early_de
 
 # Table 5: Tree species included in Map 3+4 -------------------------------
 
-grp_spp <- full_join(reg_spp,tree_spp, by = "ScientificName") %>% arrange(ScientificName)
+grp_spp <- full_join(reg_spp, tree_spp, by = "ScientificName") %>% arrange(ScientificName)
 write.csv(grp_spp, paste0(new_path, "tables/", 'Table_5_', park, "_tree_species_in_Map3_4.csv"),
           row.names = FALSE)
 
@@ -1197,3 +1233,4 @@ if(nrow(frax_cycle_com) >0){
 write_to_shp(frax_cycle_com, 
              shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle", ".shp" ))
 }
+

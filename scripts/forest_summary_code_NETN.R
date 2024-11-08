@@ -906,7 +906,6 @@ if(park == "SAGA" & to == 2022){
   # Tree note said "No EAB", but was picked up in query for positive EAB detections
 }
 
-pests_wide$none <- rowSums(pests_wide[,5:ncol(pests_wide)])
 
 if(park %in% c("MABI", "SAGA")){
   worms <- do.call(joinStandData, args = args_vs) %>% select(Plot_Name, cycle, Earthworms) %>% 
@@ -917,52 +916,57 @@ if(park %in% c("MABI", "SAGA")){
   pests_wide <- left_join(pests_wide, worms, by = "Plot_Name")
   
   }
-pests_no <- pests_wide |> filter(none == 0)
+pests_wide$totpests = rowSums(pests_wide[,6:ncol(pests_wide)], na.rm = T)
+
+pests_no <- pests_wide |> filter(totpests == 0)
 
 no_pests <- pests_no$Plot_Name
 
-pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) #check total # of plots in all dfs is right
+pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) |> select(-totpests) #check total # of plots in all dfs is right
 
 if(nrow(pests_no) >0){
   write_to_shp(pests_no, 
-               shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections_", cycle_latest, "_no_pests", ".shp" ))
+               shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_no_pests", ".shp" ))
 }
+if(ncol(pests_wide) >5){
+  pest.1 <- pests_wide %>% filter(.[[6]] > 0)
+  if(nrow(pest.1) >0){
+    write_to_shp(pest.1, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.1", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >6){
+  pest.2 <- pests_wide %>% filter(.[[7]] > 0)
+  if(nrow(pest.2) >0){
+    write_to_shp(pest.2, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.2", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >7){
+  pest.3 <- pests_wide %>% filter(.[[8]] > 0)
+  if(nrow(pest.3) >0){
+    write_to_shp(pest.3, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.3", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >8){
+  pest.4 <- pests_wide %>% filter(.[[9]] > 0)
+  if(nrow(pest.4) >0){
+    write_to_shp(pest.4, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.4", ".shp" ))
+  }}
+
+if(ncol(pests_wide) >9){
+  pest.5 <- pests_wide %>% filter(.[[10]] > 0)
+  if(nrow(pest.5) >0){
+    write_to_shp(pest.5, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.5", ".shp" ))
+  }}
 
 if(nrow(pests_wide) >0){
   write_to_shp(pests_wide, shp_name = 
-                 paste0(new_path, "shapefiles/", park, "_pest_detections_", cycle_latest, ".shp"))
+                 paste0(new_path, "shapefiles/", park, "_pest_detections", "_all", ".shp"))
 }
-
-#---- Map 7 Canopy Cover ----
-cancov <- do.call(joinStandData, args = args_all) %>% 
-  select(Plot_Name, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure)
-
-cancov_wide <- cancov %>% pivot_wider(names_from = cycle, 
-                                      values_from = CrownClos, 
-                                      names_prefix = "cycle_",
-                                      values_fill = NA)
-
-cancov_no <- cancov_wide |> rowwise() |> mutate(tot_cancov = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
-  filter(tot_cancov == 0)
-
-no_cancov <- cancov_no$Plot_Name
-
-cancov_wide <- cancov_wide |> filter(!(Plot_Name %in% no_cancov)) #check total # of plots in all dfs is right
-
-cancov_cycle_incom <- cancov_wide %>% filter_at(vars(last_col()), all_vars(is.na(.))) %>% select(-tail(names(.), 1))
-cancov_cycle_com <- cancov_wide %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
-
-if(nrow(cancov_no) >0){
-  write_to_shp(cancov_no, 
-               shp_name = paste0(new_path,  "shapefiles/", park, "_canopy_cover_no_cancov", ".shp" ))
-}
-
-if(nrow(cancov_cycle_incom) >0){
-  write_to_shp(cancov_cycle_incom, 
-               shp_name = paste0(new_path,  "shapefiles/", park, "_canopy_cover_incomplete", ".shp" ))
-}
-
-write_to_shp(cancov_wide, shp_name = paste0(new_path, "shapefiles/", park, "_canopy_cover.shp"))
 
 #---- Table 2 Average Invasive cover by plot and cycle ----
 inv_plots <- do.call(sumSpeciesList, args = c(args_all, speciesType = "invasive")) %>% 
