@@ -597,12 +597,12 @@ table(treecond_4yr$PanelCode, treecond_4yr$SampleYear)
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
            "SB", "SLF", "SOD", "SPB", "SW")
 
-treepests <- treecond_4yr %>% select(Plot_Name, PlotCode, all_of(pests)) %>% 
+treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>% 
   #group_by(Plot_Name) %>% summarize(across(all_of(pests), ~ifelse(sum(.x) > 0, 1, 0))) %>% 
-  group_by(Plot_Name, PlotCode) %>% summarize_at(vars(all_of(pests)), ~ifelse(sum(.x) > 0, 1, 0)) %>% 
-  pivot_longer(-c(Plot_Name, PlotCode), names_to = "pest", values_to = 'tree_cond') %>% 
+  group_by(Plot_Name) %>% summarize_at(vars(all_of(pests)), ~ifelse(sum(.x) > 0, 1, 0)) %>% 
+  pivot_longer(-c(Plot_Name), names_to = "pest", values_to = 'tree_cond') %>% 
   filter(tree_cond > 0) %>% 
-  arrange(Plot_Name) %>% unique() %>% select(Plot_Name, PlotCode, pest)
+  arrange(Plot_Name) %>% unique() %>% select(Plot_Name, pest)
 
 # Compile notes from visit that could contain mentions of pests
 #Review notes for false positives first, remove from final table below
@@ -637,8 +637,7 @@ pest_detects <- rbind(treepests, disturb, vnotes) %>%
          detect = ifelse(pest == "None", 0, 1))
 
 pests_wide <- pest_detects %>% 
-  pivot_wider(names_from = pest, values_from = detect, values_fill = 0) %>% 
-  select(-None)
+  pivot_wider(names_from = pest, values_from = detect, values_fill = 0) 
 
 # if(ncol(pests_wide) > 5){
 # pests_wide$none <- rowSums(pests_wide[,6:ncol(pests_wide)])
@@ -675,13 +674,16 @@ if(park == "RICH"){
   pests_wide$BLD[pests_wide$Plot_Name == "RICH-020" & pests_wide$SampleYear == 2023] <- 0
   # Crew suspected BLD, but state forester confirmed it was not
 }
+
+pests_wide <- left_join( plotevs_4yr |> select(Plot_Name, PlotCode), pests_wide, by = "Plot_Name") 
+
 pests_wide$totpests = rowSums(pests_wide[,6:ncol(pests_wide)], na.rm = T)
 
 pests_no <- pests_wide |> filter(totpests == 0)
 
 no_pests <- pests_no$Plot_Name
 
-pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) |> select(-totpests) #check total # of plots in all dfs is right
+pests_wide <- pests_wide|> filter(!(Plot_Name %in% no_pests)) |> select(-totpests, -None) #check total # of plots in all dfs is right
 
 if(nrow(pests_no) >0){
   write_to_shp(pests_no, 
