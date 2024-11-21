@@ -41,16 +41,20 @@ write.csv(reg_cycle_wide,
           paste0(new_path, "tables/", "Table_1_", park, "_regen_by_cycle.csv"), row.names = FALSE)
 
 #---- Map 1 regen by cycle ----
-reg_cycle <- reg %>% group_by(Plot_Name, cycle) %>% 
-                     summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
-                     left_join(plotevs %>% select(Plot_Name, xCoordinate, yCoordinate, cycle), ., 
-                               by = c("Plot_Name", "cycle")) %>% 
-                     arrange(Plot_Name, cycle) %>% 
-                     pivot_wider(names_from = cycle, values_from = regen_den, 
-                                 names_prefix = "cycle_", values_fill = 0) %>% 
-                     rename(X = xCoordinate, Y = yCoordinate) #abbr for shapefile
+reg_cycle3 <- reg %>% group_by(Plot_Name, PlotCode, cycle) %>% 
+  summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
+  left_join(plotevs %>% select(Plot_Name, PlotCode, xCoordinate, yCoordinate, cycle), ., 
+            by = c("Plot_Name", "PlotCode", "cycle")) %>% 
+  arrange(Plot_Name, PlotCode, cycle) %>% 
+  pivot_wider(names_from = cycle, values_from = regen_den, 
+              names_prefix = "cycle_", values_fill = NA) %>% 
+  rename(X = xCoordinate, Y = yCoordinate) #abbr for shapefile
 
-max(reg_cycle[,4:ncol(reg_cycle)])
+reg_cycle2 <- reg_cycle3 %>% mutate(MAX = max(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+reg_cycle <- reg_cycle2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+#max(reg_cycle[,4:ncol(reg_cycle)])
 
 reg_no <- reg_cycle|> rowwise() |> mutate(tot_reg = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
   filter(tot_reg == 0)
@@ -686,6 +690,42 @@ mean(dbi$DBI) #SAGA = 3.67
 write_to_shp(dbi, shp_name = 
          paste0(new_path, "shapefiles/", park, "_dbi_cycle_", cycle_latest, ".shp"))
 
+#---- Map 7 Canopy Cover ----
+cancov <- do.call(joinStandData, args = args_all)  %>% 
+  select(Plot_Name, PlotCode, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure) |> 
+  arrange(cycle, Plot_Name, PlotCode) %>% 
+  filter(!Plot_Name %in% "COLO-380") #Canopy cover not collected in MIDN in 2007
+
+cancov_wide3 <- cancov %>% pivot_wider(names_from = cycle, 
+                                       values_from = CrownClos, 
+                                       names_prefix = "cycle_",
+                                       values_fill = NA)
+
+cancov_wide2 <- cancov_wide3 %>% mutate(MAX = max(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+cancov_wide <- cancov_wide2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+cancov_no_C1 <- cancov_wide |> filter(is.na(cycle_1))
+
+no_cancov_C1 <- cancov_no_C1$Plot_Name
+
+cancov_wide <- cancov_wide |> filter(!(Plot_Name %in% no_cancov_C1)) #check total # of plots in all dfs is right
+
+cancov_cycle_incom <- cancov_wide %>% filter_at(vars(last_col()), all_vars(is.na(.))) %>% select(-tail(names(.), 1))
+cancov_cycle_com <- cancov_wide %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
+
+if(nrow(cancov_no_C1) >0){
+  write_to_shp(cancov_no_C1, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_canopy_cover_by_no_cancov_C1", ".shp" ))
+}
+
+if(nrow(cancov_cycle_incom) >0){
+  write_to_shp(cancov_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_canopy_cover_incomplete", ".shp" ))
+}
+
+write_to_shp(cancov_cycle_com, shp_name = paste0(new_path, "shapefiles/", park, "_canopy_cover.shp"))
+
 
 #---- Map 9 Invasive % Cover by Cycle ----
 invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive')) %>% 
@@ -695,10 +735,14 @@ invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive'))
             ., by = c("Plot_Name", "cycle")) %>% 
   mutate(quad_cov = replace_na(quad_cov, 0))
 
-invcov_wide <- invcov %>% pivot_wider(names_from = cycle, 
-                                      values_from = quad_cov, 
-                                      names_prefix = "cycle_",
-                                      values_fill = NA)
+invcov_wide3 <- invcov %>% pivot_wider(names_from = cycle, 
+                                       values_from = quad_cov, 
+                                       names_prefix = "cycle_",
+                                       values_fill = NA)
+
+invcov_wide2 <- invcov_wide3 %>% mutate(MAX = max(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+invcov_wide <- invcov_wide2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
 
 invcov_no <- invcov_wide |> rowwise() |> mutate(tot_invcov = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
   filter(tot_invcov == 0)
@@ -1193,14 +1237,18 @@ cwd <- cwd1 %>% group_by(Plot_Name, cycle) %>%
   
 cwd$cwd_vol[is.na(cwd$cwd_vol)] <- 0
 
-cwd_wide <- cwd %>% pivot_wider(names_from = cycle, 
-                                values_from = cwd_vol, 
-                                names_prefix = "cycle_",
-                                values_fill = NA) # Better for mapping if unsampled plots are NA not 0
+cwd_wide3 <- cwd %>% pivot_wider(names_from = cycle, 
+                                 values_from = cwd_vol, 
+                                 names_prefix = "cycle_",
+                                 values_fill = NA) # Better for mapping if unsampled plots are NA not 0
 
-apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
+apply(cwd_wide3[,5:ncol(cwd_wide3)], 2, mean)
 
-max_cwd <- max(cwd_wide[,c(4:ncol(cwd_wide))])
+max_cwd <- max(cwd_wide3[,c(5:ncol(cwd_wide3))], na.rm = T)
+
+cwd_wide2 <- cwd_wide3 %>% mutate(MAX = max(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+cwd_wide <- cwd_wide2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
 
 cwd_no <- cwd_wide |> rowwise() |> mutate(tot_cwd = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
   filter(tot_cwd == 0)
@@ -1256,10 +1304,14 @@ frax <- left_join(frax_plotevs, frax2 |> select(-sppcode), by = c("Plot_Name", "
 
 frax$num_stems[is.na(frax$num_stems)] <- 0
 
-frax_wide <- frax %>% pivot_wider(names_from = cycle, 
-                                  values_from = num_stems, 
-                                  names_prefix = "cycle_",
-                                  values_fill = NA) # Better for mapping if unsampled plots are NA not 0
+frax_wide3 <- frax %>% pivot_wider(names_from = cycle, 
+                                   values_from = num_stems, 
+                                   names_prefix = "cycle_",
+                                   values_fill = NA) # Better for mapping if unsampled plots are NA not 0
+
+frax_wide2 <- frax_wide3 %>% mutate(MAX = max(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+frax_wide <- frax_wide2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
 
 
 frax_no <- frax_wide |> rowwise() |> mutate(tot_stems = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
