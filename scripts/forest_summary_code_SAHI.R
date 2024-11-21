@@ -117,9 +117,6 @@ if(nrow(size_no) >0){
 write_to_shp(reg_size_4yr, 
              shp_name = paste0(new_path, "shapefiles/", park, 
                                "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
-write_to_shp(reg_size_4yr, 
-             shp_name = paste0(new_path, "shapefiles/", park, 
-                               "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
 
 #---- Figure 1A Regen trends by size class ----
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
@@ -184,8 +181,6 @@ reg_trend_plot
   
 ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"),
        height = 5.5, width = 7.5, units = 'in')
-ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.png"),
-       height = 5.5, width = 7.5, units = 'in', dpi = 600)
 
 #---- Figure 1B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
@@ -287,8 +282,6 @@ dbh_trend_plot
 
 ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')
-ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.png"),
-       height = 5, width = 7.5, units = 'in', dpi = 600)
 
 #---- Map 3 Regen by composition ----
 reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m')) |> 
@@ -650,37 +643,10 @@ pests_wide <- pest_detects %>%
 # pests_wide$none <- rowSums(pests_wide[,6:ncol(pests_wide)])
 # } else {pests_wide$none <- 0}
 
-if(park == "FRSP"){
-  pests_wide$BLD[pests_wide$Plot_Name == "FRSP-058" & pests_wide$SampleYear == 2023] <- 0
-  # Tree note said "possible BLD", but not confirmed and unlikely
-}
-
-if(park == "FRSP"){
-  pests_wide$BLD[pests_wide$Plot_Name == "FRSP-291" & pests_wide$SampleYear == 2022] <- 0
-  # Tree note said "not BLD", but was picked up in query for positive BLD detections
-}
-
-if(park == "FRSP"){
-  pests_wide$BBD[pests_wide$Plot_Name == "FRSP-316" & pests_wide$SampleYear == 2022] <- 0
-  # Tree note said "not BBD", but was picked up in query for positive BBD detections
-}
-
-if(park == "VAFO"){
-  pests_wide$BLD[pests_wide$Plot_Name == "VAFO-240" & pests_wide$SampleYear == 2023] <- 0
-  # Tree note said "No BLD", but was picked up in query for positive BLD detections
-}
-
-if(park == "COLO"){
-  pests_wide$BBD[pests_wide$Plot_Name == "COLO-342" & pests_wide$SampleYear == 2024] <- 0
-  pests_wide$BBD[pests_wide$Plot_Name == "COLO-351" & pests_wide$SampleYear == 2022] <- 0
-  # Tree note said "No BBD", but was picked up in query for positive BBD detections
-}# COLO-344 2022 has notes for "No EAB" on some trees but other trees on plot did have EAB so not added here
-
-if(park == "RICH"){
-  pests_wide$BLD[pests_wide$Plot_Name == "RICH-019" & pests_wide$SampleYear == 2023] <- 0
-  pests_wide$BLD[pests_wide$Plot_Name == "RICH-020" & pests_wide$SampleYear == 2023] <- 0
-  # Crew suspected BLD, but state forester confirmed it was not
-}
+# if(park == "FRSP"){
+#   pests_wide$BLD[pests_wide$Plot_Name == "FRSP-058" & pests_wide$SampleYear == 2023] <- 0
+#   # Tree note said "possible BLD", but not confirmed and unlikely
+# }
 
 pests_wide <- left_join( plotevs_4yr |> select(Plot_Name, PlotCode), pests_wide, by = "Plot_Name") 
 
@@ -778,14 +744,14 @@ inv_plots_wide <- inv_plots %>% pivot_wider(names_from = cycle,
 write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park, 
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
-#---- Table 3 Invasive species by number of plots cycle
-inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>%
+#---- Table 3 Exotic species by number of plots cycle
+inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>%
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
 
-centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
+centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Centaurea", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -798,7 +764,7 @@ centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive'
 miss_cy <- setdiff(names(inv_spp1), names(centaurea))
 centaurea[miss_cy] <- 0
 
-lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
+lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(ScientificName %in% c("Lonicera - Exotic", "Lonicera morrowii", "Lonicear tatartica", 
                                "Lonicear X bella", "Lonicera maackii")) %>% 
   mutate(present = 1) %>% 
@@ -812,7 +778,7 @@ lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')
 miss_cy <- setdiff(names(inv_spp1), names(lonicera))
 lonicera[miss_cy] <- 0
 
-euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
+euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(ScientificName %in% c("Euonymus", "Euonymus alatus", "Euonymus atropurpureus"))  %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -826,7 +792,7 @@ euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')
 miss_cy <- setdiff(names(inv_spp1), names(euonymus))
 euonymus[miss_cy] <- 0
 
-ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
+ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Ligustrum", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -840,7 +806,7 @@ ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive'
 miss_cy <- setdiff(names(inv_spp1), names(ligustrum))
 ligustrum[miss_cy] <- 0
 
-vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
+vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Vincetoxicum", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
@@ -854,7 +820,7 @@ vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasi
 miss_cy <- setdiff(names(inv_spp1), names(vincetoxicum))
 vincetoxicum[miss_cy] <- 0
 
-elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'invasive')) %>% 
+elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Elaeagnus", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
