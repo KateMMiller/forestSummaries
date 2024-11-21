@@ -46,8 +46,9 @@ library(vegan)
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
 park <<- params$park #assigns to global env. so easier for later code to find
-#path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' 
-path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' # output files go here
+path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' 
+#path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
+# output files go here
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
 from <<- as.numeric(midn_params$from[midn_params$park == park])
