@@ -849,7 +849,7 @@ write_to_shp(pests_wide, shp_name =
 }
 
 #---- Map 7 Canopy Cover ----
-cancov <- do.call(joinStandData, args = args_all) %>% filter(SampleYear != 2007) %>% 
+cancov <- do.call(joinStandData, args = args_all)  %>% 
   select(Plot_Name, PlotCode, cycle, X = xCoordinate, Y = yCoordinate, CrownClos = Pct_Crown_Closure) |> 
   arrange(cycle, Plot_Name, PlotCode) %>% 
   filter(!Plot_Name %in% "COLO-380") #Canopy cover not collected in MIDN in 2007
@@ -859,19 +859,18 @@ cancov_wide <- cancov %>% pivot_wider(names_from = cycle,
                                       names_prefix = "cycle_",
                                       values_fill = NA)
 
-cancov_no <- cancov_wide |> rowwise() |> mutate(tot_cancov = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
-  filter(tot_cancov == 0)
+cancov_no_C1 <- cancov_wide |> filter(is.na(cycle_1))
 
-no_cancov <- cancov_no$Plot_Name
+no_cancov_C1 <- cancov_no_C1$Plot_Name
 
-cancov_wide <- cancov_wide |> filter(!(Plot_Name %in% no_cancov)) #check total # of plots in all dfs is right
+cancov_wide <- cancov_wide |> filter(!(Plot_Name %in% no_cancov_C1)) #check total # of plots in all dfs is right
 
 cancov_cycle_incom <- cancov_wide %>% filter_at(vars(last_col()), all_vars(is.na(.))) %>% select(-tail(names(.), 1))
 cancov_cycle_com <- cancov_wide %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
 
-if(nrow(cancov_no) >0){
-  write_to_shp(cancov_no, 
-               shp_name = paste0(new_path,  "shapefiles/", park, "_canopy_cover_by_no_cancov", ".shp" ))
+if(nrow(cancov_no_C1) >0){
+  write_to_shp(cancov_no_C1, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_canopy_cover_by_no_cancov_C1", ".shp" ))
 }
 
 if(nrow(cancov_cycle_incom) >0){
