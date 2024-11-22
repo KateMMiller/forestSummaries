@@ -29,6 +29,35 @@ tree_grps <- left_join(trees, trspp_grps |> select(Species, spp_grp, sppcode),
 if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in tree_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 
+###Park specific changes to tree species groups###
+#Must match listed changes in forest_summary_code_MIDN.R
+if(park == "HOFU"){
+  tree_grps <- tree_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Ulmus americana" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Ulmus americana" ~ "Other Native",
+                               TRUE ~ spp_grp))
+}
+if(park == "COLO"){
+  tree_grps <- tree_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Morella cerifera" ~ "SUBCAN",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Morella cerifera" ~ "Subcanopy",
+                               TRUE ~ spp_grp))
+}
+if(park == "RICH"){
+  tree_grps <- tree_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Betula nigra" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Betula nigra" ~ "Other Native",
+                               TRUE ~ spp_grp))
+}
+
+tree_grps <- tree_grps %>%  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                             spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                             spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                             TRUE ~ spp_grp))
+
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
 
 # This will create all combination of plot, year, spp, but adds years not sampled by plots.
@@ -52,8 +81,9 @@ if(length(unique(dup_spp_check$Freq)) > 1)(stop("Not all tree species have the s
 
 # Join group code back in
 head(plot_spp_yr3)
-head(trspp_grps)
-plot_spp_yr <- left_join(plot_spp_yr3, trspp_grps |> select(sppcode, spp_grp) |> unique(), 
+#head(trspp_grps) #switched to tree_grps df because losing the edits that were made to species groups 
+head(tree_grps)
+plot_spp_yr <- left_join(plot_spp_yr3, tree_grps |> select(sppcode, spp_grp) |> unique(), 
                          by = "spp_grp")
 
 tree_spp_sum1 <- left_join(plot_spp_yr, 
@@ -71,6 +101,7 @@ tree_spp_sum <- tree_spp_sum1 |> group_by(Plot_Name, SampleYear, spp_grp, sppcod
 
 head(tree_spp_sum)
 spp_list <- sort(unique(tree_spp_sum$sppcode))
+spp_list
 
 length(unique(tree_spp_sum$spp_grp))
 table(tree_spp_sum$spp_grp)
@@ -147,7 +178,8 @@ table(tree_stem_smooth3$spp_grp)
 cols = c(
   "Acer rubrum (red maple)" = "#38A800",
   "Acer spp. (maple)" = "#00FF00",
-  "Ailanthus altissima (tree-of-heaven)" = "#FF00C5",
+  "Ailanthus altissima (tree-of-heaven)" = "#cd4a8f",
+  "Asimina triloba (pawpaw)" = "#FF00C5",
   "Betula lenta (black birch)" = "#fffac8",
   "Betula spp. (black birch)" = "#fffac8", # Either use BETLEN or BETSPP
   "Carya spp. (hickory)" = "#911eb4",
@@ -167,16 +199,17 @@ cols = c(
   "Prunus spp. (native cherry)" ="#00E6A9", 
   "Pyrus calleryana (Bradford pear)" = "#cd4a8f",
   "Quercus spp. (oak)" = "#0E5D2C",
-  "Robinia pseudoacacia (black locust)" = "#efdf00",
+  "Robinia pseudoacacia (black locust)" = "#cccc00",
   "Other native subcanopy spp." = "#ffa8b4",
   "Tsuga canadensis (eastern hemlock)" = "#9bd2ef",
-  "Ulmus spp. (native elm)" = "#59538A", 
+  "Ulmus spp. (native elm)" = "#808000", 
   "Unknown spp." = "#CACACA")
 
 lines = c(
-  "Acer rubrum (red maple)" = "dotdash",
-  "Acer spp. (maple)" = "dashed",
+  "Acer rubrum (red maple)" = "solid",
+  "Acer spp. (maple)" = "solid",
   "Ailanthus altissima (tree-of-heaven)" = "solid",
+  "Asimina triloba (pawpaw)" = "dashed",
   "Betula lenta (black birch)" = "dashed",
   "Betula spp. (black birch)" = "dashed", # Either use BETLEN or BETSPP
   "Carya spp. (hickory)" = "solid",
@@ -187,16 +220,19 @@ lines = c(
   "Liquidambar styraciflua (sweetgum)" = "solid",
   "Liriodendron tulipifera (tulip poplar)" = "solid",
   "Nyssa sylvatica (black gum)" = "dashed",
-  "Other Exotic" = "dashed",
-  "Other Native" = "solid",
+  "Other exotic spp." = "dashed",
+  "Other native canopy spp." = "solid",
   "Pinus spp. (pine)" = "dotdash",
-  "Prunus spp. (native cherry)" = "dotted", 
+  "Pinus strobus (eastern white pine)" = "dotdash",
+  "Pinus taeda (loblolly pine)" = "dotdash",
+  "Pinus virginiana (Virginia pine)" = "dotdash",
+  "Prunus spp. (native cherry)" = "dotdash", 
   "Pyrus calleryana (Bradford pear)" = "dotted",
   "Quercus spp. (oak)" = "solid",
   "Robinia pseudoacacia (black locust)" = "dashed",
-  "Subcanopy" = "solid",
+  "Other native subcanopy spp." = "solid",
   "Tsuga canadensis (eastern hemlock)" = "dashed",
-  "Ulmus spp. (native elm)" = "dotted", 
+  "Ulmus spp. (native elm)" = "dashed", 
   "Unknown spp." = "dotted")
 
 
