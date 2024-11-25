@@ -362,7 +362,7 @@ if(park == "WEFA"){
                                ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>% 
-    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (Sugar maple)",
+    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (sugar maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Nyssa sylvatica" ~ "Other Native",
                                TRUE ~ spp_grp))
@@ -384,7 +384,7 @@ if(park == "MABI"){
                                ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Picea abies" ~ "EXOPLA",
                                TRUE ~ sppcode)) %>% 
-    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (Sugar maple)",
+    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (sugar maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Picea abies" ~ "Exotic plantation spp.",
                                TRUE ~ spp_grp))
@@ -538,7 +538,7 @@ if(park == "WEFA"){
                                ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>% 
-    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (Sugar maple)",
+    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (sugar maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Nyssa sylvatica" ~ "Other Native",
                                TRUE ~ spp_grp))
@@ -568,7 +568,7 @@ if(park == "MABI"){
                                ScientificName == "Picea abies" ~ "EXOPLA",
                                ScientificName == "Pinus sylvestris" ~ "EXOPLA",
                                TRUE ~ sppcode)) %>% 
-    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (Sugar maple)",
+    mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (sugar maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Larix decidua" ~ "Exotic plantation spp.",
                                ScientificName == "Picea abies" ~ "Exotic plantation spp.",
