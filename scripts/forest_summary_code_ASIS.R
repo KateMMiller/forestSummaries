@@ -314,7 +314,11 @@ if(park == "ASIS"){
   reg_grps <- reg_grps %>%
     mutate(sppcode = case_when(ScientificName == "Diospyros virginiana" ~ "DIOVIR",
                                TRUE ~ sppcode)) %>%
-    mutate(spp_grp = case_when(ScientificName == "Diospyros virginiana" ~ "Diospyros virginiana (persimmon)",
+    mutate(spp_grp = case_when(ScientificName == "Diospyros virginiana" ~ "Diospyros virginiana (American persimmon)",
+                               TRUE ~ spp_grp)) %>% 
+    mutate(sppcode = case_when(ScientificName == "Sassafras albidum" ~ "SASALB",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Sassafras albidum" ~ "Sassafras albidum (sassafrass)",
                                TRUE ~ spp_grp)) %>% 
     mutate(sppcode = case_when(ScientificName == "Persea" ~ "SUBCAN",
                                TRUE ~ sppcode)) %>%
@@ -327,6 +331,10 @@ if(park == "ASIS"){
     mutate(sppcode = case_when(ScientificName == "Amelanchier canadensis" ~ "AMESPP",
                                TRUE ~ sppcode)) %>%
     mutate(spp_grp = case_when(ScientificName == "Amelanchier canadensis" ~ "Amelanchier spp. (serviceberry)",
+                               TRUE ~ spp_grp)) |> 
+    mutate(sppcode = case_when(ScientificName == "Pinus taeda" ~ "PINTAE",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Pinus taeda" ~ "Pinus taeda (loblolly pine)",
                                TRUE ~ spp_grp))
 }
 
@@ -387,18 +395,18 @@ if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
 head(tree_grps)
 
 if(park == "ASIS"){
-  tree_grps <- tree_grps %>%
+  tree_grps <- tree_grps %>% 
     mutate(sppcode = case_when(ScientificName == "Sassafras albidum" ~ "SASALB",
                                TRUE ~ sppcode)) %>%
-    mutate(spp_grp = case_when(ScientificName == "Diospyros virginiana" ~ "Sassafras albidum (sassafras)",
-                               TRUE ~ spp_grp)) %>% 
-    mutate(sppcode = case_when(ScientificName == "Magnolia virginiana" ~ "MAGVIR",
-                               TRUE ~ sppcode)) %>%
-    mutate(spp_grp = case_when(ScientificName == "Magnolia virginiana" ~ "Magnolia virginiana (sweetbay magnolia)",
-                               TRUE ~ spp_grp)) |> 
+    mutate(spp_grp = case_when(ScientificName == "Sassafras albidum" ~ "Sassafras albidum (sassafrass)",
+                               TRUE ~ spp_grp)) %>%
     mutate(sppcode = case_when(ScientificName == "Amelanchier canadensis" ~ "AMESPP",
                                TRUE ~ sppcode)) %>%
     mutate(spp_grp = case_when(ScientificName == "Amelanchier canadensis" ~ "Amelanchier spp. (serviceberry)",
+                               TRUE ~ spp_grp))|> 
+    mutate(sppcode = case_when(ScientificName == "Pinus taeda" ~ "PINTAE",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Pinus taeda" ~ "Pinus taeda (loblolly pine)",
                                TRUE ~ spp_grp))
 }
 

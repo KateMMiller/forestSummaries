@@ -29,6 +29,19 @@ tree_grps <- left_join(trees, trspp_grps |> select(Species, spp_grp, sppcode),
 if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in tree_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 
+if(park == "SAHI"){
+  tree_grps <- tree_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               TRUE ~ spp_grp))
+}
+
+tree_grps <- tree_grps %>%  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                                                       spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                                                       spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                                                       TRUE ~ spp_grp))
+
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
 
 # This will create all combination of plot, year, spp, but adds years not sampled by plots.
@@ -52,8 +65,8 @@ if(length(unique(dup_spp_check$Freq)) > 1)(stop("Not all tree species have the s
 
 # Join group code back in
 head(plot_spp_yr3)
-head(trspp_grps)
-plot_spp_yr <- left_join(plot_spp_yr3, trspp_grps |> select(sppcode, spp_grp) |> unique(), 
+head(tree_grps)
+plot_spp_yr <- left_join(plot_spp_yr3, tree_grps |> select(sppcode, spp_grp) |> unique(), 
                          by = "spp_grp")
 
 tree_spp_sum1 <- left_join(plot_spp_yr, 
@@ -71,6 +84,9 @@ tree_spp_sum <- tree_spp_sum1 |> group_by(Plot_Name, SampleYear, spp_grp, sppcod
 
 head(tree_spp_sum)
 spp_list <- sort(unique(tree_spp_sum$sppcode))
+spp_list
+
+length(spp_list) # may be longer than Map 3 b/c includes all cycles
 
 length(unique(tree_spp_sum$spp_grp))
 table(tree_spp_sum$spp_grp)
@@ -145,11 +161,13 @@ net_ba_year # No decline in BA over time
 table(tree_stem_smooth3$spp_grp)
 # Colors to start with. Can change them per park if needed
 cols = c(
-  "Acer rubrum (red maple)" = "#00c990",
+  "Acer rubrum (red maple)" = "#38A800",
+  "Acer platanoides (Norway maple)" = "#8b0000",
   "Acer spp. (maple)" = "#00FF00",
-  "Ailanthus altissima (tree-of-heaven)" = "#FF00C5",
-  "Betula lenta (black birch)" = "#38A800",
-  "Betula spp. (black birch)" = "#05e689", # Either use BETLEN or BETSPP
+  "Ailanthus altissima (tree-of-heaven)" = "#cd4a8f",
+  "Asimina triloba (pawpaw)" = "#FF00C5",
+  "Betula lenta (black birch)" = "#fffac8",
+  "Betula spp. (black birch)" = "#fffac8", # Either use BETLEN or BETSPP
   "Carya spp. (hickory)" = "#911eb4",
   "Fagus grandifolia (American beech)" = "#FFAA00",
   "Fraxinus spp. (ash)" = "#A87000",
@@ -158,25 +176,27 @@ cols = c(
   "Liquidambar styraciflua (sweetgum)" = "#FFFF00",
   "Liriodendron tulipifera (tulip poplar)" = "#4363d8",
   "Nyssa sylvatica (black gum)" = "#000075",
-  "Other Exotic" = "#ca0020",
-  "Other Native" = "#828282",
+  "Other exotic spp." = "#ca0020",
+  "Other native canopy spp." = "#d9d9d9",
   "Pinus spp. (pine)" = "#5A462B",
-  # "Pinus strobus (eastern white pine)" = "#5A1111",
-  # "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
-  # "Pinus virginiana (Virginia pine)" = "#E5740D",
+  "Pinus strobus (eastern white pine)" = "#5A1111",
+  "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
+  "Pinus virginiana (Virginia pine)" = "#E5740D",
   "Prunus spp. (native cherry)" ="#00E6A9", 
   "Pyrus calleryana (Bradford pear)" = "#cd4a8f",
-  "Quercus spp. (oak)" = "#23984F",
-  "Robinia pseudoacacia (black locust)" = "#efdf00",
-  "Subcanopy" = "#ffa8b4",
+  "Quercus spp. (oak)" = "#0E5D2C",
+  "Robinia pseudoacacia (black locust)" = "#cccc00",
+  "Other native subcanopy spp." = "#ffa8b4",
   "Tsuga canadensis (eastern hemlock)" = "#9bd2ef",
-  "Ulmus spp. (native elm)" = "#59538A", 
+  "Ulmus spp. (native elm)" = "#808000", 
   "Unknown spp." = "#CACACA")
 
 lines = c(
-  "Acer rubrum (red maple)" = "dotdash",
-  "Acer spp. (maple)" = "dashed",
+  "Acer rubrum (red maple)" = "solid",
+  "Acer platanoides (Norway maple)" = "solid",
+  "Acer spp. (maple)" = "solid",
   "Ailanthus altissima (tree-of-heaven)" = "solid",
+  "Asimina triloba (pawpaw)" = "dashed",
   "Betula lenta (black birch)" = "dashed",
   "Betula spp. (black birch)" = "dashed", # Either use BETLEN or BETSPP
   "Carya spp. (hickory)" = "solid",
@@ -187,16 +207,19 @@ lines = c(
   "Liquidambar styraciflua (sweetgum)" = "solid",
   "Liriodendron tulipifera (tulip poplar)" = "solid",
   "Nyssa sylvatica (black gum)" = "dashed",
-  "Other Exotic" = "dashed",
-  "Other Native" = "solid",
+  "Other exotic spp." = "dashed",
+  "Other native canopy spp." = "solid",
   "Pinus spp. (pine)" = "dotdash",
-  "Prunus spp. (native cherry)" = "dotted", 
+  "Pinus strobus (eastern white pine)" = "dotdash",
+  "Pinus taeda (loblolly pine)" = "dotdash",
+  "Pinus virginiana (Virginia pine)" = "dotdash",
+  "Prunus spp. (native cherry)" = "dotdash", 
   "Pyrus calleryana (Bradford pear)" = "dotted",
   "Quercus spp. (oak)" = "solid",
   "Robinia pseudoacacia (black locust)" = "dashed",
-  "Subcanopy" = "solid",
+  "Other native subcanopy spp." = "solid",
   "Tsuga canadensis (eastern hemlock)" = "dashed",
-  "Ulmus spp. (native elm)" = "dotted", 
+  "Ulmus spp. (native elm)" = "dashed", 
   "Unknown spp." = "dotted")
 
 
@@ -276,6 +299,22 @@ reg_grps <- left_join(reg, trspp_grps |> select(Species, spp_grp, sppcode),
 if(nrow(reg_grps[which(is.na(reg_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in reg_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 
+if(park == "SAHI"){
+  reg_grps <- reg_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               TRUE ~ spp_grp))
+}
+
+reg_grps <- reg_grps %>% mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                                                    spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                                                    spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                                                    ScientificName == "Fabaceae" ~ "Other native canopy spp.",
+                                                    TRUE ~ spp_grp)) %>% 
+                        mutate(sppcode = case_when(ScientificName == "Fabaceae" ~ "OTHNAT",
+                                                    TRUE ~ sppcode))
+
 # Shifting to loess smoother with case bootstrap. Need a matrix of site x species x year
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
 
@@ -298,8 +337,8 @@ if(length(unique(dup_rspp_check$Freq)) > 1)(stop("Not all regen species have the
 
 # Join group code back in
 head(plot_spp_yr3)
-head(trspp_grps)
-plot_rspp_yr <- left_join(plot_rspp_yr3, trspp_grps |> select(sppcode, spp_grp) |> unique(), 
+head(reg_grps)
+plot_rspp_yr <- left_join(plot_rspp_yr3, reg_grps |> select(sppcode, spp_grp) |> unique(), 
                          by = "spp_grp")
 
 reg_spp_smooth <- left_join(plot_rspp_yr, reg_grps |> select(Plot_Name, SampleYear, spp_grp, seed_den, sap_den), 
@@ -309,6 +348,9 @@ reg_spp_smooth <- left_join(plot_rspp_yr, reg_grps |> select(Plot_Name, SampleYe
 reg_spp_smooth[,c("seed_den", "sap_den")][is.na(reg_spp_smooth[,c("seed_den", "sap_den")])] <- 0
 
 spp_list <- sort(unique(reg_spp_smooth$sppcode))
+spp_list
+
+length(spp_list) # may be longer than Map 3 b/c includes all cycles
 
 #span = 4/5
 table(reg_spp_smooth$SampleYear, reg_spp_smooth$Plot_Name)
@@ -464,6 +506,8 @@ guild_plot <-
         legend.title = element_text(size = 10),
         legend.text = element_text(size = 10), 
         plot.margin = margin(0.4, 0.4, 0.1, 0.4, "cm"))
+
+guild_plot
 
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
     height = 4.6, width = 8)

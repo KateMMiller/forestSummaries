@@ -65,7 +65,7 @@ plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
 plot_spp_yr1 <- expand.grid(Plot_Name = unique(plot_yr$Plot_Name), 
                             SampleYear = unique(plot_yr$SampleYear),
                             spp_grp = unique(tree_grps$spp_grp)) |> 
-  select(Plot_Name, SampleYear, spp_grp)
+select(Plot_Name, SampleYear, spp_grp)
 
 #plot_spp_yr1$sppcode[plot_spp_yr1$ScientificName == "Acer saccharum"] <- "ACESAC3"
 head(tree_grps)
@@ -177,6 +177,7 @@ table(tree_stem_smooth3$spp_grp)
 # Colors to start with. Can change them per park if needed
 cols = c(
   "Acer rubrum (red maple)" = "#38A800",
+  "Acer platanoides (Norway maple)" = "#8b0000",
   "Acer spp. (maple)" = "#00FF00",
   "Ailanthus altissima (tree-of-heaven)" = "#cd4a8f",
   "Asimina triloba (pawpaw)" = "#FF00C5",
@@ -203,10 +204,14 @@ cols = c(
   "Other native subcanopy spp." = "#ffa8b4",
   "Tsuga canadensis (eastern hemlock)" = "#9bd2ef",
   "Ulmus spp. (native elm)" = "#808000", 
-  "Unknown spp." = "#CACACA")
+  "Unknown spp." = "#CACACA",
+  "Diospyros virginiana (persimmon)" = "#006666", #for ASIS only
+  "Amelanchier spp. (serviceberry)" = "#ffd8b1", #for ASIS only
+  "Sassafras albidum (sassafrass)" = "#59538A") #for ASIS only
 
 lines = c(
   "Acer rubrum (red maple)" = "solid",
+  "Acer platanoides (Norway maple)" = "solid",
   "Acer spp. (maple)" = "solid",
   "Ailanthus altissima (tree-of-heaven)" = "solid",
   "Asimina triloba (pawpaw)" = "dashed",
@@ -233,7 +238,11 @@ lines = c(
   "Other native subcanopy spp." = "solid",
   "Tsuga canadensis (eastern hemlock)" = "dashed",
   "Ulmus spp. (native elm)" = "dashed", 
-  "Unknown spp." = "dotted")
+  "Unknown spp." = "dotted",
+  "Diospyros virginiana (American persimmon)" = "dashed", #for ASIS only
+  "Amelanchier spp. (serviceberry)" = "dashed", #for ASIS only
+  "Sassafras albidum (sassafrass)" = "dashed") #for ASIS only)
+
 
 
 #---- Net stem/BA plots by species
@@ -312,6 +321,47 @@ reg_grps <- left_join(reg, trspp_grps |> select(Species, spp_grp, sppcode),
 if(nrow(reg_grps[which(is.na(reg_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in reg_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 
+if(park == "HOFU"){
+  reg_grps <- reg_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Ilex opaca" ~ "SUBCAN",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Ilex opaca" ~ "Subcanopy",
+                               TRUE ~ spp_grp))
+}
+
+if(park == "GETT"){
+  reg_grps <- reg_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Robinia pseudoacacia" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Robinia pseudoacacia" ~ "Other Native",
+                               TRUE ~ spp_grp))
+}
+if(park == "PETE"){
+  reg_grps <- reg_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Castanea pumila" ~ "SUBCAN",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Castanea pumila" ~ "Subcanopy",
+                               TRUE ~ spp_grp))
+}
+
+if(park == "COLO"| park == "GEWA"| park == "THST"){
+  reg_grps <- reg_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Asimina triloba" ~ "ASITRI",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Asimina triloba" ~ "Asimina triloba",
+                               TRUE ~ spp_grp))
+}
+
+reg_grps <- reg_grps %>% mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                                                    spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                                                    spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                                                    ScientificName == "Fabaceae" ~ "Other native canopy spp.",
+                                                    TRUE ~ spp_grp)) %>% 
+                        mutate(sppcode = case_when(ScientificName == "Fabaceae" ~ "OTHNAT",
+                                                    TRUE ~ sppcode))
+
+
+
 # Shifting to loess smoother with case bootstrap. Need a matrix of site x species x year
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
 
@@ -334,8 +384,8 @@ if(length(unique(dup_rspp_check$Freq)) > 1)(stop("Not all regen species have the
 
 # Join group code back in
 head(plot_spp_yr3)
-head(trspp_grps)
-plot_rspp_yr <- left_join(plot_rspp_yr3, trspp_grps |> select(sppcode, spp_grp) |> unique(), 
+head(reg_grps)
+plot_rspp_yr <- left_join(plot_rspp_yr3, reg_grps |> select(sppcode, spp_grp) |> unique(), 
                          by = "spp_grp")
 
 reg_spp_smooth <- left_join(plot_rspp_yr, reg_grps |> select(Plot_Name, SampleYear, spp_grp, seed_den, sap_den), 
@@ -345,6 +395,9 @@ reg_spp_smooth <- left_join(plot_rspp_yr, reg_grps |> select(Plot_Name, SampleYe
 reg_spp_smooth[,c("seed_den", "sap_den")][is.na(reg_spp_smooth[,c("seed_den", "sap_den")])] <- 0
 
 spp_list <- sort(unique(reg_spp_smooth$sppcode))
+spp_list
+
+length(spp_list) # may be longer than Map 3 b/c includes all cycles
 
 #span = 4/5
 table(reg_spp_smooth$SampleYear, reg_spp_smooth$Plot_Name)
@@ -502,6 +555,8 @@ guild_plot <-
         legend.title = element_text(size = 10),
         legend.text = element_text(size = 10), 
         plot.margin = margin(0.4, 0.4, 0.1, 0.4, "cm"))
+
+guild_plot
 
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
     height = 4.6, width = 8)
