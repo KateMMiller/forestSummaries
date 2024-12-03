@@ -320,7 +320,7 @@ reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m'))|>
 
 head(trspp_grps) # loaded in source_script_NETN.R. Use as default grouping.
 
-reg_grps <- left_join(reg_all, trspp_grps, by = c("ScientificName" = "Species"))
+reg_grps <- left_join(reg_all, trspp_grps, by = c("ScientificName" = "Species")) |> select(-New)
 
 if(nrow(reg_grps[which(is.na(reg_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in reg_spp_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
@@ -450,14 +450,14 @@ reg_wide <- reg_grps %>% group_by(Plot_Name, PlotCode, sppcode) %>%
   pivot_wider(names_from = sppcode, values_from = regen_den, values_fill = 0) %>% 
   arrange(Plot_Name)
 
-reg_wide <- if("NONPRE" %in% names(reg_wide)){reg_wide %>% select(-NONPRE)}else{reg_wide} 
+reg_wide <- if("NA" %in% names(reg_wide)){reg_wide %>% select(-"NA")}else{reg_wide} 
 
 reg_wide$total <- rowSums(reg_wide[,5:ncol(reg_wide)])
 reg_wide$logtot <- log(reg_wide$total + 1)
 
 names(sort(desc(colSums(reg_wide[,c(5:(ncol(reg_wide)-2))]))))
 
-regcomp_no <- reg_wide |> filter(total == 0)
+regcomp_no <- reg_wide |> filter(is.na(total))
 
 no_regcomp <- regcomp_no$Plot_Name
 
@@ -636,12 +636,14 @@ tree_wide <- tree_grps %>% group_by(Plot_Name, PlotCode, sppcode) %>%
             ., by = c("Plot_Name", "PlotCode")) %>% arrange(sppcode) %>% 
   pivot_wider(names_from = sppcode, values_from = BAm2ha, values_fill = 0) 
 
+tree_wide <- if("NA" %in% names(tree_wide)){tree_wide %>% select(-"NA")}else{tree_wide} 
+
 tree_wide$total <- rowSums(tree_wide[,5:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
 
 names(tree_wide)
 
-treecomp_no <- tree_wide |> filter(total == 0)
+treecomp_no <- tree_wide |> filter(is.na(total))
 
 no_treecomp <- treecomp_no$Plot_Name
 
@@ -1290,7 +1292,6 @@ Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica',
                   'Fraxinus nigra', 'Fraxinus profunda')
 
 frax1 <- do.call(joinTreeData, c(args_vs, status = 'live')) |> filter(ScientificName %in% Fraxinus_spp)
-head(frax)|> filter(!Plot_Name %in% "COLO-380") 
 
 frax2 <- frax1 %>% group_by(Plot_Name, PlotCode, cycle) %>% 
   summarize(num_stems = sum(num_stems),
