@@ -432,7 +432,7 @@ reg_wide$logtot <- log(reg_wide$total + 1)
 
 names(sort(desc(colSums(reg_wide[,c(5:(ncol(reg_wide)-2))]))))
 
-regcomp_no <- reg_wide |> filter(is.na(total))
+regcomp_no <- reg_wide |> filter(total == 0)
 
 no_regcomp <- regcomp_no$Plot_Name
 
@@ -512,7 +512,7 @@ tree_wide$logtot <- log(tree_wide$total + 1)
 
 names(tree_wide)
 
-treecomp_no <- tree_wide |> filter(is.na(total))
+treecomp_no <- tree_wide |> filter(total == 0)
 
 no_treecomp <- treecomp_no$Plot_Name
 
