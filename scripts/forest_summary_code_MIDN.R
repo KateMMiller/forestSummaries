@@ -418,6 +418,14 @@ if(park == "COLO"| park == "GEWA"| park == "THST"){
                                TRUE ~ spp_grp))
 }
 
+if(park == "RICH"){
+  reg_grps <- reg_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Juniperus virginiana" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Juniperus virginiana" ~ "Other Native",
+                               TRUE ~ spp_grp))
+}
+
 reg_wide <- reg_grps %>% group_by(Plot_Name, PlotCode, sppcode) %>% 
   summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate) %>% unique(),
@@ -496,7 +504,15 @@ if(park == "RICH"){
     mutate(sppcode = case_when(ScientificName == "Betula nigra" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>%
     mutate(spp_grp = case_when(ScientificName == "Betula nigra" ~ "Other Native",
-                               TRUE ~ spp_grp))
+                               TRUE ~ spp_grp))%>%
+    mutate(sppcode = case_when(ScientificName == "Juniperus virginiana" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Juniperus virginiana" ~ "Other Native",
+                               TRUE ~ spp_grp))%>%
+    mutate(spp_grp = case_when(sppcode == "ULMSPP" ~ "Other Native",
+                               TRUE ~ spp_grp))%>%
+    mutate(sppcode = case_when(sppcode == "ULMSPP" ~ "OTHNAT",
+                               TRUE ~ sppcode)) 
 }
 
 tree_wide <- tree_grps %>% group_by(Plot_Name, PlotCode, sppcode) %>% 
