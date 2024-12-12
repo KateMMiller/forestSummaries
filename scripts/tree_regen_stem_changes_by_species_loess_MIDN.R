@@ -50,7 +50,15 @@ if(park == "RICH"){
     mutate(sppcode = case_when(ScientificName == "Betula nigra" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>%
     mutate(spp_grp = case_when(ScientificName == "Betula nigra" ~ "Other Native",
-                               TRUE ~ spp_grp))
+                               TRUE ~ spp_grp))%>%
+    mutate(sppcode = case_when(ScientificName == "Juniperus virginiana" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Juniperus virginiana" ~ "Other Native",
+                               TRUE ~ spp_grp))%>%
+    mutate(spp_grp = case_when(sppcode == "ULMSPP" ~ "Other Native",
+                               TRUE ~ spp_grp))%>%
+    mutate(sppcode = case_when(sppcode == "ULMSPP" ~ "OTHNAT",
+                               TRUE ~ sppcode)) 
 }
 
 tree_grps <- tree_grps %>%  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
@@ -351,7 +359,13 @@ if(park == "COLO"| park == "GEWA"| park == "THST"){
     mutate(spp_grp = case_when(ScientificName == "Asimina triloba" ~ "Asimina triloba",
                                TRUE ~ spp_grp))
 }
-
+if(park == "RICH"){
+  reg_grps <- reg_grps %>%
+    mutate(sppcode = case_when(ScientificName == "Juniperus virginiana" ~ "OTHNAT",
+                               TRUE ~ sppcode)) %>%
+    mutate(spp_grp = case_when(ScientificName == "Juniperus virginiana" ~ "Other Native",
+                               TRUE ~ spp_grp))
+}
 reg_grps <- reg_grps %>% mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
                                                     spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
                                                     spp_grp == "Other Exotic" ~ "Other exotic spp.",
