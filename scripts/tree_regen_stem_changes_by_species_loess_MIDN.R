@@ -364,8 +364,13 @@ if(park == "RICH"){
     mutate(sppcode = case_when(ScientificName == "Juniperus virginiana" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>%
     mutate(spp_grp = case_when(ScientificName == "Juniperus virginiana" ~ "Other Native",
-                               TRUE ~ spp_grp))
+                               TRUE ~ spp_grp))%>%
+    mutate(spp_grp = case_when(sppcode == "ULMSPP" ~ "Other Native",
+                               TRUE ~ spp_grp))%>%
+    mutate(sppcode = case_when(sppcode == "ULMSPP" ~ "OTHNAT",
+                               TRUE ~ sppcode)) 
 }
+
 reg_grps <- reg_grps %>% mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
                                                     spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
                                                     spp_grp == "Other Exotic" ~ "Other exotic spp.",
