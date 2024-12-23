@@ -307,12 +307,12 @@ reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m'))|>
 ### Check dominant NETN species to pull out of standard groups ###
 #Run for each park every year and update list of exceptions below if necessary
 # !!! Must update tree_regen_stem_changes_by_species_loess.R as well!!!
-# reg_park <- do.call(joinRegenData, args = list(park = "MORR", from_4yr, to = to, units = 'sq.m'))|> 
-#                       filter(!ScientificName %in% c('None present', "Not Sampled")) # just selected park
-# 
-# dom_regspp <- reg_park %>% group_by(Plot_Name, ScientificName) %>% summarize(reg = sum(regen_den, na.rm = T)) %>% 
-#                            group_by(ScientificName) %>% summarize(reg = sum(reg, na.rm = T)) %>% arrange(desc(reg))
-# view(dom_regspp)
+reg_park <- do.call(joinRegenData, args = list(park, from_4yr, to = to, units = 'sq.m'))|>
+                      filter(!ScientificName %in% c('None present', "Not Sampled")) # just selected park
+
+dom_regspp <- reg_park %>% group_by(Plot_Name, ScientificName) %>% summarize(reg = sum(regen_den, na.rm = T)) %>%
+                           group_by(ScientificName) %>% summarize(reg = sum(reg, na.rm = T)) %>% arrange(desc(reg))
+view(dom_regspp)
 ###
 
 head(trspp_grps) # loaded in source_script_NETN.R. Use as default grouping.
@@ -908,6 +908,7 @@ vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>%
                                 Notes) ~ Notes,
                           grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ Notes,
                           grepl("GM|spongy|gypsy", Notes) ~ Notes,
+                          grepl("crazy|snake|snakeworm|worm", Notes) ~ Notes,
                           TRUE ~ NA_character_)) %>% filter(!is.na(pest)) 
 
 vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
@@ -1087,10 +1088,32 @@ inv_spp2 <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName
 inv_spp <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
                          mutate(InvasiveNETN = case_when(InvasiveNETN == 'TRUE' ~ 'Yes',
                                                          InvasiveNETN =='FALSE' ~ 'No')) %>% 
-                         relocate(InvasiveNETN, .after = CommonName)
+                         relocate(InvasiveNETN, .after = CommonName) |> arrange(ScientificName)
 
 write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
+
+#Average exotic cover for last census (useful for report)
+avg_inv <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive')) %>% 
+  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>%
+  group_by(Plot_Name, PlotCode, cycle, PanelCode) %>% 
+  summarize(inv_cov = sum(quad_avg_cov, na.rm = T),
+            numspp = sum(present), .groups = 'drop')
+ 
+avg_inv2 <- avg_inv |>  summarise(avg_invcov = mean(inv_cov), 
+                                  avg_spp = mean(numspp))
+
+#Average native cover for last census (useful for report)
+avg_nat <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'native')) %>% 
+  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>%
+  group_by(Plot_Name, PlotCode, cycle, PanelCode) %>% 
+  summarize(nat_cov = sum(quad_avg_cov, na.rm = T),
+            numspp = sum(present), .groups = 'drop')
+
+avg_nat2 <- avg_nat |>  summarise(avg_natcov = mean(nat_cov), 
+                                  avg_spp = mean(numspp))
+
+
 
 #---- Table 4: Early Detections -----
 taxa <- prepTaxa()
@@ -1269,8 +1292,8 @@ if(nrow(cwd_cycle_incom) >0){
                shp_name = paste0(new_path,  "shapefiles/", park, "_CWD_vol_by_cycle_incomplete", ".shp" ))
 }
 
-write_to_shp(cwd_wide, shp_name = 
-               paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle_", to, ".shp"))
+write_to_shp(cwd_cycle_com, shp_name = 
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_by_cycle",  ".shp"))
 
 # Map 12: CWD Rating ------------------------------------------------------
 cwd_4yr1 <- joinCWDData(from = from_4yr, to = to) %>% select(Plot_Name, CWD_Vol) |> 
@@ -1282,7 +1305,8 @@ cwd_4yr <- cwd_4yr1 %>% group_by(Plot_Name) %>%
             ., by = c("Plot_Name"))
 
 write_to_shp(cwd_4yr, shp_name = 
-               paste0(new_path, "shapefiles/", park, "_CWD_vol_for_rating_", to, ".shp"))
+               paste0(new_path, "shapefiles/", park, "_CWD_vol_for_rating", ".shp"))
+
 
 #----- Map 13: Number of Ash tree stems over time ------
 Fraxinus_spp <- c('Fraxinus', 'Fraxinus americana', 'Fraxinus pennsylvanica', 
@@ -1337,7 +1361,105 @@ if(nrow(frax_cycle_com) >0){
                shp_name = paste0(new_path, "shapefiles/", park, "_ash_trees_by_cycle", ".shp" ))
 }
 
+#----- Map 14?: Number of Beech tree stems over time ------
+fagus1 <- do.call(joinTreeData, c(args_vs, status = 'live')) |> filter(ScientificName == 'Fagus grandifolia')
 
+fagus2 <- fagus1 %>% group_by(Plot_Name, PlotCode, cycle) %>% 
+  summarize(num_stems = sum(num_stems),
+            sppcode = "FAGGRA",
+            .groups = 'drop') 
+
+fagus_plotevs <- plotevs %>% select(Plot_Name, PlotCode, cycle, X = xCoordinate, Y = yCoordinate) 
+
+fagus <- left_join(fagus_plotevs, fagus2 |> select(-sppcode), by = c("Plot_Name", "PlotCode", "cycle")) %>%
+  arrange(cycle, Plot_Name, PlotCode) 
+
+fagus$num_stems[is.na(fagus$num_stems)] <- 0
+
+fagus_wide3 <- fagus %>% pivot_wider(names_from = cycle, 
+                                     values_from = num_stems, 
+                                     names_prefix = "cycle_",
+                                     values_fill = NA) # Better for mapping if unsampled plots are NA not 0
+
+fagus_wide2 <- fagus_wide3 %>% mutate(MAX = max(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+fagus_wide <- fagus_wide2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+
+fagus_no <- fagus_wide |> rowwise() |> mutate(tot_stems = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+  filter(tot_stems == 0)
+no_beech <- fagus_no$Plot_Name
+
+fagus_wide <- fagus_wide |> filter(!(Plot_Name %in% no_beech)) # No. of plots in no_beech + fagus_wide should = tot plots for park
+
+fagus_cycle_incom <- fagus_wide %>%  filter_at(vars(last_col()), all_vars(is.na(.))) %>% select(-tail(names(.), 1))
+fagus_cycle_com <- fagus_wide |>  filter_at(vars(last_col()), all_vars(!is.na(.)))
+
+if(nrow(fagus_no) >0){
+  write_to_shp(fagus_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_beech_trees_by_cycle_no_beech", ".shp" ))
+}
+
+if(nrow(fagus_cycle_incom) >0){
+  write_to_shp(fagus_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_beech_trees_by_cycle_incomplete", ".shp" ))
+}
+
+
+if(nrow(fagus_cycle_com) >0){
+  write_to_shp(fagus_cycle_com, 
+               shp_name = paste0(new_path, "shapefiles/", park, "_beech_trees_by_cycle", ".shp" ))
+}
+
+#----- Map 14?: Proportion of beech (number of stems) ------
+fagus1 <- do.call(joinTreeData, c(args_vs, status = 'live')) |> filter(ScientificName == 'Fagus grandifolia')
+
+fagus2 <- fagus1 %>% group_by(Plot_Name, PlotCode, cycle) %>% 
+  summarize(num_stems = sum(num_stems),
+            sppcode = "FAGGRA",
+            .groups = 'drop') 
+
+fagus_plotevs <- plotevs %>% select(Plot_Name, PlotCode, cycle, X = xCoordinate, Y = yCoordinate) 
+
+fagus <- left_join(fagus_plotevs, fagus2 |> select(-sppcode), by = c("Plot_Name", "PlotCode", "cycle")) %>%
+  arrange(cycle, Plot_Name, PlotCode) 
+
+fagus$num_stems[is.na(fagus$num_stems)] <- 0
+
+fagus_wide3 <- fagus %>% pivot_wider(names_from = cycle, 
+                                     values_from = num_stems, 
+                                     names_prefix = "cycle_",
+                                     values_fill = NA) # Better for mapping if unsampled plots are NA not 0
+
+fagus_wide2 <- fagus_wide3 %>% mutate(MAX = max(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+fagus_wide <- fagus_wide2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm = T), .before = "cycle_1")
+
+
+fagus_no <- fagus_wide |> rowwise() |> mutate(tot_stems = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+  filter(tot_stems == 0)
+no_beech <- fagus_no$Plot_Name
+
+fagus_wide <- fagus_wide |> filter(!(Plot_Name %in% no_beech)) # No. of plots in no_beech + fagus_wide should = tot plots for park
+
+fagus_cycle_incom <- fagus_wide %>%  filter_at(vars(last_col()), all_vars(is.na(.))) %>% select(-tail(names(.), 1))
+fagus_cycle_com <- fagus_wide |>  filter_at(vars(last_col()), all_vars(!is.na(.)))
+
+if(nrow(fagus_no) >0){
+  write_to_shp(fagus_no, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_beech_trees_by_cycle_no_beech", ".shp" ))
+}
+
+if(nrow(fagus_cycle_incom) >0){
+  write_to_shp(fagus_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_beech_trees_by_cycle_incomplete", ".shp" ))
+}
+
+
+if(nrow(fagus_cycle_com) >0){
+  write_to_shp(fagus_cycle_com, 
+               shp_name = paste0(new_path, "shapefiles/", park, "_beech_trees_by_cycle", ".shp" ))
+}
 #---- MABI Only: plot harvest history -----
 if(park == "MABI"){
 cut_trees <- do.call(joinTreeData, args_all) |> filter(TreeStatusCode == "DC")
