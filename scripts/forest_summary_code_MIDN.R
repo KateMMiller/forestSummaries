@@ -630,6 +630,18 @@ if(nrow(invcov_cycle_incom) >0){
 write_to_shp(invcov_cycle_com, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_cycle.shp"))
 
+#Average invasive vs native cover for last census (useful for report)
+allcov <- do.call(joinQuadSpecies, args = c(args_4yr, speciesType = 'all')) %>% 
+  select(Plot_Name, cycle, ScientificName, quad_avg_cov, Exotic)
+
+invspp <- prepTaxa() %>% select(ScientificName, InvasiveNETN)
+
+covsum <- left_join(allcov, invspp, by = "ScientificName") %>% 
+  filter(!(InvasiveNETN == FALSE & Exotic == TRUE)) %>% # native vs. invasive; Exotic, but not invasive species are dropped
+  group_by(Plot_Name, InvasiveNETN) %>% 
+  summarize(avgcov = sum(quad_avg_cov, na.rm = TRUE), .groups = 'drop') %>% 
+  group_by(InvasiveNETN) %>% summarize(avg_cov = sum(avgcov)/length(evs_4yr))
+
 #---- Map 10 Invasive % Cover by Species ----
 # Lump some species in the same genus
 invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive') %>% 

@@ -484,12 +484,12 @@ tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
 ### Check dominant NETN species to pull out of standard groups ###
 #Run for each park every year and update list of exceptions below if necessary 
 #!!! must update tree_regen_stem_changes_by_species_loess.R as well!!!
-# trees_park <- do.call(joinTreeData, args = list(park = "ACAD", from_4yr, to = to, status = 'live')) # just selected park
-# 
-# dom_trspp <- trees_park %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>% 
-#   group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
-# 
-# view(dom_trspp)
+trees_park <- do.call(joinTreeData, args = list(park, from_4yr, to = to, status = 'live')) # just selected park
+
+dom_trspp <- trees_park %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>%
+  group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
+
+view(dom_trspp)
 ###
 
 tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
@@ -517,6 +517,7 @@ if(park == "ROVA"){
     mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
                                ScientificName == "Acer platanoides" ~ "ACEPLA",
                                ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Fraxinus americana" ~ "SUBCAN",
                                ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
                                ScientificName == "Pinus resinosa" ~ "PINRES",
                                ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
@@ -524,6 +525,7 @@ if(park == "ROVA"){
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Fraxinus americana" ~ "Subcanopy",
                                ScientificName == "Nyssa sylvatica" ~ "Other Native",
                                ScientificName == "Pinus resinosa" ~ "Pinus resinosa (red pine)",
                                ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
@@ -766,16 +768,18 @@ if(nrow(invcov_cycle_incom) >0){
 write_to_shp(invcov_cycle_com, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_cycle.shp"))
 
+#Average invasive vs native cover for last census (useful for report)
 allcov <- do.call(joinQuadSpecies, args = c(args_4yr, speciesType = 'all')) %>% 
   select(Plot_Name, cycle, ScientificName, quad_avg_cov, Exotic)
 
 invspp <- prepTaxa() %>% select(ScientificName, InvasiveNETN)
 
 covsum <- left_join(allcov, invspp, by = "ScientificName") %>% 
-  filter(!(InvasiveNETN == FALSE & Exotic == TRUE)) %>% # native vs. invasive
+  filter(!(InvasiveNETN == FALSE & Exotic == TRUE)) %>% # native vs. invasive; Exotic, but not invasive species are dropped
   group_by(Plot_Name, InvasiveNETN) %>% 
   summarize(avgcov = sum(quad_avg_cov, na.rm = TRUE), .groups = 'drop') %>% 
-  group_by(InvasiveNETN) %>% summarize(avg_cov = sum(avgcov)/29)
+  group_by(InvasiveNETN) %>% summarize(avg_cov = sum(avgcov)/length(evs_4yr))
+
 
 #---- Map 10 Invasive % Cover by Species ----
 # Lump some species in the same genus
@@ -810,7 +814,7 @@ invspp1 <- do.call(joinQuadSpecies,
            TRUE ~ ScientificName)) %>% 
   arrange(Plot_Name, PlotCode, ScientificName)
 
-# Determine 10 most common invasives in a park by plot frequency
+# Determine 10 most common invasives in a park by average cover
 plotspp_df <- data.frame(expand.grid(unique(invspp1$Plot_Name), 
                                      unique(invspp1$ScientificName), 
                                      stringsAsFactors = FALSE)) %>% 
@@ -887,7 +891,7 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%
 treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live'))
 
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
-           "SB", "SLF", "SOD", "SPB", "SW")
+           "SB", "SLF", "SOD", "SPB", "SW", "CSW")
 
 
 treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>% 
@@ -908,7 +912,7 @@ vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>%
                                 Notes) ~ Notes,
                           grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ Notes,
                           grepl("GM|spongy|gypsy", Notes) ~ Notes,
-                          grepl("crazy|snake|snakeworm|worm", Notes) ~ Notes,
+                          grepl("jumping|crazy|snake|snakeworm|worm", Notes) ~ Notes,
                           TRUE ~ NA_character_)) %>% filter(!is.na(pest)) 
 
 vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
@@ -919,8 +923,9 @@ vnotes <- do.call(joinVisitNotes, args = args_4yr) %>%
                                 Notes) ~ "HWA",
                           grepl("BBD|beech bark disease|Beech bark disease", Notes) ~ "BBD",
                           grepl("GM|spongy|gypsy", Notes) ~ "GM",
-                          TRUE ~ NA_character_
-  )) %>% filter(!is.na(pest)) %>% 
+                          grepl("Jumping|jumping|crazy|snake|snakeworm|worm|worms", Notes) ~ "CSW",
+                          TRUE ~ NA_character_)) %>% 
+  filter(!is.na(pest)) %>% 
   select(Plot_Name, pest) %>% unique()
 
 # Combine detections to 1 shapefile
@@ -1092,28 +1097,6 @@ inv_spp <- inv_spp2 %>%  filter(ScientificName != 'None present') %>%
 
 write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
-
-#Average exotic cover for last census (useful for report)
-avg_inv <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive')) %>% 
-  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>%
-  group_by(Plot_Name, PlotCode, cycle, PanelCode) %>% 
-  summarize(inv_cov = sum(quad_avg_cov, na.rm = T),
-            numspp = sum(present), .groups = 'drop')
- 
-avg_inv2 <- avg_inv |>  summarise(avg_invcov = mean(inv_cov), 
-                                  avg_spp = mean(numspp))
-
-#Average native cover for last census (useful for report)
-avg_nat <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'native')) %>% 
-  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>%
-  group_by(Plot_Name, PlotCode, cycle, PanelCode) %>% 
-  summarize(nat_cov = sum(quad_avg_cov, na.rm = T),
-            numspp = sum(present), .groups = 'drop')
-
-avg_nat2 <- avg_nat |>  summarise(avg_natcov = mean(nat_cov), 
-                                  avg_spp = mean(numspp))
-
-
 
 #---- Table 4: Early Detections -----
 taxa <- prepTaxa()
@@ -1477,4 +1460,5 @@ if(park == "MABI"){
     filter(avg_cov >= 15)
   ferns_sum
   
-  }
+}
+

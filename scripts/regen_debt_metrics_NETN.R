@@ -10,6 +10,8 @@ library(vegan)
 plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
   select(Plot_Name, SampleYear)
 
+
+# Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
 dbi <- joinStandData(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
   select(Plot_Name, dbi = Deer_Browse_Index)
@@ -334,7 +336,7 @@ results_plot <-
 
 results_plot
 
-ggsave(paste0(new_path, "figures/", "Figure_1_", park, "_Regen_Debt_table", ".svg"), height = 6, width = 5.5, units = 'in')
+ggsave(paste0(new_path, "figures/", "Figure_1_", park, "_Regen_Debt_table", ".svg"), height = 6, width = 4.5, units = 'in')
 
 debt_final <- debt_final |> mutate(park = park)
 

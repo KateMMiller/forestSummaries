@@ -14,6 +14,8 @@ plotevs2 <- plotevs1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |>
 evs_4yr <- plotevs2$EventID # EventIDs that represent the most recent visit to each plot
 plotevs <- plotevs2 |> select(Plot_Name, SampleYear)
 
+
+# Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
 dbi <- joinStandData(park = park, from = from_4yr, to = to) |> 
   filter(EventID %in% evs_4yr) |> 
