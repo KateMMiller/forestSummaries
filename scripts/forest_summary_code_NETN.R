@@ -891,7 +891,7 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%
 treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live'))
 
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
-           "SB", "SLF", "SOD", "SPB", "SW", "CSW")
+           "SB", "SLF", "SOD", "SPB", "SW")
 
 
 treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>% 
@@ -983,35 +983,63 @@ if(ncol(pests_wide) >5){
   pest.1 <- pests_wide %>% filter(.[[6]] > 0)
   if(nrow(pest.1) >0){
     write_to_shp(pest.1, 
-                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.1", ".shp" ))
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[6]), ".shp" ))
   }}
 
 if(ncol(pests_wide) >6){
   pest.2 <- pests_wide %>% filter(.[[7]] > 0)
   if(nrow(pest.2) >0){
     write_to_shp(pest.2, 
-                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.2", ".shp" ))
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[7]), ".shp" ))
   }}
 
 if(ncol(pests_wide) >7){
   pest.3 <- pests_wide %>% filter(.[[8]] > 0)
   if(nrow(pest.3) >0){
     write_to_shp(pest.3, 
-                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.3", ".shp" ))
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[8]), ".shp" ))
   }}
 
 if(ncol(pests_wide) >8){
   pest.4 <- pests_wide %>% filter(.[[9]] > 0)
   if(nrow(pest.4) >0){
     write_to_shp(pest.4, 
-                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.4", ".shp" ))
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[9]), ".shp" ))
   }}
 
 if(ncol(pests_wide) >9){
   pest.5 <- pests_wide %>% filter(.[[10]] > 0)
   if(nrow(pest.5) >0){
     write_to_shp(pest.5, 
-                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest.5", ".shp" ))
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[10]), ".shp" ))
+  }}
+
+if(ncol(pests_wide) >10){
+  pest.6 <- pests_wide %>% filter(.[[11]] > 0)
+  if(nrow(pest.6) >0){
+    write_to_shp(pest.6, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[11]), ".shp" ))
+  }}
+
+if(ncol(pests_wide) >11){
+  pest.7 <- pests_wide %>% filter(.[[12]] > 0)
+  if(nrow(pest.7) >0){
+    write_to_shp(pest.7, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[12]), ".shp" ))
+  }}
+
+if(ncol(pests_wide) >12){
+  pest.8 <- pests_wide %>% filter(.[[13]] > 0)
+  if(nrow(pest.8) >0){
+    write_to_shp(pest.8, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[13]), ".shp" ))
+  }}
+
+if(ncol(pests_wide) >13){
+  pest.9 <- pests_wide %>% filter(.[[14]] > 0)
+  if(nrow(pest.9) >0){
+    write_to_shp(pest.9, 
+                 shp_name = paste0(new_path,  "shapefiles/", park, "_pest_detections", "_pest_", names(pests_wide[14]), ".shp" ))
   }}
 
 if(nrow(pests_wide) >0){
