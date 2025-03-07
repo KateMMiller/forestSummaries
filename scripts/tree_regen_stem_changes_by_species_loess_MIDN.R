@@ -145,6 +145,9 @@ tree_stem_smooth3 <- left_join(tree_stem_smooth2,
   mutate(spp_grp = as.character(spp_grp)) |> 
   arrange(spp_grp)
 
+write.csv(tree_stem_smooth3, paste0(new_path, "tables/", park, 
+                                  "_tree_stem_density_estimates.csv"), row.names = FALSE)
+
 #--- Tree BA
 tree_BA_smooth <- purrr::map_dfr(spp_list, 
                                  function(spp){
@@ -176,6 +179,9 @@ tree_BA_smooth3 <- left_join(tree_BA_smooth2,
                              relationship = 'many-to-many') |> 
   mutate(spp_grp = as.character(spp_grp)) |> 
   arrange(spp_grp)
+
+write.csv(tree_BA_smooth3, paste0(new_path, "tables/", park, 
+                                 "_tree_BA_estimates.csv"), row.names = FALSE)
 
 net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba = sum(estimate))
 net_ba_year # No decline in BA over time
@@ -402,7 +408,7 @@ dup_rspp_check <- as.data.frame(table(plot_rspp_yr3$spp_grp))
 if(length(unique(dup_rspp_check$Freq)) > 1)(stop("Not all regen species have the same frequency in expand grid. Check for duplicate species codes."))
 
 # Join group code back in
-head(plot_spp_yr3)
+head(plot_rspp_yr3)
 head(reg_grps)
 plot_rspp_yr <- left_join(plot_rspp_yr3, reg_grps |> select(sppcode, spp_grp) |> unique(), 
                          by = "spp_grp")
