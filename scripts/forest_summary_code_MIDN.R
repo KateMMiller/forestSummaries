@@ -444,6 +444,12 @@ reg_wide$logtot <- log(reg_wide$total + 1)
 
 names(sort(desc(colSums(reg_wide[,c(5:(ncol(reg_wide)-2))]))))
 
+###get propotion of oak vs total
+reg_sum <- reg_wide |> summarize(across(5:ncol(reg_wide), sum)) 
+
+reg_sum$QUESPP/reg_sum$total
+###
+
 regcomp_no <- reg_wide |> filter(total == 0)
 
 no_regcomp <- regcomp_no$Plot_Name
@@ -531,6 +537,12 @@ tree_wide$total <- rowSums(tree_wide[,5:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
 
 names(tree_wide)
+
+###get propotion of oak vs total
+tree_sum <- tree_wide |> summarize(across(5:ncol(tree_wide), sum)) 
+
+tree_sum$QUESPP/tree_sum$total
+###
 
 treecomp_no <- tree_wide |> filter(total == 0)
 
@@ -634,13 +646,13 @@ write_to_shp(invcov_cycle_com, shp_name =
 allcov <- do.call(joinQuadSpecies, args = c(args_4yr, speciesType = 'all')) %>% 
   select(Plot_Name, cycle, ScientificName, quad_avg_cov, Exotic)
 
-invspp <- prepTaxa() %>% select(ScientificName, InvasiveNETN)
+invspp <- prepTaxa() %>% select(ScientificName, InvasiveMIDN)
 
 covsum <- left_join(allcov, invspp, by = "ScientificName") %>% 
-  filter(!(InvasiveNETN == FALSE & Exotic == TRUE)) %>% # native vs. invasive; Exotic, but not invasive species are dropped
-  group_by(Plot_Name, InvasiveNETN) %>% 
+  filter(!(InvasiveMIDN == FALSE & Exotic == TRUE)) %>% # native vs. invasive; Exotic, but not invasive species are dropped
+  group_by(Plot_Name, InvasiveMIDN) %>% 
   summarize(avgcov = sum(quad_avg_cov, na.rm = TRUE), .groups = 'drop') %>% 
-  group_by(InvasiveNETN) %>% summarize(avg_cov = sum(avgcov)/length(evs_4yr))
+  group_by(InvasiveMIDN) %>% summarize(avg_cov = sum(avgcov)/length(evs_4yr))
 
 #---- Map 10 Invasive % Cover by Species ----
 # Lump some species in the same genus
