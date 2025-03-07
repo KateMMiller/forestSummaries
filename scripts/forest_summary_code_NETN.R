@@ -12,7 +12,15 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 #---- Plot event lists ----
 plotevs <- do.call(joinLocEvent, args_all)
 plotevs_vs <- do.call(joinLocEvent, args_vs)
-plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to))
+plotevs_4yr1 <- plotevs %>% filter(between(SampleYear, from_4yr, to))
+
+# Take the highest sample year when multiple panels were sampled within a year
+# and only one of those panels is the most recent visit to that plot. 
+plotevs_4yr <- plotevs_4yr1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |> 
+  slice_max(SampleYear) |> ungroup()
+
+# vector of the EventIDs that represent the most recent visit to each plot
+evs_4yr <- plotevs_4yr$EventID
 
 #---- Table 1. Regen densities by plot and year ----
 reg <- do.call(joinRegenData, 
@@ -83,14 +91,21 @@ write_to_shp(reg_cycle_com,
 #---- Map 2 regen by size class ----
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
-reg_size <- reg %>% group_by(Plot_Name, PlotCode, SampleYear) |> 
-  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T)
+reg_size <- reg  |> filter(EventID %in% evs_4yr) |> 
+  group_by(Plot_Name, PlotCode, SampleYear, EventID) |> 
+  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T) |> ungroup()
 
-reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
-                             left_join(plotevs_4yr %>% select(Plot_Name, PlotCode, xCoordinate, yCoordinate),
-                                       ., by = c('Plot_Name', 'PlotCode'))
+reg_size_4yr <- reg_size %>% 
+  left_join(plotevs_4yr %>% select(Plot_Name, PlotCode, xCoordinate, yCoordinate),
+            ., by = c('Plot_Name', 'PlotCode')) |> 
+  select(-EventID)
 
-reg_size_4yr[, reg_sz_cols][reg_size_4yr[is.na(reg_size_4yr[,reg_sz_cols])]] <- 0
+reg_size_4yr$seed_15_30cm[is.na(reg_size_4yr$seed_15_30cm)] <- 0
+reg_size_4yr$seed_30_100cm[is.na(reg_size_4yr$seed_30_100cm)] <- 0
+reg_size_4yr$seed_100_150cm[is.na(reg_size_4yr$seed_100_150cm)] <- 0
+reg_size_4yr$seed_p150cm[is.na(reg_size_4yr$seed_p150cm)] <- 0
+reg_size_4yr$sap_den[is.na(reg_size_4yr$sap_den)] <- 0
+
 head(reg_size_4yr)
 
 colnames(reg_size_4yr) <- c("Plot_Name", "PlotCode", "X", "Y", "SampleYear", 
@@ -426,9 +441,10 @@ if(park == "ACAD"){
                                ScientificName == "Populus grandidentata" ~ "POPSPP",
                                ScientificName == "Populus tremuloides" ~ "POPSPP",
                                ScientificName == "Thuja occidentalis" ~ "OTHCON",
+                               ScientificName == "Sorbus decora" ~ "SUBCAN",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
-                               ScientificName == "Larix laricina" ~ "Other Conifer",
+                               ScientificName == "Larix laricina" ~ "Other conifer",
                                ScientificName == "Picea" ~ "Picea spp. (spruce)",
                                ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
                                ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
@@ -436,7 +452,8 @@ if(park == "ACAD"){
                                ScientificName == "Populus" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
-                               ScientificName == "Thuja occidentalis" ~ "Other Conifer",
+                               ScientificName == "Thuja occidentalis" ~ "Other conifer",
+                               ScientificName == "Sorbus decora" ~ "Subcanopy",
                                TRUE ~ spp_grp))
 }
 
@@ -533,7 +550,7 @@ if(park == "ROVA"){
 } 
 if(park == "WEFA"){
   tree_grps <- tree_grps %>% 
-    mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
+    mutate(sppcode = case_when(ScientificName == "Acer saccharum" ~ "ACESAC3",
                                ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>% 
@@ -542,6 +559,7 @@ if(park == "WEFA"){
                                ScientificName == "Nyssa sylvatica" ~ "Other Native",
                                TRUE ~ spp_grp))
 } 
+
 if(park == "SARA"){
   tree_grps <- tree_grps %>% 
     mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
@@ -617,7 +635,7 @@ if(park == "ACAD"){
                                ScientificName == "Thuja occidentalis" ~ "OTHCON",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
-                               ScientificName == "Larix laricina" ~ "Other Conifer",
+                               ScientificName == "Larix laricina" ~ "Other conifer",
                                ScientificName == "Picea" ~ "Picea spp. (spruce)",
                                ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
                                ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
@@ -625,7 +643,7 @@ if(park == "ACAD"){
                                ScientificName == "Populus" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
-                               ScientificName == "Thuja occidentalis" ~ "Other Conifer",
+                               ScientificName == "Thuja occidentalis" ~ "Other conifer",
                                TRUE ~ spp_grp))
 }
 
@@ -964,6 +982,7 @@ if(park %in% c("MABI", "SAGA")){
   pests_wide <- left_join(pests_wide, worms, by = "Plot_Name")
   
   }
+
 
 pests_wide <- left_join( plotevs_4yr |> select(Plot_Name, PlotCode), pests_wide, by = "Plot_Name") 
 
