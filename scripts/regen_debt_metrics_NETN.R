@@ -7,13 +7,16 @@ library(vegan)
 #---- Params -----
 
 # Plot list
-plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
-  select(Plot_Name, SampleYear)
+plotevs1 <- joinLocEvent(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) 
+plotevs2 <- plotevs1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |> 
+  slice_max(SampleYear) |> ungroup() 
+evs_4yr <- plotevs2$EventID # EventIDs that represent the most recent visit to each plot
+plotevs <- plotevs2 |> select(Plot_Name, SampleYear)
 
 
 # Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
-dbi <- joinStandData(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
+dbi <- joinStandData(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) |> 
   select(Plot_Name, dbi = Deer_Browse_Index)
 
 mean_dbi <- mean(dbi$dbi)
@@ -55,6 +58,7 @@ dbi_plot <-
   scale_y_continuous(breaks = c(0, 0.25, 0.50, 0.75, 1.00), labels = c(0, 25, 50, 75, 100)) +
   labs(y = "Proportion of Plots")
 
+dbi_plot
 # svg(paste0(new_path, "figures/", "Figure_6_", park, "_DBI_by_cycle.svg"),
 #     height = 6.15, width = 8)
 # dbi_plot
@@ -342,3 +346,4 @@ debt_final <- debt_final |> mutate(park = park)
 
 write.csv(debt_final, paste0(new_path, "tables/Regen_Debt_table.csv"), row.names= F)
 # Now open svg and make the Regen Debt Status fill white, "#FFFFFF", and font size 13 instead of 11.
+
