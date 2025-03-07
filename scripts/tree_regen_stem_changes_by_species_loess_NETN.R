@@ -6,7 +6,7 @@ library(ggpubr)
 span <- 4/5 #roughly linear between timesteps
 #span = 4/5
 
-if(!exists('trspp_grps')){stop("Must run source_script_MIDN.R before this script will work.")}
+if(!exists('trspp_grps')){stop("Must run source_script_NETN.R before this script will work.")}
 head(trspp_grps)
 #---- Tree trends by species ----
 trees1 <- do.call(joinTreeData, args = c(args_vs, status = 'live'))
@@ -60,7 +60,7 @@ if(park == "ROVA"){
 } 
 if(park == "WEFA"){
   tree_grps <- tree_grps %>% 
-    mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
+    mutate(sppcode = case_when(ScientificName == "Acer saccharum" ~ "ACESAC3",
                                ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>% 
@@ -144,7 +144,7 @@ if(park == "ACAD"){
                                ScientificName == "Thuja occidentalis" ~ "OTHCON",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
-                               ScientificName == "Larix laricina" ~ "Other Conifer",
+                               ScientificName == "Larix laricina" ~ "Other conifer",
                                ScientificName == "Picea" ~ "Picea spp. (spruce)",
                                ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
                                ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
@@ -152,7 +152,7 @@ if(park == "ACAD"){
                                ScientificName == "Populus" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
-                               ScientificName == "Thuja occidentalis" ~ "Other Conifer",
+                               ScientificName == "Thuja occidentalis" ~ "Other conifer",
                                TRUE ~ spp_grp))
 }
 
@@ -339,10 +339,11 @@ cols = c(
   "Acer rubrum (red maple)" = "#38A800",
   "Acer platanoides (Norway maple)" = "#8b0000",
   "Acer spp. (maple)" = "#00FF00",
+  "Acer saccharum (sugar maple)" = "#009999",
   "Ailanthus altissima (tree-of-heaven)" = "#cd4a8f",
   "Asimina triloba (pawpaw)" = "#FF00C5",
-  "Betula lenta (black birch)" = "#fffac8",
-  "Betula spp. (birch)" = "#fffac8", # Either use BETLEN or BETSPP
+  "Betula lenta (black birch)" = "#ffd8b1", # darkened color for 2024 NETN figs; does not match maps or MIDN
+  "Betula spp. (birch)" = "#ffd8b1", 
   "Carya spp. (hickory)" = "#911eb4",
   "Fagus grandifolia (American beech)" = "#FFAA00",
   "Fraxinus spp. (ash)" = "#A87000",
@@ -357,6 +358,7 @@ cols = c(
   "Pinus strobus (eastern white pine)" = "#5A1111",
   "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
   "Pinus virginiana (Virginia pine)" = "#E5740D",
+  "Pinus resinosa (red pine)" = "#E5740D",
   "Prunus spp. (native cherry)" ="#00E6A9", 
   "Pyrus calleryana (Bradford pear)" = "#cd4a8f",
   "Quercus spp. (oak)" = "#0E5D2C",
@@ -367,11 +369,17 @@ cols = c(
   "Unknown spp." = "#CACACA",
   "Diospyros virginiana (persimmon)" = "#006666", #for ASIS only
   "Amelanchier spp. (serviceberry)" = "#ffd8b1", #for ASIS only
-  "Sassafras albidum (sassafrass)" = "#59538A") #for ASIS only
+  "Sassafras albidum (sassafrass)" = "#59538A", #ASIS only
+  "Abies balsamea (balsam fir)" = '#911eb4',#ACAD only
+  "Other conifer" = "#42d4f4",#ACAD only
+  "Picea spp. (spruce)" = "#000075",#ACAD only
+  "Populus spp. (aspen)" = "#FFFF00")#ACAD only
+
 
 lines = c(
   "Acer rubrum (red maple)" = "solid",
   "Acer platanoides (Norway maple)" = "solid",
+  "Acer saccharum (sugar maple)" = "dotdash",
   "Acer spp. (maple)" = "solid",
   "Ailanthus altissima (tree-of-heaven)" = "solid",
   "Asimina triloba (pawpaw)" = "dashed",
@@ -391,6 +399,7 @@ lines = c(
   "Pinus strobus (eastern white pine)" = "dotdash",
   "Pinus taeda (loblolly pine)" = "dotdash",
   "Pinus virginiana (Virginia pine)" = "dotdash",
+  "Pinus resinosa (red pine)" = "dotdash",
   "Prunus spp. (native cherry)" = "dotdash", 
   "Pyrus calleryana (Bradford pear)" = "dotted",
   "Quercus spp. (oak)" = "solid",
@@ -401,8 +410,11 @@ lines = c(
   "Unknown spp." = "dotted",
   "Diospyros virginiana (American persimmon)" = "dashed", #for ASIS only
   "Amelanchier spp. (serviceberry)" = "dashed", #for ASIS only
-  "Sassafras albidum (sassafrass)" = "dashed") #for ASIS only)
-
+  "Sassafras albidum (sassafrass)" = "dashed", #ASIS only
+  "Abies balsamea (balsam fir)" = 'dashed',#ACAD only
+  "Other conifer" = "dotdash",#ACAD only
+  "Picea spp. (spruce)" = "solid",#ACAD only
+  "Populus spp. (aspen)" = "dotted")#ACAD only
 
 #---- Net stem/BA plots by species
 net_stems <- 
@@ -580,9 +592,10 @@ if(park == "ACAD"){
                                ScientificName == "Populus grandidentata" ~ "POPSPP",
                                ScientificName == "Populus tremuloides" ~ "POPSPP",
                                ScientificName == "Thuja occidentalis" ~ "OTHCON",
+                               ScientificName == "Sorbus decora" ~ "SUBCAN",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
-                               ScientificName == "Larix laricina" ~ "Other Conifer",
+                               ScientificName == "Larix laricina" ~ "Other conifer",
                                ScientificName == "Picea" ~ "Picea spp. (spruce)",
                                ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
                                ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
@@ -590,7 +603,8 @@ if(park == "ACAD"){
                                ScientificName == "Populus" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
-                               ScientificName == "Thuja occidentalis" ~ "Other Conifer",
+                               ScientificName == "Thuja occidentalis" ~ "Other conifer",
+                               ScientificName == "Sorbus decora" ~ "Subcanopy",
                                TRUE ~ spp_grp))
 }
 
@@ -678,11 +692,16 @@ seed_smooth2 <-
 
 # Join full group names back into dataframe
 seed_smooth3 <- left_join(seed_smooth2,
-                          plot_spp_yr |> select(spp_grp, sppcode) |> unique(),
+                          plot_rspp_yr |> select(spp_grp, sppcode) |> unique(),
                           by = c('sppcode'), 
                           relationship = 'many-to-many') |> 
                 mutate(spp_grp = as.character(spp_grp)) |> 
                 arrange(spp_grp)
+
+spp_list <- sort(unique(seed_smooth3$spp_grp))
+spp_list
+
+length(spp_list) # may be longer than Map 3 b/c includes all cycles
 
 # Plotting trends by species group facet
 # seed_trends <- 
@@ -725,7 +744,7 @@ sap_smooth2 <-
             by = "sppcode")
 
 sap_smooth3 <- left_join(sap_smooth2,
-                         plot_spp_yr |> select(spp_grp, sppcode) |> unique(),
+                         plot_rspp_yr |> select(spp_grp, sppcode) |> unique(),
                          by = c('sppcode'), 
                          relationship = 'many-to-many') |> 
   mutate(spp_grp = as.character(spp_grp)) |>
@@ -733,6 +752,10 @@ sap_smooth3 <- left_join(sap_smooth2,
   filter(drop == "keep") |> select(-drop) |>  
   arrange(spp_grp)
 
+spp_list <- sort(unique(sap_smooth3$spp_grp))
+spp_list
+
+length(spp_list)
 
 # sap_trends <- 
 #   ggplot(sap_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
