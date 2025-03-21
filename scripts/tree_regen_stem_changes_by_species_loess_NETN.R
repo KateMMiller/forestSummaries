@@ -481,8 +481,7 @@ ggsave(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_sp
 reg1 <- do.call(joinRegenData, c(args_all, units = 'sq.m')) |> 
   filter(!ScientificName %in% "None present") # b/c treat as shrub until tree-size
 
-reg <- left_join(reg1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear")) |> 
-  mutate(stock = stock * (4 * pi)) #100pt scale
+reg <- left_join(reg1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear")) 
 
 reg_grps <- left_join(reg, trspp_grps |> select(Species, spp_grp, sppcode), 
                       by = c("ScientificName" = "Species"))
