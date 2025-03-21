@@ -651,7 +651,7 @@ write.csv(debt_final, paste0(new_path, "tables/Regen_Debt_table_", subunit, ".cs
 
 
 # Stem Changes by Species Code Start --------------------------------------
-span = 8/10 # more smoothing for line graphs so less wiggles at every cycle
+span = 8/10 # more smoothing for line graphs so fewer wiggles at every cycle
 
 #---- Tree trends by species ----
 trees1 <- do.call(joinTreeData, args = c(args_vs, status = 'live')) |> filter(ParkSubUnit == subunit)

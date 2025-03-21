@@ -3,8 +3,8 @@
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
 library(ggpubr)
-span <- 4/5 #roughly linear between timesteps
-#span = 4/5
+#the lower the span the less smoothing, if higher more.
+span = 4/5
 
 if(!exists('trspp_grps')){stop("Must run source_script_MIDN.R before this script will work.")}
 head(trspp_grps)
