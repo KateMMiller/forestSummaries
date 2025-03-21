@@ -654,6 +654,32 @@ covsum <- left_join(allcov, invspp, by = "ScientificName") %>%
   summarize(avgcov = sum(quad_avg_cov, na.rm = TRUE), .groups = 'drop') %>% 
   group_by(InvasiveMIDN) %>% summarize(avg_cov = sum(avgcov)/length(evs_4yr))
 
+
+# Invasive species increase due to protocol change ------------------------
+#compare full MIDN quadrat invasive species list (woodies + indicator list) to the Cycle 1 indicator list
+#Vast majority of indicator species were added by 2009 so using the same list for both MIDN and NCBN regardless of delayed start
+ind_spp <- read.csv("MIDN_NCBN_indicator_species.csv")
+ind_spp_C1 <- ind_spp |> filter(YearAdded <= 2010) # only species added before the end of C1
+indsppC1 <- ind_spp_C1$ScientificName
+
+invcov4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive') %>% 
+  filter(EventID %in% evs_4yr) %>%
+  select(Plot_Name, PlotCode, cycle, ScientificName, quad_avg_cov) %>% 
+  group_by(Plot_Name, PlotCode, cycle) %>% summarize(quad_cov = sum(quad_avg_cov), .groups = 'drop') %>% 
+  mutate(quad_cov = replace_na(quad_cov, 0))
+
+invcov4yr_indspp <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive') %>% 
+  filter(EventID %in% evs_4yr) %>%
+  select(Plot_Name, PlotCode, cycle, ScientificName, quad_avg_cov) %>% 
+  filter(ScientificName %in% indsppC1) %>% 
+  group_by(Plot_Name, PlotCode, cycle) %>% summarize(quad_cov_indC1 = sum(quad_avg_cov), .groups = 'drop') %>% 
+  mutate(quad_cov_indC1 = replace_na(quad_cov_indC1, 0))
+
+invComp <- left_join(invcov4yr, invcov4yr_indspp, by = c("Plot_Name", "PlotCode", "cycle"))
+
+SumInvComp <- invComp |> summarise(avg_cov_indC1 = mean(quad_cov_indC1),
+                                   avg_cov = mean(quad_cov), .groups = 'drop')
+
 #---- Map 10 Invasive % Cover by Species ----
 # Lump some species in the same genus
 invspp_4yr <- joinQuadSpecies(from = from_4yr, to = to, speciesType = 'invasive') %>% 
