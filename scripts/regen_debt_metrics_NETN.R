@@ -69,7 +69,8 @@ ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, w
 
 
 # Regen densities
-reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') 
+reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') |> 
+  filter(EventID %in% evs_4yr) 
 
 reg$CanopyExclusion[reg$ScientificName %in% c("Fraxinus americana", "Fraxinus nigra", 
                                                 "Fraxinus pennsylvanica", "Fraxinus")] <- TRUE
@@ -82,7 +83,7 @@ reg_natcan <- reg |> filter(NatCan == 1) |>
   summarize(sapden = sum(sap_den, na.rm = T),
             seedden = sum(seed_den, na.rm = T),
             stock = sum(stock, na.rm = T), .groups = 'drop') |> 
-  mutate(stocked = ifelse(stock > DBI_threshold, 1, 0)) # DBI > 3, so stocking must be 100
+            mutate(stocked = ifelse(stock > DBI_threshold, 1, 0)) # DBI > 3, so stocking must be 100
 
 regsum_natcan <- reg_natcan |> 
   summarize(sapden = sum(sapden)/num_plots,
@@ -100,6 +101,7 @@ if(length(unique(reg_tot$Plot_Name)) < num_plots & !park %in% "COLO"){
   warning(paste0("Regen debt metrics don't include the total number of plots for ", park, 
                  ". Compare total number of plots = ", num_plots, " regen debt plot tally = ", 
                  length(unique(reg_tot$Plot_Name))))}
+# getting warning for ACAD because stunted woodlands not included
 
 length(unique(reg_tot$Plot_Name))
 
@@ -153,6 +155,7 @@ reg_sap <- reg |>
   pivot_wider(names_from = sppcode, values_from = sap_den, values_fill = 0)
 
 trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |> 
+  filter(EventID %in% evs_4yr) |> 
   mutate(genus = word(ScientificName, 1),
          species = ifelse(is.na(word(ScientificName, 2)), "SPP", word(ScientificName, 2)),
          sppcode1 = toupper(paste0(substr(genus, 1, 3), substr(species, 1, 3))),
@@ -202,7 +205,8 @@ sor_seed <- comb |> filter(strata %in% c("tree", "seedling")) |>
 sor_seed_mean <- mean(sor_seed$sor_seed, na.rm = T)
 
 # Tree DBH distribution
-tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live')
+tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> 
+  filter(EventID %in% evs_4yr) 
 
 tree_dist2 <- tree_dist |> 
   summarize(dbh_10cm = sum(dens_10_19.9)/num_plots,
