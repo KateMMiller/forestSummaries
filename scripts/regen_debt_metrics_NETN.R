@@ -17,6 +17,7 @@ plotevs <- plotevs2 |> select(Plot_Name, SampleYear)
 # Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
 dbi <- joinStandData(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) |> 
+  filter(EventID %in% evs_4yr)|> 
   select(Plot_Name, dbi = Deer_Browse_Index)
 
 mean_dbi <- mean(dbi$dbi)
