@@ -21,7 +21,7 @@ importData()
 
 # Set parameters
 park = 'ACAD'
-subunit = 'ACAD_MDI_East'
+subunit = 'ACAD_Isle_au_Haut'
 from = 2006
 from_4yr = 2021
 to = 2024
@@ -174,7 +174,7 @@ table(reg_smooth$size_class)
 
 reg_trend_plot <- 
   ggplot(reg_smooth, aes(x = size_class, y = estimate, #color = size_class,#linetype = sign, 
-                         group = size_class)) + theme_FVM() +
+                         group = size_class)) + theme_FHM() +
   geom_bar(stat = 'identity', aes(fill = size_class), color = 'DimGrey') +
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8) +
@@ -279,7 +279,7 @@ cycle_labs_tr = c("1" = ifelse(AIC_test$best_mod[AIC_test$cycle == 1] == 'linear
                                paste0(cycle_labs[5], "*"), cycle_labs[5]))
 
 dbh_trend_plot <- 
-  ggplot(tree_dbh_sm, aes(x = dbh_class, y = estimate)) + theme_FVM() +
+  ggplot(tree_dbh_sm, aes(x = dbh_class, y = estimate)) + theme_FHM() +
   geom_bar(stat = 'identity', fill = "#81B082" , color = 'DimGrey')+
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8)+
@@ -338,7 +338,7 @@ dbi_sum2$num_plots[is.na(dbi_sum2$num_plots)] <- 0
 dbi_plot <- 
   ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac)) +
   geom_bar(position = 'fill', stat = 'identity', na.rm = T, color = '#696969') +
-  theme_FVM() +
+  theme_FHM() +
   # scale_color_manual(values = c("Low" = "#05e689", "Medium" = "#efdf00", 
   #                               "High" = "#f94b24", "Very High" = "#a60808"),
   #                    labels = c("Low", "Medium", "High", "Very High"), 
@@ -396,6 +396,8 @@ if(length(unique(reg_tot$Plot_Name)) < num_subunit_plots & !park %in% "COLO"){
   warning(paste0("Regen debt metrics don't include the total number of plots for ", park, 
                  ". Compare total number of plots = ", num_subunit_plots, " regen debt plot tally = ", 
                  length(unique(reg_tot$Plot_Name))))}
+
+length(unique(reg_tot$Plot_Name))
 
 reg_natcan <- reg |> filter(NatCan == 1) |> 
   group_by(Plot_Name) |> 
@@ -537,7 +539,7 @@ debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "% Stocked 
                              regsum_natcan$stock, mean_dbi, flat_dist, 
                              reg_pct$sap_pct, reg_pct$seed_pct, 
                              sor_sap_mean, sor_seed_mean),
-                   Units = c("(stems/m^2)", "(stems/m^2)", "%", 
+                   Units = c("(stems/sq.m)", "(stems/sq.m)", "%", 
                              "(per 2m radius microplot)", "(range: 1 - 5)", "", "%", "%", 
                              "(range: 0 - 1)", "(range: 0 - 1)"))
 debt <- debt |> mutate(
@@ -1024,7 +1026,7 @@ net_stems <-
   labs(x = NULL, y = "Tree Density (stems/ha)") +
   # geom_line(data = mor_rec_tot %>% filter(unit_type == "stem"),
   #           aes(x = cycle, y = park_total), color = 'black') +
-  theme_FVM()+
+  theme_FHM()+
   # may have to update for different parks
   scale_color_manual(values = cols,  name = NULL) +
   scale_linetype_manual(values = lines,  name = NULL) +
@@ -1050,7 +1052,7 @@ net_ba <-
   labs(x = NULL, y = "Tree Basal Area (sq.m/ha)") +
   # geom_line(data = mor_rec_tot %>% filter(unit_type == "stem"),
   #           aes(x = cycle, y = park_total), color = 'black') +
-  theme_FVM()+
+  theme_FHM()+
   # may have to update for different parks
   scale_color_manual(values = cols,  name = NULL) +
   scale_linetype_manual(values = lines, name = NULL) +
@@ -1329,7 +1331,7 @@ net_seeds <-
          aes(x = SampleYear, y = estimate)) +
   geom_line(aes(color = spp_grp, linetype = spp_grp), linewidth = 1.5) +
   labs(x = NULL, y = "Seedling Density (stems/sq.m)") +
-  theme_FVM()+
+  theme_FHM()+
   scale_color_manual(values = cols, name = NULL) +
   scale_linetype_manual(values = lines, name = NULL) +
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
@@ -1353,7 +1355,7 @@ net_saps <-
          aes(x = SampleYear, y = estimate)) +
   geom_line(aes(color = spp_grp, linetype = spp_grp), linewidth = 1.5) +
   labs(x = NULL, y = "Sapling Density (stems/sq.m)") +
-  theme_FVM()+
+  theme_FHM()+
   scale_color_manual(values = cols, name = NULL) +
   scale_linetype_manual(values = lines, name = NULL) +
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
@@ -1403,7 +1405,7 @@ guild_plot <-
   ggplot(guild_smooth, aes(x = SampleYear, y = estimate)) +
   geom_line(aes(color = guild, group = guild), linewidth = 1.5) +
   labs(x = NULL, y = "% Invasive Cover") +
-  theme_FVM()+
+  theme_FHM()+
   scale_color_manual(values = gcols,  name = "Invasive Guild") +
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
                      limits = c(from, to)) +
@@ -1421,7 +1423,5 @@ ggsave(paste0(new_path, "figures/", "Figure_6_", subunit, "_smoothed_invasive_co
 
 ggsave(paste0(new_path, "figures/", "Figure_6_", subunit, "_smoothed_invasive_cover_by_guild_cycle.png"),
        height = 4.6, width = 8, dpi = 600)
-
-
 
 
