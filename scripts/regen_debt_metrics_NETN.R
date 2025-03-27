@@ -250,7 +250,7 @@ aic_check
 flat_dist <- ifelse(aic_check$linear < aic_check$exp, 1, 0)
 
 #----- Regen Debt Table -----
-debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "Pct Stocked Plots",
+debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "% Stocked Plots",
                               "Stocking Index", "Deer Browse Impacts", "Flat Tree Diam. Dist.",
                               "Sapling Composition", "Seedling Comp.", 
                               "Sorensen Sapling", "Sorensen Seedling"),
@@ -268,16 +268,12 @@ debt <- debt |> mutate(
               Metric == "Sapling Density" & Value >= 0.16 ~ "Acceptable",
               
               Metric == "Seedling Density" & Value < 0.25 ~ "Critical",
-              Metric == "Seedling Density" & Value >= 0.25 & Value < 2 ~ "Caution",
+              Metric == "Seedling Density" & Value >= 0.25 & Value < 2.0 ~ "Caution",
               Metric == "Seedling Density" & Value >= 2.0 ~ "Acceptable",
               
-              Metric == "Pct Stocked Plots" & Value < 33 ~ "Critical",
-              Metric == "Pct Stocked Plots" & Value >= 33 & Value < 67 ~ "Caution",
-              Metric == "Pct Stocked Plots" & Value >= 67 ~ "Acceptable",
-              
-              Metric == "Stocking Index" & Value < 25 ~ "Critical",
-              Metric == "Stocking Index" & Value >= 25 & Value < 100 ~ "Caution",
-              Metric == "Stocking Index" & Value >= 100 ~ "Acceptable",
+              Metric == "% Stocked Plots" & Value < 33.0 ~ "Critical",
+              Metric == "% Stocked Plots" & Value >= 33.0 & Value < 67.0 ~ "Caution",
+              Metric == "% Stocked Plots" & Value >= 67.0 ~ "Acceptable",
               
               Metric == "Deer Browse Impacts" & Value >= 4 ~ "Critical",
               Metric == "Deer Browse Impacts" & Value > 3 & Value < 4 ~ "Caution",
@@ -296,13 +292,22 @@ debt <- debt |> mutate(
               
               Metric == "Sorensen Sapling" & Value < 0.2 ~ "Critical",
               Metric == "Sorensen Sapling" & Value >= 0.2 ~ "Acceptable",
-
+              
               Metric == "Sorensen Seedling" & Value < 0.2 ~ "Critical",
               Metric == "Sorensen Seedling" & Value >= 0.2 ~ "Acceptable",
               
               TRUE ~ "UNKNOWN"
-              )
-  )
+    )
+)
+
+if(DBI_threshold == 100){debt <- debt |> mutate(status = case_when(Metric == "Stocking Index" & Value < 25 ~ "Critical",
+                                                                   Metric == "Stocking Index" & Value >= 25 & Value < 100 ~ "Caution",
+                                                                   Metric == "Stocking Index" & Value >= 100 ~ "Acceptable",
+                                                                   TRUE ~ status))}
+if(DBI_threshold == 50){debt <- debt |> mutate(status = case_when(Metric == "Stocking Index" & Value < 25 ~ "Critical",
+                                                                  Metric == "Stocking Index" & Value >= 25 & Value < 50 ~ "Caution",
+                                                                  Metric == "Stocking Index" & Value >= 50 ~ "Acceptable",
+                                                                  TRUE ~ status))}
 
 debt_final <- 
   rbind(debt,

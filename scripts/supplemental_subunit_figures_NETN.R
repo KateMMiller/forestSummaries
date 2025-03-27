@@ -571,10 +571,6 @@ debt <- debt |> mutate(
               Metric == "% Stocked Plots" & Value >= 33 & Value < 67 ~ "Caution",
               Metric == "% Stocked Plots" & Value >= 67 ~ "Acceptable",
               
-              Metric == "Stocking Index" & Value < 25 ~ "Critical",
-              Metric == "Stocking Index" & Value >= 25 & Value < 100 ~ "Caution",
-              Metric == "Stocking Index" & Value >= 100 ~ "Acceptable",
-              
               Metric == "Deer Browse Impacts" & Value >= 4 ~ "Critical",
               Metric == "Deer Browse Impacts" & Value > 3 & Value < 4 ~ "Caution",
               Metric == "Deer Browse Impacts" & Value <= 3 ~ "Acceptable",
@@ -599,6 +595,16 @@ debt <- debt |> mutate(
               TRUE ~ "UNKNOWN"
     )
 )
+
+if(DBI_threshold == 100){debt <- debt |> mutate(status = case_when(Metric == "Stocking Index" & Value < 25 ~ "Critical",
+                                                        Metric == "Stocking Index" & Value >= 25 & Value < 100 ~ "Caution",
+                                                        Metric == "Stocking Index" & Value >= 100 ~ "Acceptable",
+                                                        TRUE ~ status))}
+if(DBI_threshold == 50){debt <- debt |> mutate(status = case_when(Metric == "Stocking Index" & Value < 25 ~ "Critical",
+                                                        Metric == "Stocking Index" & Value >= 25 & Value < 50 ~ "Caution",
+                                                        Metric == "Stocking Index" & Value >= 50 ~ "Acceptable",
+                                                        TRUE ~ status))}
+       
 
 debt_final <- 
   rbind(debt,
