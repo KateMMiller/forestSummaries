@@ -11,13 +11,14 @@ head(trspp_grps)
 #---- Tree trends by species ----
 trees1 <- do.call(joinTreeData, args = c(args_vs, status = 'live'))
 
-plot_evs <- do.call(joinLocEvent, args = args_vs) |> select(Plot_Name, SampleYear, cycle) %>% 
-  group_by(SampleYear, cycle) |>  mutate(num_plots = sum(!is.na(Plot_Name)))
+plot_evs <- do.call(joinLocEvent, args = args_vs) |> select(Plot_Name, SampleYear, cycle, IsStuntedWoodland) %>% 
+                filter(IsStuntedWoodland == FALSE) |> group_by(SampleYear, cycle) 
 
 trees <- left_join(trees1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear")) |> 
-         mutate(BA_m2ha = BA_cm2/ifelse(ParkUnit == "ACAD", 225, 400),
+          filter(IsStuntedWoodland == FALSE) |>        
+          mutate(BA_m2ha = BA_cm2/ifelse(ParkUnit == "ACAD", 225, 400),
                 stems = 1) |> 
-         select(Plot_Name, SampleYear, cycle, num_plots, ScientificName, 
+         select(Plot_Name, SampleYear, cycle, ScientificName, 
                 stems, BA_m2ha) |> 
   arrange(Plot_Name, SampleYear)  
   
@@ -164,6 +165,7 @@ table(tree_grps$spp_grp)
 table(tree_grps$ScientificName, tree_grps$spp_grp)
 
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
+length(unique(plot_yr$Plot_Name))
 
 # This will create all combination of plot, year, spp, but adds years not sampled by plots.
 # Need to then left join to drop unsampled years.
@@ -481,13 +483,14 @@ ggsave(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_sp
 reg1 <- do.call(joinRegenData, c(args_all, units = 'sq.m')) |> 
   filter(!ScientificName %in% "None present") # b/c treat as shrub until tree-size
 
-reg <- left_join(reg1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear")) 
+reg <- left_join(reg1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear")) |> 
+  filter(IsStuntedWoodland == FALSE)
+
+length(unique(reg$Plot_Name))
 
 reg_grps <- left_join(reg, trspp_grps |> select(Species, spp_grp, sppcode), 
                       by = c("ScientificName" = "Species"))
 
-if(nrow(reg_grps[which(is.na(reg_grps$spp_grp)),]) > 0){
-  warning("There's at least 1 NA in reg_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 #Park specific exceptions to default groupings
 if(park == "MORR"){
   reg_grps <- reg_grps %>% 
@@ -612,6 +615,9 @@ reg_grps <- reg_grps %>% mutate(spp_grp = case_when(spp_grp == "Other Native" ~ 
                                                     spp_grp == "Other Exotic" ~ "Other exotic spp.",
                                                     TRUE ~ spp_grp))
 
+if(nrow(reg_grps[which(is.na(reg_grps$spp_grp)),]) > 0){
+  warning("There's at least 1 NA in reg_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
+
 head(reg_grps)
 table(reg_grps$spp_grp)
 table(reg_grps$ScientificName, reg_grps$spp_grp)
@@ -619,6 +625,7 @@ table(reg_grps$ScientificName, reg_grps$spp_grp)
 # Shifting to loess smoother with case bootstrap. Need a matrix of site x species x year
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
 
+length(unique(plot_yr$Plot_Name))
 # This will create all combination of plot, year, spp, but adds years not sampled by plots.
 # Need to then left join to drop unsampled years.
 plot_rspp_yr1 <- expand.grid(Plot_Name = unique(plot_yr$Plot_Name), 
@@ -641,7 +648,7 @@ head(plot_spp_yr3)
 head(reg_grps)
 plot_rspp_yr <- left_join(plot_rspp_yr3, reg_grps |> select(sppcode, spp_grp) |> unique(), 
                           by = "spp_grp")
-
+length(unique(plot_spp_yr$Plot_Name))
 reg_spp_smooth <- left_join(plot_rspp_yr, reg_grps |> select(Plot_Name, SampleYear, spp_grp, seed_den, sap_den), 
                             by = c("Plot_Name", "SampleYear", "spp_grp")) #|> 
                 # filter(SampleYear > 2006) #dropped first year b/c only 1 microplot
@@ -655,6 +662,7 @@ length(spp_list) # may be longer than Map 3 b/c includes all cycles
 
 #span = 8/length(unique(reg_spp_smooth$SampleYear)) # MIDN is span = 4/5
 table(reg_spp_smooth$SampleYear, reg_spp_smooth$Plot_Name)
+length(unique(reg_spp_smooth$Plot_Name))
 
 seed_smooth <- purrr::map_dfr(spp_list, 
                               function(spp){
@@ -839,6 +847,7 @@ ggsave(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_c
        height = 11, width = 9.5, dpi = 600)
 
 #----- Trends in invasive guilds over time -----
+#stunted woodlands included
 guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
 guild_list <- sort(unique(guilds$Group))
 

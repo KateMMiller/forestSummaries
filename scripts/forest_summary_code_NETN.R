@@ -10,7 +10,8 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 }
 
 #---- Plot event lists ----
-plotevs <- do.call(joinLocEvent, args_all)
+#Not including ACAD stunted woodland park level summaries. Still included in plot level reporting.
+plotevs <- do.call(joinLocEvent, args_all) 
 plotevs_vs <- do.call(joinLocEvent, args_vs)
 plotevs_4yr1 <- plotevs %>% filter(between(SampleYear, from_4yr, to))
 
@@ -133,12 +134,14 @@ write_to_shp(reg_size_4yr,
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
-                           canopyForm = 'canopy', units = 'sq.m'))
+                           canopyForm = 'canopy', units = 'sq.m', ))
 
 reg_size_cy <- reg_vs %>% group_by(Plot_Name, cycle) %>% 
                           summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = TRUE) %>% 
-                          left_join(plotevs_vs %>% select(Plot_Name, cycle),
-                                    ., by = c("Plot_Name", "cycle")) 
+                          left_join(plotevs_vs %>% select(Plot_Name, cycle, IsStuntedWoodland),
+                                    ., by = c("Plot_Name", "cycle")) |> filter(IsStuntedWoodland == FALSE) 
+
+length(unique(reg_size_cy$Plot_Name))
 
 reg_size_cy[reg_sz_cols][reg_size_cy[is.na(reg_sz_cols)]] <- 0
 
@@ -219,7 +222,10 @@ ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by
 #---- Figure 3B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
-tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live'))
+tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live')) |> 
+                        left_join(plotevs_vs %>% select(Plot_Name, cycle, IsStuntedWoodland),
+                         ., by = c("Plot_Name", "cycle")) |> filter(IsStuntedWoodland == FALSE) 
+length(unique(tree_dd$Plot_Name))
 
 dbh_cols <- c('dens_10_19.9', 'dens_20_29.9', 'dens_30_39.9', 'dens_40_49.9', 
               'dens_50_59.9', 'dens_60_69.9', 'dens_70_79.9', 'dens_80_89.9',

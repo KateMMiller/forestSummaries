@@ -5,6 +5,15 @@
 
 library(vegan)
 #---- Params -----
+#Not including ACAD stunted woodland plots in park level summaries
+num_plots = case_when(park == "ACAD" ~ 172, #no stunted woodlands so 172 instead of 176
+                      park == "MABI" ~ 24,
+                      park == "MIMA" ~ 20,
+                      park == "MORR" ~ 28,
+                      park == "ROVA" ~ 40,
+                      park == "SAGA" ~ 21,
+                      park == "SARA" ~ 32,
+                      park == "WEFA" ~ 10)
 
 # Plot list
 plotevs1 <- joinLocEvent(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) 
@@ -23,12 +32,14 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to) |> filter(IsStuntedW
 mean_dbi <- mean(dbi$dbi)
 mean_dbi # MORR: 4.071
 
-dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index)
+dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> filter(IsStuntedWoodland == FALSE) |> 
+  select(Plot_Name, dbi = Deer_Browse_Index) 
 dbi_prev <- mean(dbiprev$dbi)
 dbi_prev # MORR: 4.179 
 
 # DBI distribution plot
-dbi_all <- joinStandData(park = park, from = from, to = to) |> 
+dbi_all <- joinStandData(park = park, from = from, to = to) |>  
+  filter(IsStuntedWoodland == FALSE)  |>
   select(Plot_Name, cycle, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 
 dbi_sum <- dbi_all |> group_by(cycle, dbi) |> 
@@ -71,7 +82,9 @@ ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, w
 
 # Regen densities
 reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') |> 
-  filter(EventID %in% evs_4yr) 
+  filter(EventID %in% evs_4yr)
+
+length(unique(reg$Plot_Name))
 
 reg$CanopyExclusion[reg$ScientificName %in% c("Fraxinus americana", "Fraxinus nigra", 
                                                 "Fraxinus pennsylvanica", "Fraxinus")] <- TRUE
@@ -102,7 +115,6 @@ if(length(unique(reg_tot$Plot_Name)) < num_plots & !park %in% "COLO"){
   warning(paste0("Regen debt metrics don't include the total number of plots for ", park, 
                  ". Compare total number of plots = ", num_plots, " regen debt plot tally = ", 
                  length(unique(reg_tot$Plot_Name))))}
-# getting warning for ACAD because stunted woodlands not included
 
 length(unique(reg_tot$Plot_Name))
 
@@ -166,6 +178,8 @@ trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |>
   summarize(treeBA = sum(BA_cm2, na.rm = T)/plot_size, .groups = 'drop') |> 
   pivot_wider(names_from = sppcode, values_from = treeBA, values_fill = 0)
 
+length(unique(trees$Plot_Name))
+
 all_spp <- c("Plot_Name", sort(unique(c(names(trees[,-1]), names(reg_seed[,-1]), names(reg_sap[,-1])))))
 
 seed_miss <- setdiff(all_spp, names(reg_seed))
@@ -208,6 +222,7 @@ sor_seed_mean <- mean(sor_seed$sor_seed, na.rm = T)
 # Tree DBH distribution
 tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> 
   filter(EventID %in% evs_4yr) 
+length(unique(tree_dist$Plot_Name))
 
 tree_dist2 <- tree_dist |> 
   summarize(dbh_10cm = sum(dens_10_19.9)/num_plots,

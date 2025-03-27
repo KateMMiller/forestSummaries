@@ -21,7 +21,7 @@ importData()
 
 # Set parameters
 park = 'ACAD'
-subunit = 'ACAD_Isle_au_Haut'
+subunit = 'ACAD_MDI_East'
 from = 2006
 from_4yr = 2021
 to = 2024
@@ -45,9 +45,9 @@ args_all = list(park = park, from = from, to = to, QAQC = QAQC, locType = locTyp
 args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = locType)
 args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 
-num_subunit_plots = case_when(subunit == "ACAD_MDI_East" ~ 82,
+num_subunit_plots = case_when(subunit == "ACAD_MDI_East" ~ 80, #no stunted woodlands so 80 instead of 82
                               subunit == "ACAD_MDI_West" ~ 65,
-                              subunit == "ACAD_Schoodic" ~ 10,
+                              subunit == "ACAD_Schoodic" ~ 8, #no stunted woodlands so 8 instead of 10
                               subunit == "ACAD_Isle_au_Haut" ~ 19
 )
 
@@ -73,8 +73,9 @@ invisible(lapply(folders, function(x) {
 trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 
 #---- Params: Plot event lists ----
-plotevs <- do.call(joinLocEvent, args_all) |> filter(ParkSubUnit == subunit)
-plotevs_vs <- do.call(joinLocEvent, args_vs) |> filter(ParkSubUnit == subunit)
+#not including ACAD stunted woodlands in park or subunit level summaries
+plotevs <- do.call(joinLocEvent, args_all) |> filter(ParkSubUnit == subunit) |> filter(IsStuntedWoodland == FALSE) 
+plotevs_vs <- do.call(joinLocEvent, args_vs) |> filter(ParkSubUnit == subunit) |> filter(IsStuntedWoodland == FALSE) 
 plotevs_4yr1 <- plotevs %>% filter(between(SampleYear, from_4yr, to)) |> filter(ParkSubUnit == subunit)
 
 # Take the highest sample year when multiple panels were sampled within a year
@@ -102,11 +103,15 @@ reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
                            canopyForm = 'canopy', units = 'sq.m'))
+length(unique(reg_vs$Plot_Name))
+
 
 reg_size_cy <- reg_vs %>% group_by(Plot_Name, ParkSubUnit, cycle) %>% 
   summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = TRUE) %>% 
   left_join(plotevs_vs %>% select(Plot_Name, cycle),
             ., by = c("Plot_Name", "cycle")) 
+
+length(unique(reg_size_cy$Plot_Name))
 
 reg_size_cy[reg_sz_cols][reg_size_cy[is.na(reg_sz_cols)]] <- 0
 
@@ -200,7 +205,12 @@ ggsave(paste0(new_path, "figures/", "Figure_3A_", subunit, "_regen_by_size_class
 #---- Figure 3B Diam. dist. trends by size class ----
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 # Including all species and canopy forms
-tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live')) |> filter(ParkSubUnit == subunit) 
+tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live')) |> 
+                filter(ParkSubUnit == subunit) |> 
+                left_join(plotevs_vs %>% select(Plot_Name, cycle, IsStuntedWoodland),
+                ., by = c("Plot_Name", "cycle")) |> filter(IsStuntedWoodland == FALSE) 
+
+length(unique(tree_dd$Plot_Name))
 
 dbh_cols <- c('dens_10_19.9', 'dens_20_29.9', 'dens_30_39.9', 'dens_40_49.9', 
               'dens_50_59.9', 'dens_60_69.9', 'dens_70_79.9', 'dens_80_89.9',
@@ -306,7 +316,7 @@ ggsave(paste0(new_path, "figures/", "Figure_3B_", subunit, "_tree_dbh_dist_by_cy
 
 # Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
-dbi <- joinStandData(park = park, from = from_4yr, to = to) |> 
+dbi <- joinStandData(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) |> 
   filter(EventID %in% evs_4yr) |> 
   select(Plot_Name, dbi = Deer_Browse_Index)
 
@@ -320,7 +330,9 @@ mean_dbi
 
 # DBI distribution plot
 dbi_all <- joinStandData(park = park, from = from, to = to) |> 
-  select(Plot_Name, ParkSubUnit, cycle, dbi = Deer_Browse_Index) |> filter(ParkSubUnit == subunit) 
+  filter(IsStuntedWoodland == FALSE) |> 
+  select(Plot_Name, ParkSubUnit, cycle, dbi = Deer_Browse_Index) |> 
+  filter(ParkSubUnit == subunit) 
 
 dbi_sum <- dbi_all |> group_by(cycle, dbi) |> 
   summarize(num_plots = sum(!is.na(dbi)), .groups = 'drop') |>
@@ -363,6 +375,7 @@ ggsave(paste0(figpath, "Figure_2_", subunit, "_DBI_by_cycle.png"), height = 6.15
 # reg is all spp. reg$NatCan is used for metrics that only include native canopy forming spp.
 reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') |> 
   filter(EventID %in% evs_4yr) 
+length(unique(reg$Plot_Name))
 table(reg$PanelCode, reg$SampleYear)
 
 reg$CanopyExclusion[reg$ScientificName %in% c("Fraxinus americana", "Fraxinus nigra", 
@@ -461,6 +474,7 @@ trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |>
   group_by(Plot_Name, sppcode) |> 
   summarize(treeBA = sum(BA_cm2, na.rm = T)/plot_size, .groups = 'drop') |> 
   pivot_wider(names_from = sppcode, values_from = treeBA, values_fill = 0)
+length(unique(trees$Plot_Name))
 
 all_spp <- c("Plot_Name", sort(unique(c(names(trees[,-1]), names(reg_seed[,-1]), names(reg_sap[,-1])))))
 
@@ -504,6 +518,7 @@ sor_seed_mean <- mean(sor_seed$seed_sor, na.rm = T)
 # Tree DBH distribution
 tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> 
   filter(EventID %in% evs_4yr) 
+length(unique(tree_dist$Plot_Name))
 
 tree_dist2 <- tree_dist |> 
   summarize(dbh_10cm = sum(dens_10_19.9)/num_subunit_plots,
@@ -656,17 +671,22 @@ write.csv(debt_final, paste0(new_path, "tables/Regen_Debt_table_", subunit, ".cs
 span = 8/10 # more smoothing for line graphs so fewer wiggles at every cycle
 
 #---- Tree trends by species ----
-trees1 <- do.call(joinTreeData, args = c(args_vs, status = 'live')) |> filter(ParkSubUnit == subunit)
+trees1 <- do.call(joinTreeData, args = c(args_vs, status = 'live')) |> 
+  filter(ParkSubUnit == subunit) 
+
 
 plot_evs <- do.call(joinLocEvent, args = args_vs) |> filter(ParkSubUnit == subunit) |> 
-              select(Plot_Name, ParkSubUnit, SampleYear, cycle)
+             filter(IsStuntedWoodland == FALSE) |>  select(Plot_Name, ParkSubUnit, SampleYear, cycle, IsStuntedWoodland) 
 
 trees <- left_join(trees1, plot_evs, by = c("Plot_Name", "ParkSubUnit", "cycle", "SampleYear")) |> 
+  filter(IsStuntedWoodland == FALSE) |> 
   mutate(BA_m2ha = BA_cm2/ifelse(ParkUnit == "ACAD", 225, 400),
          stems = 1) |> 
   select(Plot_Name, SampleYear, cycle, ScientificName, 
          stems, BA_m2ha) |> 
   arrange(Plot_Name, SampleYear)  
+
+length(unique(trees$Plot_Name))
 
 tree_grps <- left_join(trees, trspp_grps |> select(Species, spp_grp, sppcode), 
                        by = c("ScientificName" = "Species"))
@@ -811,6 +831,7 @@ tree_grps <- tree_grps %>%  mutate(spp_grp = case_when(spp_grp == "Other Native"
                                                        TRUE ~ spp_grp))
 
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
+length(unique(plot_yr$Plot_Name))
 
 # This will create all combination of plot, year, spp, but adds years not sampled by plots.
 # Need to then left join to drop unsampled years.
@@ -838,6 +859,7 @@ head(tree_grps)
 plot_spp_yr <- left_join(plot_spp_yr3, tree_grps |> select(sppcode, spp_grp) |> unique(), 
                          by = "spp_grp")
 
+length(unique(plot_spp_yr$Plot_Name))
 tree_spp_sum1 <- left_join(plot_spp_yr, 
                            tree_grps |> select(Plot_Name, SampleYear, spp_grp, sppcode, stems, BA_m2ha), 
                            by = c("Plot_Name", "SampleYear", "spp_grp", 'sppcode'),
@@ -1083,7 +1105,10 @@ ggsave(paste0(new_path, "figures/Figure_5_", subunit, "_smoothed_tree_dens_BA_by
 reg1 <- do.call(joinRegenData, c(args_all, units = 'sq.m')) |> 
   filter(!ScientificName %in% "None present") |> filter(ParkSubUnit == subunit)
 
-reg <- left_join(reg1, plot_evs,  by = c("Plot_Name", "ParkSubUnit", "cycle", "SampleYear")) 
+reg <- left_join(reg1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear")) |> 
+  filter(IsStuntedWoodland == FALSE)
+
+length(unique(reg$Plot_Name))
 
 reg_grps <- left_join(reg, trspp_grps |> select(Species, spp_grp, sppcode), 
                       by = c("ScientificName" = "Species"))
@@ -1224,7 +1249,7 @@ reg_grps <- reg_grps %>% mutate(spp_grp = case_when(spp_grp == "Other Native" ~ 
 
 # Shifting to loess smoother with case bootstrap. Need a matrix of site x species x year
 plot_yr <- plot_evs |> ungroup() |> select(Plot_Name, SampleYear) |> unique()
-
+length(unique(plot_yr$Plot_Name))
 # This will create all combination of plot, year, spp, but adds years not sampled by plots.
 # Need to then left join to drop unsampled years.
 plot_rspp_yr1 <- expand.grid(Plot_Name = unique(plot_yr$Plot_Name), 
@@ -1248,9 +1273,10 @@ head(reg_grps)
 plot_rspp_yr <- left_join(plot_rspp_yr3, reg_grps |> select(sppcode, spp_grp) |> unique(), 
                           by = "spp_grp")
 
+length(unique(plot_spp_yr$Plot_Name))
 reg_spp_smooth <- left_join(plot_rspp_yr, reg_grps |> select(Plot_Name, SampleYear, spp_grp, seed_den, sap_den), 
                             by = c("Plot_Name", "SampleYear", "spp_grp")) #|> 
-# filter(SampleYear > 2006) #dropped first year b/c only 1 microplot
+ #filter(SampleYear > 2006) #dropped first year b/c only 1 microplot
 
 reg_spp_smooth[,c("seed_den", "sap_den")][is.na(reg_spp_smooth[,c("seed_den", "sap_den")])] <- 0
 
@@ -1261,7 +1287,7 @@ length(spp_list) # may be longer than Map 3 b/c includes all cycles
 
 #span = 4/5
 table(reg_spp_smooth$SampleYear, reg_spp_smooth$Plot_Name)
-
+length(unique(reg_spp_smooth$Plot_Name))
 seed_smooth <- purrr::map_dfr(spp_list, 
                               function(spp){
                                 df <- reg_spp_smooth |> filter(sppcode %in% spp)
@@ -1382,6 +1408,7 @@ ggsave(paste0(new_path, "figures/Figure_4_", subunit, "_smoothed_regen_by_specie
 ggsave(paste0(new_path, "figures/Figure_4_", subunit, "_smoothed_regen_by_species_cycle.png"),
        height = 11, width = 9.5, dpi = 600)
 #----- Trends in invasive guilds over time -----
+#stunted woodlands included
 guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
 guild_list <- sort(unique(guilds$Group))
 
