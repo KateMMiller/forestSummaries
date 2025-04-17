@@ -75,12 +75,61 @@ print_poss <- possibly(pdf_print, otherwise = "Error")
 #midn_parks <- sort(unique(midn_params$park))
 midn_parks <- c("APCO", "ASIS", "BOWA", "COLO", "FRSP", "GETT",
                 "GEWA", "HOFU", "PETE", "RICH", "SAHI", "THST", "VAFO")
+
+#Test if a few individual parks are working
+render_MIDN_reports("BOWA")
+pdf_print("BOWA")
+render_poss("BOWA")
+print_poss(("APCO"))
+
+# print_poss("SAHI")
+
 purrr::walk(midn_parks, ~render_poss(park = .))
 purrr::walk(midn_parks, ~print_poss(.))
 
-pdf_print("APCO")
-
-# render_poss("SAHI")
-# print_poss("SAHI")
 
 
+# Generate reports for MIDN subunits --------------------------------------
+render_MIDN_subunit_reports <- function(park, subunit){
+  
+  outpath = paste0(report_path, park, "/", end_year, "/")
+  
+  render(input = paste0(rmd_path, "MIDN_figures_subunits.Rmd"),
+           params = list(park = park, subunit = subunit), 
+           output_file = paste0(subunit, 
+                                "_Figures_", 
+                                format(Sys.time(), '%b_%Y'), ".html"),
+           output_dir = out_path,
+           output_options = list(self_contained = TRUE))#,
+    #encoding = "UTF-8")
+}
+
+pdf_subunit_print <- function(park, subunit){
+  #  report_dir <- paste0(report_path, park, "/", end_year, "/")
+  report_dir <- paste0(out_path)
+  report_name <- paste0(subunit, "_Figures_", format(Sys.time(), "%b_%Y"))
+  chrome_print(input = paste0(out_path, report_name, ".html"), 
+               output = paste0(out_path, report_name, ".pdf"),
+               format = 'pdf')
+  cat('Report printed to: ', paste0(out_path, report_name, ".pdf"))
+}
+
+
+# Set up safe functions that continue with the next park upon error
+render_subunit_poss <- possibly(render_MIDN_subunit_reports, otherwise = "Error")
+print_subunit_poss <- possibly(pdf_subunit_print, otherwise = "Error")
+
+
+midn_subunits <- c("FRSP_FRED", "FRSP_SPOT", "FRSP_CHWILD", "PETE_FIVE", "PETE_EAST")
+subunit_parks <- c("FRSP","PETE")
+#Test if a few individual subunits are working
+render_MIDN_subunit_reports("FRSP", "FRSP_FRED")
+pdf_subunit_print("FRSP", "FRSP_FRED")
+
+#Have to do FRSP and PETE separately
+purrr::walk(midn_subunits, ~render_subunit_poss(park = "PETE", subunit = .))
+purrr::walk(midn_subunits, ~print_subunit_poss(park = "PETE", subunit = .))
+
+
+purrr::walk(subunit_parks, ~(walk(midn_subunits, ~render_subunit_poss(park = "PETE", subunit = .))))
+purrr::walk(subunit_parks, ~(walk(midn_subunits, ~print_subunit_poss(park = "PETE", subunit = .))))
