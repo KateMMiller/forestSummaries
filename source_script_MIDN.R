@@ -28,10 +28,10 @@ importData()
 # temp: so can run individual parks w/ .rmd file
 ##Comment out before running for all parks##
 #assign params to global env. for source files to find. Makes iterating easier.
-
+#
 # midn_names <- read.csv("MIDN_MetaData.csv")
 # midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
-# park <<- "THST"
+# park <<- "VAFO"
 # from <<- as.numeric(midn_params$from[midn_params$park == park])
 # from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
 # to <<- as.numeric(midn_params$to[midn_params$park == park])
@@ -43,7 +43,7 @@ importData()
 # park_long <- midn_names$LongName[midn_names$ParkCode == park]
 # park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 # network_long <- midn_names$Network_long[midn_names$ParkCode == park]
-
+# 
 
 
 # Downgrade Fraxinus to subcanopy species
@@ -54,13 +54,13 @@ park_crs = ifelse(park %in% c("APCO", "BOWA"), 26917, 26918)
 num_plots = case_when(park == "APCO" ~ 28,
                       park == "ASIS" ~ 24, # Will be 24
                       park == "BOWA" ~ 8,
-                      park == "COLO" ~ 48,
+                      park == "COLO" ~ 47, # Plot 380 has not been sampled since 2014. Change to 48, if re sampled?
                       park == "FRSP" ~ 104,
                       park == "GETT" ~ 33,
                       park == "GEWA" ~ 8,
                       park == "HOFU" ~ 16,
                       park == "PETE" ~ 52,
-                      park == "RICH" ~ 31,
+                      park == "RICH" ~ 31, #Should be 32, but plot 219 wasn't sampled in 2021. Plot count was already adjusted by KMM
                       park == "SAHI" ~ 4,
                       park == "THST" ~ 8,
                       park == "VAFO" ~ 28
