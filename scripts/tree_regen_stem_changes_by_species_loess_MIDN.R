@@ -375,7 +375,7 @@ if(park == "COLO"| park == "GEWA"| park == "THST"){
   reg_grps <- reg_grps %>%
     mutate(sppcode = case_when(ScientificName == "Asimina triloba" ~ "ASITRI",
                                TRUE ~ sppcode)) %>%
-    mutate(spp_grp = case_when(ScientificName == "Asimina triloba" ~ "Asimina triloba",
+    mutate(spp_grp = case_when(ScientificName == "Asimina triloba" ~ "Asimina triloba (pawpaw)",
                                TRUE ~ spp_grp))
 }
 if(park == "RICH"){
