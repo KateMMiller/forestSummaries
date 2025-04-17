@@ -21,7 +21,7 @@ importData()
 
 # Set parameters
 park = 'ACAD'
-subunit = 'ACAD_MDI_East'
+subunit = 'ACAD_Schoodic'
 from = 2006
 from_4yr = 2021
 to = 2024
@@ -1415,7 +1415,8 @@ ggsave(paste0(new_path, "figures/Figure_4_", subunit, "_smoothed_regen_by_specie
        height = 11, width = 9.5, dpi = 600)
 #----- Trends in invasive guilds over time -----
 #stunted woodlands included
-guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
+guilds1 <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
+guilds <- guilds1 |> filter(ParkSubUnit == subunit)
 guild_list <- sort(unique(guilds$Group))
 
 guild_smooth <- purrr::map_dfr(guild_list,
@@ -1432,7 +1433,9 @@ guild_smooth <- purrr::map_dfr(guild_list,
 gcols <- c("Tree" = "#4A68BF",
            "Shrub" = "#CD5C5C",
            "Herbaceous" = "#228b22",
-           "Graminoid" = "#ffd700")
+          "Graminoid" = "#ffd700")
+
+if(nrow(guilds) >0){         
 
 guild_plot <- 
   ggplot(guild_smooth, aes(x = SampleYear, y = estimate)) +
@@ -1457,4 +1460,4 @@ ggsave(paste0(new_path, "figures/", "Figure_6_", subunit, "_smoothed_invasive_co
 ggsave(paste0(new_path, "figures/", "Figure_6_", subunit, "_smoothed_invasive_cover_by_guild_cycle.png"),
        height = 4.6, width = 8, dpi = 600)
 
-
+}

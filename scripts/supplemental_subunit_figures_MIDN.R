@@ -24,21 +24,21 @@ importData()
 ##Comment out before running for all parks##
 #assign params to global env. for source files to find. Makes iterating easier.
 # 
-midn_names <- read.csv("MIDN_MetaData.csv")
-midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
-park <<- "PETE"
-subunit <<- "PETE_FIVE"
-from <<- as.numeric(midn_params$from[midn_params$park == park])
-from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
-to <<- as.numeric(midn_params$to[midn_params$park == park])
-cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
-
-QAQC <<- FALSE
-locType <<- 'VS'
-#+++ NOTE: IF GET add_header_above error, need to update cycle_latest in MIDN_params.csv  +++
-park_long <- midn_names$LongName[midn_names$ParkCode == park]
-park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
-network_long <- midn_names$Network_long[midn_names$ParkCode == park]
+# midn_names <- read.csv("MIDN_MetaData.csv")
+# midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
+# park <<- "PETE"
+# subunit <<- "PETE_FIVE"
+# from <<- as.numeric(midn_params$from[midn_params$park == park])
+# from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
+# to <<- as.numeric(midn_params$to[midn_params$park == park])
+# cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
+# 
+# QAQC <<- FALSE
+# locType <<- 'VS'
+# #+++ NOTE: IF GET add_header_above error, need to update cycle_latest in MIDN_params.csv  +++
+# park_long <- midn_names$LongName[midn_names$ParkCode == park]
+# park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
+# network_long <- midn_names$Network_long[midn_names$ParkCode == park]
 
 
 
