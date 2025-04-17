@@ -183,6 +183,9 @@ reg_trend_plot
 ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"),
        height = 5.5, width = 7.5, units = 'in')
 
+ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.png"),
+       height = 5.5, width = 7.5, units = 'in')
+
 #---- Figure 1B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
@@ -287,6 +290,8 @@ dbh_trend_plot
 ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')
 
+ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.png"),
+       height = 5, width = 7.5, units = 'in')
 
 #---- Map 3 Regen by composition ----
 reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m')) |> 
@@ -505,6 +510,20 @@ if(nrow(invcov_wide) > 0){
   write_to_shp(invcov_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_cycle.shp"))
 }
+
+# Average invasive vs native cover for last census  -----------------------
+#(useful for report)
+allcov <- do.call(joinQuadSpecies, args = c(args_4yr, speciesType = 'all')) %>% 
+  select(Plot_Name, cycle, ScientificName, quad_avg_cov, Exotic)
+
+
+invspp <- prepTaxa() %>% select(ScientificName, InvasiveMIDN)
+
+covsum <- left_join(allcov, invspp, by = "ScientificName") %>% 
+  filter(!(InvasiveMIDN == FALSE & Exotic == TRUE)) %>% # native vs. invasive; Exotic, but not invasive species are dropped
+  group_by(Plot_Name, InvasiveMIDN) %>% 
+  summarize(avgcov = sum(quad_avg_cov, na.rm = TRUE), .groups = 'drop') %>% 
+  group_by(InvasiveMIDN) %>% summarize(avg_cov = sum(avgcov)/length(evs_4yr))
 
 #---- Map 8 Invasive % Cover by Species ----
 # Lump some species in the same genus
@@ -779,6 +798,37 @@ inv_plots_wide <- inv_plots %>% pivot_wider(names_from = cycle,
 write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park, 
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
+# Invasive species count increase due to protocol change ------------------------
+#compare full MIDN quadrat invasive species list (woodies + indicator list) to the Cycle 1 indicator list
+#Vast majority of indicator species were added by 2009 so using the same list for both MIDN and NCBN regardless of delayed start
+ind_spp <- read.csv("MIDN_NCBN_indicator_species.csv")
+ind_spp_C1 <- ind_spp |> filter(YearAdded <= 2010) # only species added before the end of C1
+indsppC1 <- ind_spp_C1$ScientificName
+
+inv4yr <- do.call(sumSpeciesList, args = c(args_all, speciesType = "invasive")) %>% 
+  filter(EventID %in% evs_4yr) %>%
+  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% 
+  group_by(Plot_Name, PlotCode, cycle) %>% summarize(quad_cov = sum(quad_avg_cov, na.rm = T),
+                                                     numspp= sum(present), .groups = 'drop') %>% 
+  mutate(quad_cov = replace_na(quad_cov, 0))
+
+inv4yr_indspp <- do.call(sumSpeciesList, args = c(args_all, speciesType = "invasive")) %>% 
+  filter(EventID %in% evs_4yr) %>%
+  mutate(ScientificName = ifelse(ScientificName %in% indsppC1, ScientificName, "None present")) %>% 
+  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% 
+  mutate(quad_avg_cov = ifelse(ScientificName == "None present", 0, quad_avg_cov)) %>% 
+  group_by(Plot_Name, PlotCode, cycle) %>% summarize(quad_cov_indC1 = sum(quad_avg_cov, na.rm = T),
+                                                     numspp_indC1= sum(present), .groups = 'drop')
+
+invComp <- left_join(inv4yr, inv4yr_indspp, by = c("Plot_Name", "PlotCode", "cycle"))
+
+SumInvComp <- invComp |> summarise(avg_cov_indC1 = sum(quad_cov_indC1)/num_plots,
+                                   avg_cov = sum(quad_cov)/num_plots,
+                                   numspp_indC1 = sum(numspp_indC1)/num_plots,
+                                   numspp = sum(numspp)/num_plots,.groups = 'drop')
+
+InvCovComp <- round(SumInvComp$avg_cov - SumInvComp$avg_cov_indC1, digits = 2)
+InvCountComp <- round(SumInvComp$numspp - SumInvComp$numspp_indC1, digits = 2)
 
 #---- Table 3 Exotic species by number of plots cycle -------------------------
 inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>%
@@ -905,10 +955,14 @@ inv_spp2 <- rbind(inv_spp, centaurea, lonicera, euonymus,
 inv_spp2 <- inv_spp2[, c("ScientificName", "CommonName", "InvasiveMIDN",
                          sort(names(inv_spp2[,4:ncol(inv_spp2)])))]
 
-inv_spp_final <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
+inv_spp3 <- left_join(inv_spp2, ind_spp |> select(ScientificName, YearAdded), by = "ScientificName") |> 
+  replace_na(list(YearAdded = 2019)) # all woodies added in 2019
+names(inv_spp3)
+inv_spp_final <- inv_spp3 %>%  filter(ScientificName != 'None present') %>% 
   mutate(InvasiveMIDN = case_when(InvasiveMIDN == '1' ~ 'Yes',
                                   InvasiveMIDN =='0' ~ 'No',
-                                  TRUE ~ InvasiveMIDN)) 
+                                  TRUE ~ InvasiveMIDN)) |> 
+  relocate( "YearAdded", .after = "InvasiveMIDN")
 
 write.csv(inv_spp_final, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
