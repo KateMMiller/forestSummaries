@@ -223,7 +223,7 @@ sap_dbh_labels <- c("1", "2", "3", "4", "5",
   # geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
   #               color = 'DimGrey', alpha = 0.8)+
   # labs(x  = "Cycle", y = "Stems/ha")+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 5)+
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5)+
   scale_color_manual(values = reg_colors, name = "DBH Size Class",
                      labels = reg_labels)+
   scale_fill_manual(values = reg_colors, name = "DBH Size Class",
