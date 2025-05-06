@@ -218,11 +218,11 @@ sap_dbh_labels <- c("1", "2", "3", "4", "5",
 sap_dbh_trend_plot <- 
   ggplot(sap_dbh_sm, aes(x = dbh_class, y = estimate, fill = as.factor(cycle), color = as.factor(cycle), group = as.factor(cycle))) + 
     theme_FHM() +
-  #geom_line(linewidth = 0.5) + 
-  
-  # geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
-  #               color = 'DimGrey', alpha = 0.8)+
-  # labs(x  = "Cycle", y = "Stems/ha")+
+#  geom_line(linewidth = 0.5) +
+  geom_bar(stat = 'identity', fill = "#81B082" , color = 'DimGrey') +
+  geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5,
+                color = 'DimGrey', alpha = 0.8)+
+  labs(x  = "Cycle", y = "Stems/ha")+
   facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5)+
   scale_color_manual(values = reg_colors, name = "DBH Size Class",
                      labels = reg_labels)+
@@ -361,7 +361,7 @@ trees_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
 table(trees_4yr$ScientificName)
 
 dom_trspp <- trees_4yr %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>% 
-  group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
+  group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T), .groups = 'drop') %>% arrange(desc(ba))
 
 dom_trspp
 
@@ -383,7 +383,7 @@ tree_wide <- trees_4yr %>% group_by(Plot_Name, spp_grp) %>%
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
             ., by = "Plot_Name") %>% arrange(spp_grp) %>% 
   pivot_wider(names_from = spp_grp, values_from = BAm2ha, values_fill = 0) %>%
-  select(-`NA`)
+  {if("NA" %in% names(.)) select(-`NA`)}
 
 tree_wide$total <- rowSums(tree_wide[,4:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
