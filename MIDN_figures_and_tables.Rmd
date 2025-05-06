@@ -9,8 +9,8 @@ output:
     # includes:
     #   in_header: "header_MIDN.html"
     #   after_body: "footer_MIDN.html"
-# params:
-# park: 'COLO'
+params:
+  park: 'COLO'
 
 ---
 
@@ -45,7 +45,7 @@ library(vegan)
 
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
-park <<- park #For running 'generate_all_MIDN_reports.R'
+park <<- params$park #For running 'generate_all_MIDN_reports.R'
 # park <<- "BOWA" #for running indiv. parks
 path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' #ces path
 # path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
