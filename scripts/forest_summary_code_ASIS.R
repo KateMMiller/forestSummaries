@@ -1,8 +1,8 @@
 #-------------------------------------
 # Forest Data Summaries: Regeneration
 #-------------------------------------
-library(tidyverse)
-new_path = paste0(path, park, "/", as.character(to), "/")
+
+if(!exists("new_path")){new_path = paste0(path, park, "/")}
 
 span = 8/16
 

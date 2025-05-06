@@ -11,11 +11,6 @@ library(sf)
 library(vegan)
 library(ggpubr)
 
-
-if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/NETN/'} #ces path
-# if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'} #kmm path
-
-
 # Make sure local copy of DB is current or connect to server
 importData()
 
@@ -25,6 +20,7 @@ subunit = 'ACAD_Schoodic'
 from = 2006
 from_4yr = 2021
 to = 2024
+report_year = 2024 # used for file path and output naming, in case differs from last year sampled
 QAQC = FALSE
 locType = 'all'
 cycle_latest = 5
@@ -41,6 +37,8 @@ plot_size = ifelse(park == "ACAD", 225, 400)
 from_prev = 2017
 to_prev = 2019
 
+if(!exists("path")){path = paste0('./output/', report_year, "/NETN/")} #general path that should work for everyone
+
 args_all = list(park = park, from = from, to = to, QAQC = QAQC, locType = locType)
 args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = locType)
 args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
@@ -51,18 +49,14 @@ num_subunit_plots = case_when(subunit == "ACAD_MDI_East" ~ 80, #no stunted woodl
                               subunit == "ACAD_Isle_au_Haut" ~ 19
 )
 
-
 #Set up file structure
-invisible(lapply(park, function(x) {
-  if(!dir.exists(paste0(path, x))){dir.create(paste0(path, x))}
-})
-)
+if(!dir.exists(paste0("./output/", report_year))){dir.create(paste0("./output/", report_year, "/"))}
+if(!dir.exists(paste0("./output/", report_year, "/NETN/"))){dir.create(paste0("./output/", report_year, "/NETN/"))}
 
-new_path = paste0(path, park, "/", as.character(to), "/")
+new_path = paste0(path, subunit, "/")
 
 if(!dir.exists(new_path)){dir.create(new_path)}
-
-folders <- c("ArcPro_projects", "figures", "map_exports", "shapefiles", "tables", "written_report")
+folders <- c("figures", "tables")
 
 invisible(lapply(folders, function(x) {
   if(!dir.exists(paste0(new_path, x))){dir.create(paste0(new_path, x))}
@@ -94,7 +88,7 @@ span <- 8/16 #less smoothing for confidence intervals
 #span = 4/5
 
 # Forest Summary Code Start ----------------------------------------------
-new_path = paste0(path, park, "/", as.character(to), "/")
+#new_path = paste0(path, park, "/", as.character(to), "/")
 
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
@@ -367,7 +361,7 @@ dbi_plot <-
 # dbi_plot
 # dev.off()
 dbi_plot
-figpath <- paste0(path, park, "/", to, '/figures/')
+figpath <- paste0(path, subunit, '/figures/')
 ggsave(paste0(figpath, "Figure_2_", subunit, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
 ggsave(paste0(figpath, "Figure_2_", subunit, "_DBI_by_cycle.png"), height = 6.15, width = 8, units = 'in', dpi = 600)
 
@@ -663,10 +657,10 @@ results_plot <-
 
 results_plot
 
-figpath2 <- paste0(path, park, "/", to, '/figures/') # not hard coded
+#figpath2 <- paste0(path, park, "/", to, '/figures/') # not hard coded
 
-ggsave(paste0(figpath2, "Figure_1_", subunit, "_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
-ggsave(paste0(figpath2, "Figure_1_", subunit, "_Regen_Debt_table.png"), height = 6, width = 4.5, units = 'in', dpi = 600)
+ggsave(paste0(figpath, "Figure_1_", subunit, "_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+ggsave(paste0(figpath, "Figure_1_", subunit, "_Regen_Debt_table.png"), height = 6, width = 4.5, units = 'in', dpi = 600)
 
 debt_final <- debt_final |> mutate(park = park)
 
@@ -955,7 +949,7 @@ tree_BA_smooth3 <- left_join(tree_BA_smooth2,
 write.csv(tree_BA_smooth3, paste0(new_path, "tables/", subunit, 
                                   "_tree_BA_estimates.csv"), row.names = FALSE)
 
-net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba = sum(estimate))
+net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba = sum(estimate), .groups = 'drop')
 net_ba_year # BA overtime, check for decline
 
 
@@ -1461,3 +1455,4 @@ ggsave(paste0(new_path, "figures/", "Figure_6_", subunit, "_smoothed_invasive_co
        height = 4.6, width = 8, dpi = 600)
 
 }
+

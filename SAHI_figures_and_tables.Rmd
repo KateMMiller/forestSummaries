@@ -8,6 +8,8 @@ output:
     #includes:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
+params:
+  report_year: 2024 # year report was generated for
 ---
 ```{r setup, include = FALSE, results = 'hide'}
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center', message = F, warning = F)
@@ -32,8 +34,9 @@ library(vegan)
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
 park <<- "SAHI" #assigns to global env. so easier for later code to find
-path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' 
-#path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' # output files go here
+report_year <- params$report_year
+path <<- paste0('./output/', report_year, "/MIDN/")#'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' #ces path
+
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
 #park <<- park
@@ -74,7 +77,7 @@ save_html(html_header, "html_header.html")
 ```
 
 ```{r include = F, cache = F}
-source('source_script_SAHI.R') # sets up parameters. Can also run all the scripts below, but turned off for easier troubleshooting.
+source('source_script_SAHI.R') # sets up parameters. 
 ```
 ```{r include = F, cache = F}
 source('./scripts/forest_summary_code_SAHI.R') # main figures and tables
@@ -259,7 +262,7 @@ includeHTML("html_header.html")
 ```
 <br>
 ```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1_Regen_Debt_table.png"))
+include_graphics(paste0(new_path, "figures/Figure_1_", park, "_Regen_Debt_table.png"))
 ```
 
 ```{r results = 'asis'}

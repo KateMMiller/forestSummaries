@@ -10,24 +10,27 @@ library(pagedown) # for chrome_print()
 #devtools::install_github('yihui/servr')
 library(servr)
 
-# rmd_path <- c("C:/NETN/R_Dev/forestSummaries/") # location where .RMD lives (make sure ends with /)
-rmd_path <- c("C:/01_NETN/Forest_Health/R_Dev/forestSummaries/") # location where .RMD lives (make sure ends with /)
-if(!dir.exists(paste0(rmd_path, "output"))){dir.create(paste0(rmd_path, "output"))}
-out_path <- paste0(rmd_path, "output/") # make sure there's an output folder in path above
+# puts output from data summaries.
+report_year = 2024
+
+#rmd_path <- c("C:/01_NETN/Forest_Health/R_Dev/forestSummaries/") # location where .RMD lives (make sure ends with /)
+#rmd_path = paste0(getwd(), "/") 
+#if(!dir.exists(paste0(rmd_path, "output"))){dir.create(paste0(rmd_path, "output"))}
+if(!dir.exists(paste0(getwd(), "/output/", "MIDN/"))){dir.create(paste0(getwd(), "/output/MIDN"))} 
+if(!dir.exists(paste0(getwd(), "/output/", "MIDN/", report_year))){dir.create(paste0(getwd(), "/output/MIDN/", report_year))} # year folder
+
+out_path <- paste0(getwd(), "/output/", report_year, "/MIDN/") # make sure there's an output folder in path above
 midn_params <- read.csv("MIDN_params.csv")
 # report_path <- "C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/" #path where source script
-report_path <- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'
-
-# puts output from data summaries.
-end_year = 2024
+report_path <- out_path #'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'
 
 render_MIDN_reports <- function(park){
   
-  outpath = paste0(report_path, park, "/", end_year, "/")
+  outpath = paste0(report_path, park, "/", report_year, "/")
   
   if(park == "SAHI"){
     
-    render(input = paste0(rmd_path, "SAHI_figures_and_tables.Rmd"),
+    render(input = "SAHI_figures_and_tables.Rmd",
            output_file = paste0(park, 
                                 "_Figures_and_Tables_", 
                                 format(Sys.time(), '%b_%Y'), ".html"),
@@ -36,7 +39,7 @@ render_MIDN_reports <- function(park){
     
   } else if(park == "ASIS"){
     
-    render(input = paste0(rmd_path, "ASIS_figures_and_tables.Rmd"),
+    render(input = "ASIS_figures_and_tables.Rmd",
            output_file = paste0(park, 
                                 "_Figures_and_Tables_", 
                                 format(Sys.time(), '%b_%Y'), ".html"),
@@ -45,7 +48,7 @@ render_MIDN_reports <- function(park){
     
   } else {
   
-    render(input = paste0(rmd_path, "MIDN_figures_and_tables.Rmd"),
+    render(input = "MIDN_figures_and_tables.Rmd",
            params = list(park = park), 
            output_file = paste0(park, 
                               "_Figures_and_Tables_", 
@@ -57,7 +60,7 @@ render_MIDN_reports <- function(park){
 }
 
 pdf_print <- function(park){
-#  report_dir <- paste0(report_path, park, "/", end_year, "/")
+#  report_dir <- paste0(report_path, park, "/", report_year, "/")
   report_dir <- paste0(out_path)
   report_name <- paste0(park, "_Figures_and_Tables_", format(Sys.time(), "%b_%Y"))
   chrome_print(input = paste0(out_path, report_name, ".html"), 
@@ -92,10 +95,10 @@ purrr::walk(midn_parks, ~print_poss(.))
 # Generate reports for MIDN subunits --------------------------------------
 render_MIDN_subunit_reports <- function(park, subunit){
   
-  outpath = paste0(report_path, park, "/", end_year, "/")
+  outpath = paste0(report_path, park, "/", report_year, "/")
   
-  render(input = paste0(rmd_path, "MIDN_figures_subunits.Rmd"),
-           params = list(park = park, subunit = subunit), 
+  render(input = "MIDN_figures_subunits.Rmd",
+           params = list(park = park, subunit = subunit, report_year = report_year), 
            output_file = paste0(subunit, 
                                 "_Figures_", 
                                 format(Sys.time(), '%b_%Y'), ".html"),
@@ -105,7 +108,7 @@ render_MIDN_subunit_reports <- function(park, subunit){
 }
 
 pdf_subunit_print <- function(park, subunit){
-  #  report_dir <- paste0(report_path, park, "/", end_year, "/")
+  #  report_dir <- paste0(report_path, park, "/", report_year, "/")
   report_dir <- paste0(out_path)
   report_name <- paste0(subunit, "_Figures_", format(Sys.time(), "%b_%Y"))
   chrome_print(input = paste0(out_path, report_name, ".html"), 
@@ -120,16 +123,16 @@ render_subunit_poss <- possibly(render_MIDN_subunit_reports, otherwise = "Error"
 print_subunit_poss <- possibly(pdf_subunit_print, otherwise = "Error")
 
 
-midn_subunits <- c("FRSP_FRED", "FRSP_SPOT", "FRSP_CHWILD", "PETE_FIVE", "PETE_EAST")
-subunit_parks <- c("FRSP","PETE")
 #Test if a few individual subunits are working
 render_MIDN_subunit_reports("FRSP", "FRSP_FRED")
 pdf_subunit_print("FRSP", "FRSP_FRED")
 
+frsp_subunits <- c("FRSP_FRED", "FRSP_SPOT", "FRSP_CHWILD")
+pete_subunits <- c("PETE_FIVE", "PETE_EAST") 
+
 #Have to do FRSP and PETE separately
-purrr::walk(midn_subunits, ~render_subunit_poss(park = "PETE", subunit = .))
-purrr::walk(midn_subunits, ~print_subunit_poss(park = "PETE", subunit = .))
+purrr::walk(pete_subunits, ~render_subunit_poss(park = "PETE", subunit = .))
+purrr::walk(pete_subunits, ~print_subunit_poss(park = "PETE", subunit = .))
 
-
-purrr::walk(subunit_parks, ~(walk(midn_subunits, ~render_subunit_poss(park = "PETE", subunit = .))))
-purrr::walk(subunit_parks, ~(walk(midn_subunits, ~print_subunit_poss(park = "PETE", subunit = .))))
+purrr::walk(frsp_subunits, ~render_subunit_poss(park = "FRSP", subunit = .))
+purrr::walk(frsp_subunits, ~print_subunit_poss(park = "FRSP", subunit = .))

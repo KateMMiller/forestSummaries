@@ -134,7 +134,7 @@ write_to_shp(reg_size_4yr,
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
-                           canopyForm = 'canopy', units = 'sq.m', ))
+                           canopyForm = 'canopy', units = 'sq.m'))
 
 reg_size_cy <- reg_vs %>% group_by(Plot_Name, cycle) %>% 
                           summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = TRUE) %>% 
@@ -332,8 +332,9 @@ reg_park <- do.call(joinRegenData, args = list(park, from_4yr, to = to, units = 
                       filter(!ScientificName %in% c('None present', "Not Sampled")) # just selected park
 
 dom_regspp <- reg_park %>% group_by(Plot_Name, ScientificName) %>% summarize(reg = sum(regen_den, na.rm = T)) %>%
-                           group_by(ScientificName) %>% summarize(reg = sum(reg, na.rm = T)) %>% arrange(desc(reg))
-view(dom_regspp)
+                           group_by(ScientificName) %>% summarize(reg = sum(reg, na.rm = T), .groups = 'drop') %>% 
+  arrange(desc(reg))
+#view(dom_regspp)
 ###
 
 head(trspp_grps) # loaded in source_script_NETN.R. Use as default grouping.
@@ -512,7 +513,7 @@ trees_park <- do.call(joinTreeData, args = list(park, from_4yr, to = to, status 
 dom_trspp <- trees_park %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>%
   group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
 
-view(dom_trspp)
+#view(dom_trspp)
 ###
 
 tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
@@ -695,7 +696,7 @@ reg_4yr <- do.call(joinRegenData,
                             canopyForm = 'canopy', units = 'sq.m'))
 
 reg_4yr_stock <- reg_4yr %>% group_by(Plot_Name, PlotCode) %>% 
-                             summarize(stock = sum(stock, na.rm = T)) %>% 
+                             summarize(stock = sum(stock, na.rm = T), .groups = 'drop') %>% 
                  left_join(plotevs %>% select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate) %>% unique(),
                            ., by = c("Plot_Name", "PlotCode"))
 
@@ -1300,7 +1301,7 @@ cwd_wide3 <- cwd %>% pivot_wider(names_from = cycle,
                                  names_prefix = "cycle_",
                                  values_fill = NA) # Better for mapping if unsampled plots are NA not 0
 
-apply(cwd_wide3[,5:ncol(cwd_wide3)], 2, mean)
+apply(cwd_wide3[,5:ncol(cwd_wide3)], 2, mean, na.rm = T)
 
 max_cwd <- max(cwd_wide3[,c(5:ncol(cwd_wide3))], na.rm = T)
 

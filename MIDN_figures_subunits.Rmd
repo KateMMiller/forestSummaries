@@ -9,9 +9,10 @@ output:
     # includes:
     #   in_header: "header_MIDN.html"
     #   after_body: "footer_MIDN.html"
-# params:
-# park: 'COLO'
-
+params:
+  park: 'PETE'
+  subunit: 'PETE_FIVE'
+  report_year: 2024 # year report was generated for
 ---
 
 ```{r eval = F, include = F}
@@ -48,10 +49,11 @@ library(vegan)
 # park <<- params$park #assigns to global env. so easier for later code to find
 # park <<- "PETE" #for running indiv. parks.use line above or running generate_all_MIDN?
 # subunit <<- "PETE_FIVE"
-park <<- park #for running generate_all_MIDN
-subunit <<- subunit
-path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'
-# path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
+park <<- params$park #for running generate_all_MIDN
+subunit <<- params$subunit
+report_year <- params$report_year
+path <<- paste0('./output/', report_year, "/MIDN/")
+
 # # output files go here
 midn_names <<- read.csv("MIDN_MetaData.csv")
 midn_subunit_names <<- read.csv("MIDN_MetaData_Subunits.csv")

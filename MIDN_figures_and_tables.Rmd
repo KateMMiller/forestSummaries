@@ -11,7 +11,7 @@ output:
     #   after_body: "footer_MIDN.html"
 params:
   park: 'COLO'
-
+  report_year: 2024
 ---
 
 ```{r eval = F, include = F}
@@ -46,10 +46,10 @@ library(vegan)
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
 park <<- params$park #For running 'generate_all_MIDN_reports.R'
-# park <<- "BOWA" #for running indiv. parks
-path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' #ces path
-# path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
-# # output files go here
+report_year <- params$report_year
+path <<- paste0('./output/', report_year, "/MIDN/")#'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' #ces path
+
+# output files go here
 midn_names <<- read.csv("MIDN_MetaData.csv")
 midn_params <<- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
 from <<- as.numeric(midn_params$from[midn_params$park == park])
@@ -89,7 +89,7 @@ save_html(html_header, "html_header.html")
 ```
 
 ```{r include = F, cache = F}
-source('source_script_MIDN.R') # sets up parameters. Can also run all the scripts below, but turned off for easier troubleshooting.
+source('source_script_MIDN.R') # sets up parameters. 
 ```
 ```{r include = F, cache = F}
 source('./scripts/forest_summary_code_MIDN.R') # main figures and tables
@@ -313,7 +313,7 @@ includeHTML("html_header.html")
 ```
 <br>
 ```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1_Regen_Debt_table.png"))
+include_graphics(paste0(new_path, "figures/Figure_1_", park, "_Regen_Debt_table.png"))
 ```
 
 ```{r results = 'asis'}
