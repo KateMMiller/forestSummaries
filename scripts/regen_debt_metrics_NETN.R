@@ -76,7 +76,7 @@ dbi_plot
 # dbi_plot
 # dev.off()
 
-figpath <- paste0(path, park, "/", to, '/figures/')
+figpath <- paste0(path, park, '/figures/')
 ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
 
 

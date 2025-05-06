@@ -11,10 +11,8 @@ library(sf)
 library(vegan)
 library(ggpubr)
 
-
-if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'} #ces path
-# if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'} #kmm path
-
+#report_year = 2024
+if(!exists("path")){path = paste0('./output/', report_year, "/MIDN/")} #general path that should work for everyone
 
 # Make sure local copy of DB is current or connect to server
 importData()
@@ -39,8 +37,6 @@ importData()
 # park_long <- midn_names$LongName[midn_names$ParkCode == park]
 # park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 # network_long <- midn_names$Network_long[midn_names$ParkCode == park]
-
-
 
 # Downgrade Fraxinus to subcanopy species
 VIEWS_MIDN_NCBN$Taxa_MIDN_NCBN$IsCanopyExclusion[VIEWS_MIDN_NCBN$Taxa_MIDN_NCBN$Genus == "Fraxinus"] <- TRUE
@@ -79,15 +75,17 @@ args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 parks <- c("APCO", "ASIS", "BOWA", "COLO", "FRSP", "GETT", "GEWA", 
            "HOFU", "PETE", "RICH", "SAHI", "THST", "VAFO")
 
+if(!dir.exists(paste0("./output/", report_year))){dir.create(paste0("./output/", report_year, "/"))}
+if(!dir.exists(paste0("./output/", report_year, "/MIDN/"))){dir.create(paste0("./output/", report_year, "/MIDN/"))}
+
 invisible(lapply(parks, function(x) {
   if(!dir.exists(paste0(path, x))){dir.create(paste0(path, x))}
 })
 )
 
-new_path = paste0(path, park, "/", as.character(to), "/")
+new_path = paste0(path, subunit, "/")
 
 if(!dir.exists(new_path)){dir.create(new_path)}
-
 folders <- c("figures", "tables")
 
 invisible(lapply(folders, function(x) {
@@ -119,7 +117,7 @@ span <- 8/16 #less smoothing for confidence intervals
 #span = 4/5
 
 # Forest Summary Code Start ----------------------------------------------
-new_path = paste0(path, park, "/", as.character(to), "/")
+#new_path = paste0(path, park, "/", as.character(to), "/")
 
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
@@ -398,7 +396,7 @@ dbi_plot <-
 # dbi_plot
 # dev.off()
 
-figpath <- paste0(path, park, "/", to, '/figures/')
+figpath <- paste0(path, subunit, '/figures/')
 ggsave(paste0(figpath, "Figure_2_", subunit, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
 ggsave(paste0(figpath, "Figure_2_", subunit, "_DBI_by_cycle.png"), height = 6.15, width = 8, units = 'in', dpi = 600)
 
@@ -683,10 +681,10 @@ results_plot <-
 
 results_plot
 
-figpath2 <- paste0(path, park, "/", to, '/figures/') # not hard coded
+#figpath2 <- paste0(path, park, "/", to, '/figures/') # not hard coded
 
-ggsave(paste0(figpath2, "Figure_1_", subunit, "_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
-ggsave(paste0(figpath2, "Figure_1_", subunit, "_Regen_Debt_table.png"), height = 6, width = 4.5, units = 'in', dpi = 600)
+ggsave(paste0(figpath, "Figure_1_", subunit, "_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+ggsave(paste0(figpath, "Figure_1_", subunit, "_Regen_Debt_table.png"), height = 6, width = 4.5, units = 'in', dpi = 600)
 
 debt_final <- debt_final |> mutate(park = park)
 

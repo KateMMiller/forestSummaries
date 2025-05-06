@@ -168,7 +168,7 @@ tree_BA_smooth2 <-
                         sign = case_when(up_first < lo_last ~ "signinc",
                                          lo_first > up_last ~ "signdec",
                                          is.na(up_first) ~ "notmod",
-                                         TRUE ~ "nonsign")) |> 
+                                         TRUE ~ "nonsign"), .groups = 'drop') |> 
               select(sppcode, sign),
             by = "sppcode")
 
@@ -183,7 +183,7 @@ tree_BA_smooth3 <- left_join(tree_BA_smooth2,
 write.csv(tree_BA_smooth3, paste0(new_path, "tables/", park, 
                                  "_tree_BA_estimates.csv"), row.names = FALSE)
 
-net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba = sum(estimate))
+net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba = sum(estimate), .groups = 'drop')
 net_ba_year # No decline in BA over time
 
 
@@ -469,7 +469,7 @@ seed_smooth2 <-
                                      sign = case_when(up_first < lo_last ~ "signinc",
                                                       lo_first > up_last ~ "signdec",
                                                       is.na(up_first) ~ "notmod",
-                                                      TRUE ~ "nonsign")) |> 
+                                                      TRUE ~ "nonsign"), .groups = 'drop') |> 
                            select(sppcode, sign),
   by = "sppcode")
 
@@ -490,7 +490,7 @@ sap_smooth2 <-
                         sign = case_when(up_first < lo_last ~ "signinc",
                                          lo_first > up_last ~ "signdec",
                                          is.na(up_first) ~ "notmod",
-                                         TRUE ~ "nonsign")) |> 
+                                         TRUE ~ "nonsign"), .groups = 'drop') |> 
               select(sppcode, sign),
             by = "sppcode")
 

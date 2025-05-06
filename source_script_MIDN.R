@@ -16,10 +16,8 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
-
-if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'} #ces path
-# if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'} #kmm path
-
+# report_year = 2024 # only here for testing. Defined in MIDN_figures_and_tables.RMD params.
+if(!exists("path")){path = paste0('./output/', report_year, "/MIDN/")} #general path that should work for everyone
 
 # Make sure local copy of DB is current or connect to server
 importData()
@@ -75,12 +73,15 @@ args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 parks <- c("APCO", "ASIS", "BOWA", "COLO", "FRSP", "GETT", "GEWA", 
            "HOFU", "PETE", "RICH", "SAHI", "THST", "VAFO")
 
+if(!dir.exists(paste0("./output/", report_year))){dir.create(paste0("./output/", report_year, "/"))}
+if(!dir.exists(paste0("./output/", report_year, "/MIDN/"))){dir.create(paste0("./output/", report_year, "/MIDN/"))}
+
 invisible(lapply(parks, function(x) {
   if(!dir.exists(paste0(path, x))){dir.create(paste0(path, x))}
 })
 )
 
-new_path = paste0(path, park, "/", as.character(to), "/")
+new_path = paste0(path, park, "/")
 
 if(!dir.exists(new_path)){dir.create(new_path)}
 
