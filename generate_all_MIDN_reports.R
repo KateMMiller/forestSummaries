@@ -16,8 +16,10 @@ report_year = 2024
 #rmd_path <- c("C:/01_NETN/Forest_Health/R_Dev/forestSummaries/") # location where .RMD lives (make sure ends with /)
 #rmd_path = paste0(getwd(), "/") 
 #if(!dir.exists(paste0(rmd_path, "output"))){dir.create(paste0(rmd_path, "output"))}
-if(!dir.exists(paste0(getwd(), "/output/", "MIDN/"))){dir.create(paste0(getwd(), "/output/MIDN"))} 
-if(!dir.exists(paste0(getwd(), "/output/", "MIDN/", report_year))){dir.create(paste0(getwd(), "/output/MIDN/", report_year))} # year folder
+if(!dir.exists(paste0("./output/"))){dir.create(paste0("./output/"))}
+if(!dir.exists(paste0("./output/", report_year))){dir.create(paste0("./output/", report_year, "/"))}
+if(!dir.exists(paste0("./output/", report_year, "/MIDN/"))){dir.create(paste0("./output/", report_year, "/MIDN/"))}
+
 
 out_path <- paste0(getwd(), "/output/", report_year, "/MIDN/") # make sure there's an output folder in path above
 midn_params <- read.csv("MIDN_params.csv")
