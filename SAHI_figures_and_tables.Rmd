@@ -8,6 +8,8 @@ output:
     #includes:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
+params:
+  report_year: 2024 # year report was generated for
 ---
 ```{r setup, include = FALSE, results = 'hide'}
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center', message = F, warning = F)
@@ -32,8 +34,9 @@ library(vegan)
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
 park <<- "SAHI" #assigns to global env. so easier for later code to find
-path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' 
-#path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' # output files go here
+report_year <- params$report_year
+path <<- paste0('./output/', report_year, "/MIDN/")#'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' #ces path
+
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
 #park <<- park
@@ -74,7 +77,7 @@ save_html(html_header, "html_header.html")
 ```
 
 ```{r include = F, cache = F}
-source('source_script_SAHI.R') # sets up parameters. Can also run all the scripts below, but turned off for easier troubleshooting.
+source('source_script_SAHI.R') # sets up parameters. 
 ```
 ```{r include = F, cache = F}
 source('./scripts/forest_summary_code_SAHI.R') # main figures and tables
@@ -89,11 +92,13 @@ source('./scripts/tree_regen_stem_changes_by_species_loess_SAHI.R') # smoothed c
 ```{r results = 'hide', include = F}
 cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", "</p>")
 
-cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Average cover and species counts may be increasing over time due to protocol changes, including additions to the indicator species list over time, a plot search for indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Protocol evolution over time has impacted invasive species % cover and counts. The estimated change in invasive species % cover and count in ", park_long, " (", park, ") that can be attributed to protocol change is ", InvCovComp, "% and ", InvCountComp, " species per plot for the most recent census. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2189101'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
-cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", "Average cover and species counts may be increasing over time due to additions to the protocols, including a plot search for additional indicator species starting in 2009 and all woody species being sampled in quadrats starting in 2019. Species have also been added to the indicator list over time. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2297098'>MIDN Summary of Major Protocol Changes</a>", "</p>")
+cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where exotic species were detected. ", paste0(cycle_labs, collapse = "; "), ".  Priority invasive species capable of dominating Eastern US forest habitats are highlighed in yellow. ", " Protocol evolution has impacted the number of invasive species monitored through time. Species were not consistently monitored before the year specified in the Year Added column. More details can be found in the <a href=https://irma.nps.gov/DataStore/Reference/Profile/2189101'>MIDN Summary of Major Protocol Changes</a>", "</p>")
 
 cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
+
+cap_t5 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 5.</b> List of tree species included in Maps 3 and 4 and how each was displayed.", "</p>")
 ```
 
 ```{r include = F, eval = T, results = 'hide'}
@@ -178,8 +183,8 @@ tab2_kab(park)
 ```
 ```{r include = F, eval = T, results = 'hide'}
 # Table 3 setup
-tab3_cols <- c("Latin Name", "Common Name", "Invasive", gsub("cycle_", "Cycle ", 
-                                                 names(inv_spp_final[,4:ncol(inv_spp_final)])))
+tab3_cols <- c("Latin Name", "Common Name", "Invasive", "Year Added", gsub("cycle_", "Cycle ", 
+                                                 names(inv_spp_final[,5:ncol(inv_spp_final)])))
 
 inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
 
@@ -193,6 +198,7 @@ tab3 <-
   column_spec(ncol(inv_spp), border_right = T) %>%
   column_spec(1:ncol(inv_spp), border_left = T, border_right = T) %>%
   column_spec(1, extra_css =  "border-left: 1.5px solid #000000;") %>%
+  row_spec(which(inv_spp$InvasiveMIDN == "Yes"), background =  "#F2F2A0") %>%
   row_spec(0:nrow(inv_spp), extra_css = "border-top: 1px solid #000000;") %>%
   row_spec(0:nrow(inv_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>%
@@ -217,6 +223,22 @@ tab4 <- HTML("<p>No invasive species early detections observed in most recent ce
 save_html(tab4, "table4.html")
 }
 ```
+```{r}
+if(nrow(grp_spp)>0){
+tab5 <- 
+  kable(grp_spp, col.names = c("Latin Name", "Group: Map 3. Regeneration", "Group: Map 4. Tree Canopy"),
+        align = c('l', 'c', 'c'), format = 'html',
+        table.attr = "style='width:95%;height:95%;'") |> 
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = FALSE, position = 'center', font_size = 9) %>%
+  column_spec(1, italic = TRUE) %>%
+  row_spec(0:nrow(grp_spp), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(grp_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
+  row_spec(1:nrow(grp_spp), extra_css = "padding: 1px") %>%
+  #landscape(margin = "1cm") %>%
+  save_kable(file = "table5.html", self_contained = F)
+} 
+```
 
 
 ```{r results = 'asis', include = F, eval = F}
@@ -240,7 +262,7 @@ includeHTML("html_header.html")
 ```
 <br>
 ```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1_Regen_Debt_table.png"))
+include_graphics(paste0(new_path, "figures/Figure_1_", park, "_Regen_Debt_table.png"))
 ```
 
 ```{r results = 'asis'}
@@ -407,8 +429,23 @@ includeHTML("table4.html")
 ```
 <br>
 
+<!-- Start of page 10 -->
+
+###   {.page-break-before}
+```{r results = 'asis', warning = F, message = F}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis'}
+cat(cap_t5)
+```
+
+```{r echo = F, eval = T, warning = F, message = F}
+includeHTML("table5.html")
+```
+<br>
 
 ```{r error = T, results = 'hide', echo = FALSE, include = FALSE, eval = F}
-file.remove(c("table1.html", "table2.html", "table3.html", "table4.html"))
+file.remove(c("table1.html", "table2.html", "table3.html", "table4.html", "table5.html"))
 ```
 

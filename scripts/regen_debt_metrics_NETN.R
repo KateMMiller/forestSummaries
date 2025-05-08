@@ -5,24 +5,41 @@
 
 library(vegan)
 #---- Params -----
+#Not including ACAD stunted woodland plots in park level summaries
+num_plots = case_when(park == "ACAD" ~ 172, #no stunted woodlands so 172 instead of 176
+                      park == "MABI" ~ 24,
+                      park == "MIMA" ~ 20,
+                      park == "MORR" ~ 28,
+                      park == "ROVA" ~ 40,
+                      park == "SAGA" ~ 21,
+                      park == "SARA" ~ 32,
+                      park == "WEFA" ~ 10)
 
 # Plot list
-plotevs <- joinLocEvent(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
-  select(Plot_Name, SampleYear)
+plotevs1 <- joinLocEvent(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) 
+plotevs2 <- plotevs1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |> 
+  slice_max(SampleYear) |> ungroup() 
+evs_4yr <- plotevs2$EventID # EventIDs that represent the most recent visit to each plot
+plotevs <- plotevs2 |> select(Plot_Name, SampleYear)
 
+
+# Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
-dbi <- joinStandData(park = park, from = from_4yr, to = to) |> #filter(IsStuntedWoodland == FALSE) |> 
+dbi <- joinStandData(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) |> 
+  filter(EventID %in% evs_4yr)|> 
   select(Plot_Name, dbi = Deer_Browse_Index)
 
 mean_dbi <- mean(dbi$dbi)
 mean_dbi # MORR: 4.071
 
-dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> select(Plot_Name, dbi = Deer_Browse_Index)
+dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> filter(IsStuntedWoodland == FALSE) |> 
+  select(Plot_Name, dbi = Deer_Browse_Index) 
 dbi_prev <- mean(dbiprev$dbi)
 dbi_prev # MORR: 4.179 
 
 # DBI distribution plot
-dbi_all <- joinStandData(park = park, from = from, to = to) |> 
+dbi_all <- joinStandData(park = park, from = from, to = to) |>  
+  filter(IsStuntedWoodland == FALSE)  |>
   select(Plot_Name, cycle, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 
 dbi_sum <- dbi_all |> group_by(cycle, dbi) |> 
@@ -53,17 +70,21 @@ dbi_plot <-
   scale_y_continuous(breaks = c(0, 0.25, 0.50, 0.75, 1.00), labels = c(0, 25, 50, 75, 100)) +
   labs(y = "Proportion of Plots")
 
+dbi_plot
 # svg(paste0(new_path, "figures/", "Figure_6_", park, "_DBI_by_cycle.svg"),
 #     height = 6.15, width = 8)
 # dbi_plot
 # dev.off()
 
-figpath <- paste0(path, park, "/", to, '/figures/')
+figpath <- paste0(path, park, '/figures/')
 ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
 
 
 # Regen densities
-reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') 
+reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') |> 
+  filter(EventID %in% evs_4yr)
+
+length(unique(reg$Plot_Name))
 
 reg$CanopyExclusion[reg$ScientificName %in% c("Fraxinus americana", "Fraxinus nigra", 
                                                 "Fraxinus pennsylvanica", "Fraxinus")] <- TRUE
@@ -76,7 +97,7 @@ reg_natcan <- reg |> filter(NatCan == 1) |>
   summarize(sapden = sum(sap_den, na.rm = T),
             seedden = sum(seed_den, na.rm = T),
             stock = sum(stock, na.rm = T), .groups = 'drop') |> 
-  mutate(stocked = ifelse(stock > DBI_threshold, 1, 0)) # DBI > 3, so stocking must be 100
+            mutate(stocked = ifelse(stock > DBI_threshold, 1, 0)) # DBI > 3, so stocking must be 100
 
 regsum_natcan <- reg_natcan |> 
   summarize(sapden = sum(sapden)/num_plots,
@@ -147,6 +168,7 @@ reg_sap <- reg |>
   pivot_wider(names_from = sppcode, values_from = sap_den, values_fill = 0)
 
 trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |> 
+  filter(EventID %in% evs_4yr) |> 
   mutate(genus = word(ScientificName, 1),
          species = ifelse(is.na(word(ScientificName, 2)), "SPP", word(ScientificName, 2)),
          sppcode1 = toupper(paste0(substr(genus, 1, 3), substr(species, 1, 3))),
@@ -155,6 +177,8 @@ trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |>
   group_by(Plot_Name, sppcode) |> 
   summarize(treeBA = sum(BA_cm2, na.rm = T)/plot_size, .groups = 'drop') |> 
   pivot_wider(names_from = sppcode, values_from = treeBA, values_fill = 0)
+
+length(unique(trees$Plot_Name))
 
 all_spp <- c("Plot_Name", sort(unique(c(names(trees[,-1]), names(reg_seed[,-1]), names(reg_sap[,-1])))))
 
@@ -196,7 +220,9 @@ sor_seed <- comb |> filter(strata %in% c("tree", "seedling")) |>
 sor_seed_mean <- mean(sor_seed$sor_seed, na.rm = T)
 
 # Tree DBH distribution
-tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live')
+tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> 
+  filter(EventID %in% evs_4yr) 
+length(unique(tree_dist$Plot_Name))
 
 tree_dist2 <- tree_dist |> 
   summarize(dbh_10cm = sum(dens_10_19.9)/num_plots,
@@ -224,7 +250,7 @@ aic_check
 flat_dist <- ifelse(aic_check$linear < aic_check$exp, 1, 0)
 
 #----- Regen Debt Table -----
-debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "Pct Stocked Plots",
+debt <- data.frame(Metric = c("Sapling Density", "Seedling Density", "% Stocked Plots",
                               "Stocking Index", "Deer Browse Impacts", "Flat Tree Diam. Dist.",
                               "Sapling Composition", "Seedling Comp.", 
                               "Sorensen Sapling", "Sorensen Seedling"),
@@ -242,16 +268,12 @@ debt <- debt |> mutate(
               Metric == "Sapling Density" & Value >= 0.16 ~ "Acceptable",
               
               Metric == "Seedling Density" & Value < 0.25 ~ "Critical",
-              Metric == "Seedling Density" & Value >= 0.25 & Value < 2 ~ "Caution",
+              Metric == "Seedling Density" & Value >= 0.25 & Value < 2.0 ~ "Caution",
               Metric == "Seedling Density" & Value >= 2.0 ~ "Acceptable",
               
-              Metric == "Pct Stocked Plots" & Value < 33 ~ "Critical",
-              Metric == "Pct Stocked Plots" & Value >= 33 & Value < 67 ~ "Caution",
-              Metric == "Pct Stocked Plots" & Value >= 67 ~ "Acceptable",
-              
-              Metric == "Stocking Index" & Value < 25 ~ "Critical",
-              Metric == "Stocking Index" & Value >= 25 & Value < 100 ~ "Caution",
-              Metric == "Stocking Index" & Value >= 100 ~ "Acceptable",
+              Metric == "% Stocked Plots" & Value < 33.0 ~ "Critical",
+              Metric == "% Stocked Plots" & Value >= 33.0 & Value < 67.0 ~ "Caution",
+              Metric == "% Stocked Plots" & Value >= 67.0 ~ "Acceptable",
               
               Metric == "Deer Browse Impacts" & Value >= 4 ~ "Critical",
               Metric == "Deer Browse Impacts" & Value > 3 & Value < 4 ~ "Caution",
@@ -270,13 +292,22 @@ debt <- debt |> mutate(
               
               Metric == "Sorensen Sapling" & Value < 0.2 ~ "Critical",
               Metric == "Sorensen Sapling" & Value >= 0.2 ~ "Acceptable",
-
+              
               Metric == "Sorensen Seedling" & Value < 0.2 ~ "Critical",
               Metric == "Sorensen Seedling" & Value >= 0.2 ~ "Acceptable",
               
               TRUE ~ "UNKNOWN"
-              )
-  )
+    )
+)
+
+if(DBI_threshold == 100){debt <- debt |> mutate(status = case_when(Metric == "Stocking Index" & Value < 25 ~ "Critical",
+                                                                   Metric == "Stocking Index" & Value >= 25 & Value < 100 ~ "Caution",
+                                                                   Metric == "Stocking Index" & Value >= 100 ~ "Acceptable",
+                                                                   TRUE ~ status))}
+if(DBI_threshold == 50){debt <- debt |> mutate(status = case_when(Metric == "Stocking Index" & Value < 25 ~ "Critical",
+                                                                  Metric == "Stocking Index" & Value >= 25 & Value < 50 ~ "Caution",
+                                                                  Metric == "Stocking Index" & Value >= 50 ~ "Acceptable",
+                                                                  TRUE ~ status))}
 
 debt_final <- 
   rbind(debt,
@@ -334,9 +365,10 @@ results_plot <-
 
 results_plot
 
-ggsave(paste0(new_path, "figures/", "Figure_1_", park, "_Regen_Debt_table", ".svg"), height = 6, width = 5.5, units = 'in')
+ggsave(paste0(new_path, "figures/", "Figure_1_", park, "_Regen_Debt_table", ".svg"), height = 6, width = 4.5, units = 'in')
 
 debt_final <- debt_final |> mutate(park = park)
 
 write.csv(debt_final, paste0(new_path, "tables/Regen_Debt_table.csv"), row.names= F)
 # Now open svg and make the Regen Debt Status fill white, "#FFFFFF", and font size 13 instead of 11.
+

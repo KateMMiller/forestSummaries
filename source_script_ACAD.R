@@ -16,9 +16,9 @@ VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"]
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE
 
 # Set parameters
-park = 'MORR'#'ACAD'
+park = 'ACAD'
 from = 2006
-from_4yr = 2022 #2021
+from_4yr = 2021
 to = 2024
 report_year = 2024 # used for file path and output naming, in case differs from last year sampled
 QAQC = FALSE
@@ -52,7 +52,7 @@ invisible(lapply(park, function(x) {
 # Set up file structure
 #parks <- c("ACAD", "MABI", "MIMA", "MORR", "ROVA", "SAGA", "SARA", "WEFA")
 #parks <- c("ACAD", "MABI", "MIMA", "SAGA", "SARA")
-parks <- c("ACAD", "MORR", "ROVA", "WEFA")
+parks <- c("ACAD")
 
 if(!dir.exists(paste0("./output/", report_year))){dir.create(paste0("./output/", report_year, "/"))}
 if(!dir.exists(paste0("./output/", report_year, "/NETN/"))){dir.create(paste0("./output/", report_year, "/NETN/"))}

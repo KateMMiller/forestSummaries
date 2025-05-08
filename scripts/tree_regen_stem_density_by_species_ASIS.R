@@ -8,37 +8,87 @@ library(cowplot)
 if(!exists('trspp_grps')){stop("Must run source_script_MIDN.R before this script will work.")}
 head(trspp_grps)
 
+
 # Colors for ggplot legend
 cols = c(
-  "Acer rubrum (red maple)" = "#1EA57F",# "#00c990",
+  "Acer rubrum (red maple)" = "#38A800",
+  "Acer platanoides (Norway maple)" = "#8b0000",
   "Acer spp. (maple)" = "#00FF00",
-  "Ailanthus altissima (tree-of-heaven)" = "#FF00C5",
-  "Betula lenta (black birch)" = "#38A800",
-  "Betula spp. (black birch)" = "#05e689", # Either use BETLEN or BETSPP
+  "Acer saccharum (sugar maple)" = "#009999",
+  "Ailanthus altissima (tree-of-heaven)" = "#cd4a8f",
+  "Asimina triloba (pawpaw)" = "#FF00C5",
+  "Betula lenta (black birch)" = "#ffd8b1", # darkened color for 2024 NETN figs; does not match maps
+  "Betula spp. (birch)" = "#ffd8b1", 
   "Carya spp. (hickory)" = "#911eb4",
-  "Diospyros virginiana (persimmon)" = "#DC970D",
   "Fagus grandifolia (American beech)" = "#FFAA00",
   "Fraxinus spp. (ash)" = "#A87000",
   "Ilex opaca (American holly)" = "#42d4f4",
   "Juniperus virginiana (eastern redcedar)" = "#9371B9",
   "Liquidambar styraciflua (sweetgum)" = "#FFFF00",
   "Liriodendron tulipifera (tulip poplar)" = "#4363d8",
-  "Morella cerifera (wax myrtle)" = "#B051A1",
   "Nyssa sylvatica (black gum)" = "#000075",
-  "Other Exotic" = "#ca0020",
-  "Other Native" = "#C9CFCD",
-  "Pinus taeda (loblolly pine)" = "#5A462B",
-  # "Pinus strobus (eastern white pine)" = "#5A1111",
-  # "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
-  # "Pinus virginiana (Virginia pine)" = "#E5740D",
+  "Other exotic spp." = "#ca0020",
+  "Other native canopy spp." = "#d9d9d9",
+  "Pinus spp. (pine)" = "#5A462B",
+  "Pinus strobus (eastern white pine)" = "#5A1111",
+  "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
+  "Pinus virginiana (Virginia pine)" = "#E5740D",
+  "Pinus resinosa (red pine)" = "#E5740D",
   "Prunus spp. (native cherry)" ="#00E6A9", 
   "Pyrus calleryana (Bradford pear)" = "#cd4a8f",
-  "Quercus spp. (oak)" = "#23984F",
-  "Robinia pseudoacacia (black locust)" = "#efdf00",
-  "Subcanopy" = "#ffa8b4",
+  "Quercus spp. (oak)" = "#0E5D2C",
+  "Robinia pseudoacacia (black locust)" = "#cccc00",
+  "Other native subcanopy spp." = "#ffa8b4",
   "Tsuga canadensis (eastern hemlock)" = "#9bd2ef",
-  "Ulmus spp. (native elm)" = "#59538A", 
-  "Unknown spp." = "#CACACA")
+  "Ulmus spp. (native elm)" = "#808000", 
+  "Unknown spp." = "#CACACA",
+  "Diospyros virginiana (persimmon)" = "#006666", #for ASIS only
+  "Amelanchier spp. (serviceberry)" = "#ffd8b1", #for ASIS only
+  "Sassafras albidum (sassafrass)" = "#59538A", #ASIS only
+  "Abies balsamea (balsam fir)" = '#911eb4',#ACAD only
+  "Other conifer" = "#42d4f4",#ACAD only
+  "Picea spp. (spruce)" = "#000075",#ACAD only
+  "Populus spp. (aspen)" = "#FFFF00")#ACAD only
+
+lines = c(
+  "Acer rubrum (red maple)" = "solid",
+  "Acer platanoides (Norway maple)" = "solid",
+  "Acer saccharum (sugar maple)" = "dotdash",
+  "Acer spp. (maple)" = "solid",
+  "Ailanthus altissima (tree-of-heaven)" = "solid",
+  "Asimina triloba (pawpaw)" = "dashed",
+  "Betula lenta (black birch)" = "dashed",
+  "Betula spp. (birch)" = "dashed", # Either use BETLEN or BETSPP
+  "Carya spp. (hickory)" = "solid",
+  "Fagus grandifolia (American beech)" = "solid",
+  "Fraxinus spp. (ash)" = "solid",
+  "Ilex opaca (American holly)" = "solid",
+  "Juniperus virginiana (eastern redcedar)" = "dotdash",
+  "Liquidambar styraciflua (sweetgum)" = "solid",
+  "Liriodendron tulipifera (tulip poplar)" = "solid",
+  "Nyssa sylvatica (black gum)" = "dashed",
+  "Other exotic spp." = "dashed",
+  "Other native canopy spp." = "solid",
+  "Pinus spp. (pine)" = "dotdash",
+  "Pinus strobus (eastern white pine)" = "dotdash",
+  "Pinus taeda (loblolly pine)" = "dotdash",
+  "Pinus virginiana (Virginia pine)" = "dotdash",
+  "Pinus resinosa (red pine)" = "dotdash",
+  "Prunus spp. (native cherry)" = "dotdash", 
+  "Pyrus calleryana (Bradford pear)" = "dotted",
+  "Quercus spp. (oak)" = "solid",
+  "Robinia pseudoacacia (black locust)" = "dashed",
+  "Other native subcanopy spp." = "solid",
+  "Tsuga canadensis (eastern hemlock)" = "dashed",
+  "Ulmus spp. (native elm)" = "dashed", 
+  "Unknown spp." = "dotted",
+  "Diospyros virginiana (American persimmon)" = "dashed", #for ASIS only
+  "Amelanchier spp. (serviceberry)" = "dashed", #for ASIS only
+  "Sassafras albidum (sassafrass)" = "dashed", #ASIS only
+  "Abies balsamea (balsam fir)" = 'dashed',#ACAD only
+  "Other conifer" = "dotdash",#ACAD only
+  "Picea spp. (spruce)" = "solid",#ACAD only
+  "Populus spp. (aspen)" = "dotted")#ACAD only
 
 wd_spp <- sumSpeciesList(park = "ASIS", from = from, to = to) |> 
   filter(ScientificName %in% trspp_grps$Species)
@@ -52,8 +102,17 @@ table(wd_spp2$ScientificName)
 
 # Revising species groups because low diversity and unique from other MIDN/NCBN parks
 wd_spp2$spp_grp[wd_spp2$spp_grp == "Pinus spp. (pine)"] <- "Pinus taeda (loblolly pine)"
-wd_spp2$spp_grp[wd_spp2$ScientificName == "Morella cerifera"] <- "Morella cerifera (wax myrtle)"
+wd_spp2$spp_grp[wd_spp2$ScientificName == "Morella cerifera"] <- "Subcanopy"
 wd_spp2$spp_grp[wd_spp2$ScientificName == "Diospyros virginiana"] <- "Diospyros virginiana (persimmon)"
+wd_spp2$spp_grp[wd_spp2$ScientificName == "Persea"] <- "Subcanopy"
+wd_spp2$spp_grp[wd_spp2$ScientificName == "Persea palustris"] <- "Subcanopy"
+wd_spp2$spp_grp[wd_spp2$ScientificName == "Amelanchier canadensis"] <- "Amelanchier spp. (serviceberry)"
+wd_spp2$spp_grp[wd_spp2$ScientificName == "Amelanchier"] <- "Amelanchier spp. (serviceberry)"
+wd_spp2$spp_grp[wd_spp2$ScientificName == "Sassafras albidum"] <- "Sassafras albidum (sassafrass)"
+wd_spp2$spp_grp[wd_spp2$ScientificName == "Juniperus virginiana"] <- "Other native subcanopy spp."
+wd_spp2$spp_grp[wd_spp2$spp_grp == "Subcanopy"] <- "Other native subcanopy spp."
+wd_spp2$spp_grp[wd_spp2$spp_grp == "Other Native"] <- "Other native canopy spp."
+wd_spp2$spp_grp[wd_spp2$spp_grp == "Other Exotic"] <- "Other exotic spp."
 
 table(wd_spp2$spp_grp)
 

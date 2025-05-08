@@ -1,0 +1,212 @@
+---
+output: 
+  pagedown::html_paged:
+    css: www/styles_MIDN_pages.css
+    toc: false
+    numbered_sections: false
+    number_sections: false
+    self_contained: true
+    # includes:
+    #   in_header: "header_MIDN.html"
+    #   after_body: "footer_MIDN.html"
+params:
+  park: 'PETE'
+  subunit: 'PETE_FIVE'
+  report_year: 2024 # year report was generated for
+---
+
+```{r eval = F, include = F}
+#++++++++ For every year, the following must be updated: ++++++++++
+# 1. Update the MIDN_params.csv to include the latest years for each park 
+# 2. Update the month and date in the www/styles_MIDN_pages.css. 
+#    Look for it in the @page > @bottom-left section. 
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+```
+
+
+```{r setup, include = FALSE, results = 'hide'}
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
+options(knitr.kable.NA = '-')
+
+library(pagedown)
+library(tidyverse)
+library(forestMIDN)
+library(htmltools)
+library(knitr)
+library(kableExtra)
+library(cowplot)
+library(ggpubr)
+#devtools::install_github(repo="haozhu233/kableExtra", ref="a6af5c0") # for collapse_rows()
+library(kableExtra)
+#devtools::install_github("katemmiller/forestTrends")
+library(forestTrends)
+library(sf)
+library(vegan)
+```
+
+```{r}
+# assign params to global env. for source files to find. Makes iterating easier.
+# park <<- params$park #assigns to global env. so easier for later code to find
+# park <<- "PETE" #for running indiv. parks.use line above or running generate_all_MIDN?
+# subunit <<- "PETE_FIVE"
+park <<- params$park #for running generate_all_MIDN
+subunit <<- params$subunit
+report_year <- params$report_year
+path <<- paste0('./output/', report_year, "/MIDN/")
+
+# # output files go here
+midn_names <<- read.csv("MIDN_MetaData.csv")
+midn_subunit_names <<- read.csv("MIDN_MetaData_Subunits.csv")
+midn_params <<- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
+from <<- as.numeric(midn_params$from[midn_params$park == park])
+from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
+to <<- as.numeric(midn_params$to[midn_params$park == park])
+cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
+# # from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
+# # to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
+QAQC <<- FALSE
+locType <<- 'VS'
+# #+++ NOTE: IF GET add_header_above error, need to update cycle_latest in MIDN_params.csv  +++
+park_long <- midn_names$LongName[midn_names$ParkCode == park]
+park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
+network_long <- midn_names$Network_long[midn_names$ParkCode == park]
+subunit_long <- midn_subunit_names$LongName[midn_subunit_names$SubUnitCode == subunit]
+subunit_title <- midn_subunit_names$LongName_title[midn_subunit_names$SubUnitCode == subunit]
+
+```
+
+```{r results = 'asis', include = F}
+html_header <- HTML('
+<div class="banner">
+  <div class="header">
+    <div id="col-left-header">
+        <h5>', network_long, '</h5>
+        <h5> Inventory & Monitoring Division </h5>
+        <br>
+        <h5> Forest Monitoring Data Summary </h5></div>
+    <div id="col-right-header">
+        <img src="www/ah_small_flat_4c_blackbkgr_k100.svg" alt="arrowhead" height = "75px" width = "58px"></div>
+    <div id="col-middle-header">
+        <h5> National Park Service </h5>
+        <h5> U.S. Department of the Interior </h5>
+        <h5>', subunit_title, '</h5>
+        <h5>', park_title, '</h5></div></div></div><br>')
+
+save_html(html_header, "html_header.html")
+# change style so no padding under last h5
+```
+
+```{r include = F, cache = F}
+source('./scripts/supplemental_subunit_figures_MIDN.R') # sets up parameters. Can also run all the scripts below, but turned off for easier troubleshooting.
+```
+
+
+
+<!-- Start of page 1 -->
+<br>
+```{r results = 'asis', warning = F, message = F}
+includeHTML("html_header.html")
+```
+<br>
+```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
+include_graphics(paste0(new_path, "figures/Figure_1_", subunit, "_Regen_Debt_table.png"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 1.</b> Regeneration Debt status for the most recent 4-year census (",
+    from_4yr, " \U2013 ", to, ") in ", subunit_long, " in ", park_long, " (", park, "). ", " Flat Tree Diam. Dist. stands for Flat
+Tree Diameter Distribution. If TRUE, the density of small trees is lower than expected due to
+chronic regeneration failure. Sapling/Seedling Composition is the % of total stems composed of native canopy-forming species. Sorenson is a measure of how closely the regen. layer matches canopy composition. For more details on metric calculations, thresholds and assessment of status, see <a href ='https://esajournals.onlinelibrary.wiley.com/doi/full/10.1002/eap.2837'>Miller et al. 2023</a>.</p>", sep = "")
+```
+<br>
+
+```{r out.width = "80%", out.height = "40%", out.extra = 'style="margin-left:100px;margin-top:-25px;"'}
+include_graphics(paste0(new_path, "figures/", "Figure_2_", subunit, "_DBI_by_cycle.png"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 2.</b> Deer browse impacts by cycle in ", subunit_long, " in ", park_long, " (", park, "). ",
+    paste(cycle_labs, collapse = "; "), ". ", ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete.</b>", ""), ifelse(park == "COLO", "<b>Note that Cycle 4 only partially complete.</b>", ""),
+    sep = ""))
+
+```
+
+<!-- Start of page 2 -->
+### {.page-break-before}
+
+```{r results = 'asis', warning = F, message = F}
+includeHTML("html_header.html")
+```
+
+|       A. 
+```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
+include_graphics(paste0(new_path, "figures/Figure_3A_", subunit, "_regen_by_size_class_by_cycle.png"))
+```
+
+|       B. 
+```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
+include_graphics(paste0(new_path, "figures/Figure_3B_", subunit, "_tree_dbh_dist_by_cycle.png"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 3.</b> Stem density distributions by cycle in ", subunit_long, " in ", park_long, " (", park, "). ",
+    paste(cycle_labs, collapse = "; "), ". ", 
+    ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete. </b>", ""), ifelse(park == "COLO", "<b>Note that Cycle 4 is only partially complete. </b>", ""),
+    "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals to account for non-normal error. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
+```
+
+
+<!-- Start of page 3 -->
+
+### {.page-break-before}
+```{r results = 'asis', warning = F, message = F}
+includeHTML("html_header.html")
+```
+
+```{r out.width = "98%", out.height = "95%"}
+include_graphics(paste0(new_path, "figures/Figure_4_", subunit, "_smoothed_regen_by_species_cycle.png"))
+```
+
+```{r results = 'asis'}
+cat(paste0("<p><b>Figure 4.</b> Loess smoothed changes in stem density for seedlings (A) and saplings (B) by
+species group and sample year in ", subunit_long, " in ", park_long, ". Specified loess span
+approximated a linear trend between consecutive sample events per panel.</p>", sep = ""))
+```
+<br>
+
+<!-- Start of page 4 -->
+
+### {.page-break-before}
+```{r results = 'asis', warning = F, message = F}
+includeHTML("html_header.html")
+```
+
+```{r out.width = "98%", out.height = "95%"}
+include_graphics(paste0(new_path, "figures/Figure_5_", subunit, "_smoothed_tree_dens_BA_by_species_cycle.png"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 5.</b> Loess smoothed changes in tree stem density (A) and basal area (B) by
+species group and sample year in ", subunit_long, " in ", park_long, ". Specified loess span
+approximated a linear trend between consecutive sample events per panel.</p>", sep = "")
+```
+<br>
+
+<!-- Start of page 5-->
+
+### {.page-break-before}
+```{r results = 'asis', warning = F, message = F}
+includeHTML("html_header.html")
+```
+
+```{r out.width = "98%", out.height = "50%"}
+include_graphics(paste0(new_path, "figures/Figure_6_", subunit, "_smoothed_invasive_cover_by_guild_cycle.png"))
+```
+
+```{r results = 'asis'}
+cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover by guild and sample year in ", subunit_long, " in ", 
+    park_long, ". Specified loess span approximated a linear trend between consecutive sample events per panel.</p>", 
+    sep = "")
+```
+<br>
+

@@ -8,6 +8,8 @@ output:
     #includes:
       #in_header: "header_MIDN.html"
       #after_body: "footer.html"
+params:
+  report_year: 2024 # year report was generated for
 ---
 ```{r setup, include = FALSE, results = 'hide'}
 # NOTE: Once ASIS has started a second cycle, you should be able to transition to the MIDN-level summaries.
@@ -33,7 +35,10 @@ library(vegan)
 ```{r}
 # assign params to global env. for source files to find. Makes iterating easier.
 park <<- "ASIS" #assigns to global env. so easier for later code to find
-path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/' 
+report_year <- params$report_year
+path <<- paste0('./output/', report_year, "/MIDN/")
+
+
 #path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' # output files go here
 midn_names <- read.csv("MIDN_MetaData.csv")
 midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
@@ -75,7 +80,7 @@ save_html(html_header, "html_header.html")
 ```
 
 ```{r include = F, cache = F}
-source('source_script_ASIS.R') # sets up parameters. Can also run all the scripts below, but turned off for easier troubleshooting.
+source('source_script_ASIS.R') # sets up parameters. 
 ```
 ```{r include = F, cache = F}
 source('./scripts/forest_summary_code_ASIS.R') # main figures and tables
@@ -88,13 +93,15 @@ source('./scripts/tree_regen_stem_density_by_species_ASIS.R') # smoothed composi
 ```
 
 ```{r results = 'hide', include = F}
-cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) for cycle 1. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are not considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", "</p>")
+cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) for Cycle 1. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are not considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", "</p>")
 
-cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot in cycle 1. ", paste0(cycle_labs, collapse = "; "), ". Plots with at least 10% average cover or 4 or more invasive species present are in yellow.", "</p>")
+cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot in Cycle 1. ", paste0(cycle_labs, collapse = "; "), ". Plots with at least 10% average cover or 4 or more invasive species present are in yellow.", "</p>")
 
-cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", paste0(cycle_labs, collapse = "; "), ". Species on the list include all exotic vascular plant species that are capable of dominating Eastern US forest habitats, and does not include all exotic species detected in MIDN forest plots. ", "</p>")
+cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where exotic species were detected. ", paste0(cycle_labs, collapse = "; "), ". Priority invasive species capable of dominating Eastern US forest habitats are highlighed in yellow. ", "</p>")
 
 cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
+
+cap_t5 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 5.</b> List of tree species included in Maps 3 and 4 and how each was displayed.", "</p>")
 ```
 
 ```{r include = F, eval = T, results = 'hide'}
@@ -175,8 +182,8 @@ tab2_kab(park)
 ```
 ```{r include = F, eval = T, results = 'hide'}
 # Table 3 setup
-tab3_cols <- c("Latin Name", "Common Name", "Invasive", gsub("cycle_", "Cycle ", 
-                                                 names(inv_spp_final[,4:ncol(inv_spp_final)])))
+tab3_cols <- c("Latin Name", "Common Name", "Invasive", "Year Added", gsub("cycle_", "Cycle ", 
+                                                 names(inv_spp_final[,5:ncol(inv_spp_final)])))
 
 inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
 
@@ -191,12 +198,13 @@ tab3 <-
   column_spec(ncol(inv_spp), border_right = T) %>%
   column_spec(1:ncol(inv_spp), border_left = T, border_right = T) %>%
   column_spec(1, extra_css =  "border-left: 1.5px solid #000000;") %>%
+   row_spec(which(inv_spp$InvasiveMIDN == "Yes"), background =  "#F2F2A0") %>%
   row_spec(0:nrow(inv_spp), extra_css = "border-top: 1px solid #000000;") %>%
   row_spec(0:nrow(inv_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>%
   save_kable(file = "table3.html", self_contained = F)
 } else {
-  tab3 <- HTML("<p>   No priority invasive species observed in cycle 1. </p>")  
+  tab3 <- HTML("<p>   No exotic species observed in Cycle 1. </p>")  
   save_html(tab3, "table3.html")
 }
 
@@ -218,6 +226,22 @@ tab4 <-
 tab4 <- HTML("<p>No invasive species early detections observed in most recent census. </p>")  
 save_html(tab4, "table4.html")
 }
+```
+```{r}
+if(nrow(grp_spp)>0){
+tab5 <- 
+  kable(grp_spp, col.names = c("Latin Name", "Group: Map 3. Regeneration", "Group: Map 4. Tree Canopy"),
+        align = c('l', 'c', 'c'), format = 'html',
+        table.attr = "style='width:95%;height:95%;'") |> 
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = FALSE, position = 'center', font_size = 9) %>%
+  column_spec(1, italic = TRUE) %>%
+  row_spec(0:nrow(grp_spp), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(grp_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
+  row_spec(1:nrow(grp_spp), extra_css = "padding: 1px") %>%
+  #landscape(margin = "1cm") %>%
+  save_kable(file = "table5.html", self_contained = F)
+} 
 ```
 
 
@@ -242,7 +266,7 @@ includeHTML("html_header.html")
 ```
 <br>
 ```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1_Regen_Debt_table.png"))
+include_graphics(paste0(new_path, "figures/Figure_1_", park, "_Regen_Debt_table.png"))
 ```
 
 ```{r results = 'asis'}
@@ -373,7 +397,23 @@ includeHTML("table4.html")
 ```
 <br>
 
+<!-- Start of page 10 -->
+
+###   {.page-break-before}
+```{r results = 'asis', warning = F, message = F}
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis'}
+cat(cap_t5)
+```
+
+```{r echo = F, eval = T, warning = F, message = F}
+includeHTML("table5.html")
+```
+<br>
+
 ```{r error = T, results = 'hide', echo = FALSE, include = FALSE, eval = F}
-file.remove(c("table1.html", "table2.html", "table3.html", "table4.html"))
+file.remove(c("table1.html", "table2.html", "table3.html", "table4.html", "table5.html"))
 ```
 

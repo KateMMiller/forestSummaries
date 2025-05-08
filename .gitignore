@@ -1,0 +1,17 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+lib/lighttable-0.0.1/
+lib/kePrint-0.0.1/
+lib/jquery-3.6.0/
+lib/bootstrap-3.3.5/
+**/bootstrap-3.3.5/
+**/lib/
+output/
+output_backup/
+*.html
+*.pdf
+*.svg
+*.png
+www/ah_small_flat_4c_blackbkgr_k100.svg

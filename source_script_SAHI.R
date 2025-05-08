@@ -12,8 +12,8 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
-#if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'}
-if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'} #ces path
+# report_year = 2024 # only here for testing. Defined in MIDN_figures_and_tables.RMD params.
+if(!exists("path")){path = paste0('./output/MIDN/', report_year, "/")} #general path that should work for everyone
 
 importData()
 
@@ -34,7 +34,7 @@ importData()
 # park_long <- midn_names$LongName[midn_names$ParkCode == park]
 # park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 # network_long <- midn_names$Network_long[midn_names$ParkCode == park]
-
+# report_year <- 2024
 
 
 # Downgrade Fraxinus to subcanopy species
@@ -52,9 +52,13 @@ args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 # Set up file structure
 # park <- "SAHI"
 
+if(!dir.exists(paste0("./output/"))){dir.create(paste0("./output/"))}
+if(!dir.exists(paste0("./output/", report_year))){dir.create(paste0("./output/", report_year, "/"))}
+if(!dir.exists(paste0("./output/", report_year, "/MIDN/"))){dir.create(paste0("./output/", report_year, "/MIDN/"))}
+
 if(!dir.exists(paste0(path, park))){dir.create(paste0(path, park))}
 
-new_path = paste0(path, park, "/", as.character(to), "/")
+new_path = paste0(path, park, "/")
 
 if(!dir.exists(new_path)){dir.create(new_path)}
 
