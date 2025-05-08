@@ -34,7 +34,7 @@ importData()
 # park_long <- midn_names$LongName[midn_names$ParkCode == park]
 # park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 # network_long <- midn_names$Network_long[midn_names$ParkCode == park]
-
+# report_year <- 2024
 
 
 # Downgrade Fraxinus to subcanopy species
@@ -52,6 +52,7 @@ args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 # Set up file structure
 # park <- "SAHI"
 
+if(!dir.exists(paste0("./output/"))){dir.create(paste0("./output/"))}
 if(!dir.exists(paste0("./output/", report_year))){dir.create(paste0("./output/", report_year, "/"))}
 if(!dir.exists(paste0("./output/", report_year, "/MIDN/"))){dir.create(paste0("./output/", report_year, "/MIDN/"))}
 
