@@ -62,7 +62,7 @@ reg_size <- reg %>% group_by(Plot_Name, SampleYear) |>
   summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T)
 
 reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
-                             left_join(plotevs_4yr %>% select(Plot_Name, xCoordinate, yCoordinate),
+                             left_join(plotevs_4yr %>% select(Plot_Name, xCoordinate, yCoordinate) |> unique(),
                                        ., by = 'Plot_Name')
 
 reg_size_4yr[, reg_sz_cols][reg_size_4yr[is.na(reg_size_4yr[,reg_sz_cols])]] <- 0
@@ -382,8 +382,9 @@ tree_wide <- trees_4yr %>% group_by(Plot_Name, spp_grp) %>%
   summarize(BAm2ha = sum(BA_cm2, na.rm = TRUE)/400, .groups = 'drop') %>% 
   left_join(plotevs %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate) %>% unique(),
             ., by = "Plot_Name") %>% arrange(spp_grp) %>% 
-  pivot_wider(names_from = spp_grp, values_from = BAm2ha, values_fill = 0) %>%
-  {if("NA" %in% names(.)) select(-`NA`)}
+  pivot_wider(names_from = spp_grp, values_from = BAm2ha, values_fill = 0) 
+
+if("NA" %in% names(tree_wide)){tree_wide <- tree_wide |> select(-`NA`)}
 
 tree_wide$total <- rowSums(tree_wide[,4:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
