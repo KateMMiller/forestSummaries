@@ -170,19 +170,19 @@ netn1_labs = c("1" = "Cycle 1: 2006 & 2008",
                "2" = "Cycle 2: 2010 & 2012", 
                "3" = "Cycle 3: 2014 & 2016", 
                "4" = "Cycle 4: 2018 & 2022",
-               "5" = "Cycle 5: 2023")
+               "5" = "Cycle 5: 2023 & 2025")
 # netn2: MORR, ROVA, WEFA
-netn2_labs = c("1" = "Cycle 1: 2007 \u2013 2009",
-               "2" = "Cycle 2: 2011 \u2013 2013", 
-               "3" = "Cycle 3: 2015 \u2013 2017", 
-               "4" = "Cycle 4: 2019 \u2013 2022",
+netn2_labs = c("1" = "Cycle 1: 2007 & 2009",
+               "2" = "Cycle 2: 2011 & 2013", 
+               "3" = "Cycle 3: 2015 & 2017", 
+               "4" = "Cycle 4: 2019 & 2022",
                "5" = "Cycle 5: 2024") 
 
 ACAD_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
                "2" = "Cycle 2: 2010 \u2013 2013", 
                "3" = "Cycle 3: 2014 \u2013 2017", 
                "4" = "Cycle 4: 2018 \u2013 2021",
-               "5" = "Cycle 5: 2022 \u2013 2024")
+               "5" = "Cycle 5: 2022 \u2013 2025")
 
 cycle_labs <- switch(park,
                      "SARA" = netn1_labs, 
@@ -323,7 +323,8 @@ ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle
 
 #---- Map 3 Regen by composition ----
 reg_all <- do.call(joinRegenData, args = c(args_4yr, units = 'sq.m'))|> 
-                  filter(!ScientificName %in% c('None present', "Not Sampled")) # just selected park
+                  filter(!ScientificName %in% c('None present', "Not Sampled")) |> 
+                  filter(EventID %in% evs_4yr)
 
 ### Check dominant NETN species to pull out of standard groups ###
 #Run for each park every year and update list of exceptions below if necessary
@@ -391,10 +392,16 @@ if(park == "SARA"){
     mutate(sppcode = case_when(ScientificName == "Populus" ~ "POPSPP",
                                ScientificName == "Populus grandidentata" ~ "POPSPP",
                                ScientificName == "Populus tremuloides" ~ "POPSPP",
+                               ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
+                               ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Pinus strobus" ~ "PINSTR",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Populus" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+                               ScientificName == "Nyssa sylvatica" ~ "Other Native",
+                               ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
                                TRUE ~ spp_grp))
 }
 if(park == "MABI"){
@@ -503,7 +510,8 @@ reg_spp <- reg_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() %>
 
 
 #---- Map 4 Tree canopy composition ----
-tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
+tree_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))  |> 
+                 filter(EventID %in% evs_4yr)
 
 ### Check dominant NETN species to pull out of standard groups ###
 #Run for each park every year and update list of exceptions below if necessary 
@@ -570,14 +578,12 @@ if(park == "WEFA"){
 if(park == "SARA"){
   tree_grps <- tree_grps %>% 
     mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
-                               ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
                                ScientificName == "Populus" ~ "POPSPP",
                                ScientificName == "Populus grandidentata" ~ "POPSPP",
                                ScientificName == "Populus tremuloides" ~ "POPSPP",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
-                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
                                ScientificName == "Populus" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
@@ -665,7 +671,7 @@ tree_wide <- if("NA" %in% names(tree_wide)){tree_wide %>% select(-"NA")}else{tre
 tree_wide$total <- rowSums(tree_wide[,5:ncol(tree_wide)])
 tree_wide$logtot <- log(tree_wide$total + 1)
 
-names(tree_wide)
+names(sort(desc(colSums(tree_wide[,c(5:(ncol(reg_wide)-2))]))))
 
 treecomp_no <- tree_wide |> filter(total == 0)
 
@@ -693,7 +699,8 @@ tree_spp <- tree_grps %>% select(ScientificName, spp_grp, sppcode) %>% unique() 
 #---- Map 5 Regen stocking index ----
 reg_4yr <- do.call(joinRegenData,
                    args = c(args_4yr, speciesType = 'native',
-                            canopyForm = 'canopy', units = 'sq.m'))
+                            canopyForm = 'canopy', units = 'sq.m')) |> 
+                    filter(EventID %in% evs_4yr)
 
 reg_4yr_stock <- reg_4yr %>% group_by(Plot_Name, PlotCode) %>% 
                              summarize(stock = sum(stock, na.rm = T), .groups = 'drop') %>% 
@@ -705,7 +712,8 @@ write_to_shp(reg_4yr_stock, shp_name =
                 cycle_latest, ".shp"))
 
 #---- Map 6 Deer Browse Index ----
-stand_4yr <- do.call(joinStandData, args_4yr) 
+stand_4yr <- do.call(joinStandData, args_4yr) |> 
+               filter(EventID %in% evs_4yr)
 
 dbi <- left_join(plotevs_4yr %>% select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate),
                  stand_4yr, by = c("Plot_Name", "PlotCode")) %>% 
@@ -794,8 +802,9 @@ write_to_shp(invcov_cycle_com, shp_name =
                paste0(new_path, "shapefiles/", park, "_inv_cover_by_cycle.shp"))
 
 #Average invasive vs native cover for last census (useful for report)
-allcov <- do.call(joinQuadSpecies, args = c(args_4yr, speciesType = 'all')) %>% 
-  select(Plot_Name, cycle, ScientificName, quad_avg_cov, Exotic)
+allcov <- do.call(joinQuadSpecies, args = c(args_4yr, speciesType = 'all')) |> 
+  filter(EventID %in% evs_4yr)%>% 
+  select(Plot_Name, cycle, ScientificName, quad_avg_cov, Exotic) 
 
 invspp <- prepTaxa() %>% select(ScientificName, InvasiveNETN)
 
@@ -824,7 +833,8 @@ sort(unique(invspp_4yr$ScientificName))
 
 invspp1 <- do.call(joinQuadSpecies, 
                    #args = list(from = 2017, to = 2022, speciesType = 'invasive')) %>% 
-                   args = c(args_4yr, speciesType = 'invasive')) %>% 
+                   args = c(args_4yr, speciesType = 'invasive')) |> 
+  filter(EventID %in% evs_4yr) %>% 
   select(Plot_Name, PlotCode, ScientificName, quad_avg_cov) %>% 
   left_join(plotevs_4yr %>% select(Plot_Name, PlotCode), ., by = c("Plot_Name", "PlotCode")) %>% 
   mutate(quad_avg_cov = replace_na(quad_avg_cov, 0),
@@ -898,7 +908,8 @@ write_to_shp(invspp, shp_name =
 
 #---- Map 8 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
-disturb <- do.call(joinStandDisturbance, args = args_4yr) %>% 
+disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%  
+  filter(EventID %in% evs_4yr) |> 
   filter(DisturbanceSummary != "None") %>% 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
@@ -913,7 +924,8 @@ disturb <- do.call(joinStandDisturbance, args = args_4yr) %>%
 #mutate(detect = 'plot_dist')
 
 # Next compile pest/pathogens from Tree Conditions
-treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live'))
+treecond_4yr <- do.call(joinTreeConditions, args = c(args_4yr, status = 'live')) |> 
+  filter(EventID %in% evs_4yr)
 
 pests <- c("ALB", "BBD", "BLD", "BC", "BWA", "DOG", "EAB", "EHS", "GM", "HWA", "RPS", 
            "SB", "SLF", "SOD", "SPB", "SW")
@@ -929,7 +941,8 @@ treepests <- treecond_4yr %>% select(Plot_Name, all_of(pests)) %>%
 
 # Compile notes from visit that could contain mentions of pests
 #Review notes for false positives first, remove from final table below
-vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>% 
+vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>%   
+  filter(EventID %in% evs_4yr) |> 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ Notes,
                           grepl("Emerald|emerald|EAB", Notes) ~ Notes,
                           grepl("Red pine scale|RPS|red pine scale", Notes) ~ Notes,
@@ -941,6 +954,7 @@ vnotesReview <- do.call(joinVisitNotes, args = args_4yr) %>%
                           TRUE ~ NA_character_)) %>% filter(!is.na(pest)) 
 
 vnotes <- do.call(joinVisitNotes, args = args_4yr) %>% 
+  filter(EventID %in% evs_4yr) |> 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", Notes) ~ "BLD",
                           grepl("Emerald|emerald|EAB", Notes) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", Notes) ~ "RPS",
@@ -1154,7 +1168,7 @@ write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
 
 #---- Table 4: Early Detections -----
 taxa <- prepTaxa()
-spp_all <- do.call(sumSpeciesList, args = c(args_4yr))
+spp_all <- do.call(sumSpeciesList, args = c(args_4yr)) |>  filter(EventID %in% evs_4yr)
 
 # Need to import ParkTaxonProtectedStatus table from local database until it's added to the taxon view
 connect <- "Driver={SQL Server};server=localhost\\SQLEXPRESS;database=NETN_Forest;trusted_connection=TRUE;ReadOnly=True"
@@ -1261,6 +1275,7 @@ write.csv(grp_spp, paste0(new_path, "tables/", "Table_5_", park, "_tree_species_
 taxa <- prepTaxa()
 
 spp_invD <- do.call(sumSpeciesList, args = c(args_4yr, speciesType = 'invasive')) |> 
+  filter(EventID %in% evs_4yr) |> 
   select(Plot_Name, SampleYear, quad_avg_cov, ScientificName) |> 
   filter(!ScientificName %in% "None present")
 
