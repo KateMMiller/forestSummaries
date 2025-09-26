@@ -22,6 +22,7 @@ plotevs2 <- plotevs1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |>
 evs_4yr <- plotevs2$EventID # EventIDs that represent the most recent visit to each plot
 plotevs <- plotevs2 |> select(Plot_Name, SampleYear)
 
+table(plotevs1$PanelCode)
 
 # Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
@@ -39,7 +40,7 @@ dbi_prev # MORR: 4.179
 
 # DBI distribution plot
 dbi_all <- joinStandData(park = park, from = from, to = to) |>  
-  filter(IsStuntedWoodland == FALSE)  |>
+  filter(IsStuntedWoodland == FALSE)  |> filter(SampleYear > 2008) |> # DBI methods differed before 2009
   select(Plot_Name, cycle, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 
 dbi_sum <- dbi_all |> group_by(cycle, dbi) |> 
