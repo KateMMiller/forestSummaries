@@ -24,8 +24,6 @@ trees <- left_join(trees1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear"))
   
 tree_grps <- left_join(trees, trspp_grps |> select(Species, spp_grp, sppcode), 
                        by = c("ScientificName" = "Species"))
-if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
-  warning("There's at least 1 NA in tree_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 
 ###Park specific changes to tree species groups###
 #Must match listed changes in forest_summary_code_NETN.R
@@ -73,19 +71,20 @@ if(park == "WEFA"){
 if(park == "SARA"){
   tree_grps <- tree_grps %>% 
     mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
-                               ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
                                ScientificName == "Populus" ~ "POPSPP",
                                ScientificName == "Populus grandidentata" ~ "POPSPP",
                                ScientificName == "Populus tremuloides" ~ "POPSPP",
+                               ScientificName == "Betula populifolia" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
-                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
                                ScientificName == "Populus" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
-                               TRUE ~ spp_grp))
+                               ScientificName == "Betula populifolia" ~ "Other Native",
+                               TRUE ~ spp_grp)) |> 
+    filter(ScientificName != "None present")
 }
 if(park == "MABI"){
   tree_grps <- tree_grps %>% 
@@ -107,10 +106,12 @@ if(park == "SAGA"){
     mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
                                ScientificName == "Acer rubrum" ~ "ACESPP",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                TRUE ~ spp_grp))
 } 
 if(park == "MIMA"){
@@ -118,9 +119,10 @@ if(park == "MIMA"){
     mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
                                ScientificName == "Acer rubrum" ~ "ACESPP",
                                ScientificName == "Cladrastis kentukea" ~ "OTHEXO",
-                               ScientificName == "Juniperus virginiana" ~ "SUBCAN",
+                               ScientificName == "Juniperus virginiana" ~ "OTHNAT",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
                                ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
@@ -128,6 +130,7 @@ if(park == "MIMA"){
                                ScientificName == "Juniperus virginiana" ~ "Other Native",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
                                ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                TRUE ~ spp_grp))
 }
 if(park == "ACAD"){
@@ -161,6 +164,10 @@ tree_grps <- tree_grps %>%  mutate(spp_grp = case_when(spp_grp == "Other Native"
                                                        spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
                                                        spp_grp == "Other Exotic" ~ "Other exotic spp.",
                                                        TRUE ~ spp_grp))
+
+if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
+  warning("There's at least 1 NA in tree_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
+
 table(tree_grps$spp_grp)
 table(tree_grps$ScientificName, tree_grps$spp_grp)
 
@@ -246,31 +253,31 @@ tree_stem_smooth3 <- left_join(tree_stem_smooth2,
   arrange(spp_grp)
 
 # Plotting trends by species group facet
-# tree_stem_trends <- 
-#   ggplot(tree_stem_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-#                                 color = sign, fill = sign)) +
-#   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-#   geom_line(linewidth = 0.5) +
-#   scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-#                                    "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-#   scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-#                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-#   scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-#                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-#   facet_wrap(~spp_grp, scales = 'free_y') + 
-#   labs(y = "Trees (stems/ha)", x = "Year") +
-#   scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-#                      limits = c(2005, to)) +
-#   theme_FHM() + 
-#   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-#         legend.position = 'bottom')
-# 
-# tree_stem_trends
-# 
-# svg(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_Tree_stems_by_species_cycle.svg"),
-#     height = 8, width = 7)
-# tree_stem_trends
-# dev.off()
+tree_stem_trends <-
+  ggplot(tree_stem_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
+                                color = sign, fill = sign)) +
+  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
+  geom_line(linewidth = 0.5) +
+  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
+                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
+  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
+                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
+  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
+                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
+  facet_wrap(~spp_grp, scales = 'free_y') +
+  labs(y = "Trees (stems/ha)", x = "Year") +
+  scale_x_continuous(breaks = c(seq(from, to, by = 3), to),
+                     limits = c(2005, to)) +
+  theme_FHM() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+        legend.position = 'bottom')
+
+tree_stem_trends
+
+svg(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_Tree_stems_by_species_cycle.svg"),
+    height = 8, width = 10)
+tree_stem_trends
+dev.off()
 
 #--- Tree BA
 tree_BA_smooth <- purrr::map_dfr(spp_list, 
@@ -308,32 +315,32 @@ net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba
 net_ba_year # No decline in BA over time
 
 # Plotting trends by species group facet
-# tree_BA_trends <- 
-#   ggplot(tree_BA_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-#                                 color = sign, fill = sign)) +
-#   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-#   geom_line(linewidth = 0.5) +
-#   scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-#                                    "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-#   scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-#                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-#   scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-#                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-#   facet_wrap(~spp_grp, scales = 'free_y') + 
-#   labs(y = "Tree Basal Area (sq.m/ha)", x = "Year") +
-#   scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-#                      limits = c(2005, to)) +
-#   theme_FHM() + 
-#   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-#         legend.position = 'bottom')
-# 
-# tree_BA_trends
-# 
-# svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_Tree_BA_by_species_cycle.svg"),
-#     height = 8, width = 7)
-# tree_BA_trends
-# dev.off()
-# 
+tree_BA_trends <-
+  ggplot(tree_BA_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
+                                color = sign, fill = sign)) +
+  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
+  geom_line(linewidth = 0.5) +
+  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
+                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
+  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
+                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
+  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
+                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
+  facet_wrap(~spp_grp, scales = 'free_y') +
+  labs(y = "Tree Basal Area (sq.m/ha)", x = "Year") +
+  scale_x_continuous(breaks = c(seq(from, to, by = 3), to),
+                     limits = c(2005, to)) +
+  theme_FHM() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+        legend.position = 'bottom')
+
+tree_BA_trends
+
+svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_Tree_BA_by_species_cycle.svg"),
+    height = 8, width = 10)
+tree_BA_trends
+dev.off()
+
 # table(tree_stem_smooth3$spp_grp)
 
 # Colors to start with. Can change them per park if needed
@@ -357,7 +364,7 @@ cols = c(
   "Other exotic spp." = "#ca0020",
   "Other native canopy spp." = "#d9d9d9",
   "Pinus spp. (pine)" = "#5A462B",
-  "Pinus strobus (eastern white pine)" = "#5A1111",
+  "Pinus strobus (white pine)" = "#5A1111",
   "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
   "Pinus virginiana (Virginia pine)" = "#E5740D",
   "Pinus resinosa (red pine)" = "#E5740D",
@@ -375,7 +382,7 @@ cols = c(
   "Abies balsamea (balsam fir)" = '#911eb4',#ACAD only
   "Other conifer" = "#42d4f4",#ACAD only
   "Picea spp. (spruce)" = "#000075",#ACAD only
-  "Populus spp. (aspen)" = "#FFFF00")#ACAD only
+  "Populus spp. (aspen)" = "#6600cc")
 
 
 lines = c(
@@ -398,7 +405,7 @@ lines = c(
   "Other exotic spp." = "dashed",
   "Other native canopy spp." = "solid",
   "Pinus spp. (pine)" = "dotdash",
-  "Pinus strobus (eastern white pine)" = "dotdash",
+  "Pinus strobus (white pine)" = "dotdash",
   "Pinus taeda (loblolly pine)" = "dotdash",
   "Pinus virginiana (Virginia pine)" = "dotdash",
   "Pinus resinosa (red pine)" = "dotdash",
@@ -537,10 +544,18 @@ if(park == "SARA"){
     mutate(sppcode = case_when(ScientificName == "Populus" ~ "POPSPP",
                                ScientificName == "Populus grandidentata" ~ "POPSPP",
                                ScientificName == "Populus tremuloides" ~ "POPSPP",
+                               ScientificName == "Nyssa sylvatica" ~ "OTHNAT",
+                               ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Pinus strobus" ~ "PINSTR",
+                               ScientificName == "Betula" ~ "OTHNAT",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Populus" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
                                ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+                               ScientificName == "Nyssa sylvatica" ~ "Other Native",
+                               ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
+                               ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
+                               ScientificName == "Betula" ~ "Other Native",
                                TRUE ~ spp_grp))
 }
 if(park == "MABI"){
@@ -559,10 +574,11 @@ if(park == "SAGA"){
     mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
                                ScientificName == "Acer rubrum" ~ "ACESPP",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
-                               ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                TRUE ~ spp_grp))
 } 
 if(park == "MIMA"){
@@ -573,6 +589,8 @@ if(park == "MIMA"){
                                ScientificName == "Juniperus virginiana" ~ "OTHNAT",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
                                ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
+                               ScientificName == "Pinus" ~ "PINSTR",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
                                TRUE ~ sppcode)) %>% 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
@@ -580,6 +598,8 @@ if(park == "MIMA"){
                                ScientificName == "Juniperus virginiana" ~ "Other Native",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
                                ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
+                               ScientificName == "Pinus" ~ "Pinus strobus (white pine)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                TRUE ~ spp_grp))
 }
 if(park == "ACAD"){
@@ -711,31 +731,31 @@ spp_list
 length(spp_list) # may be longer than Map 3 b/c includes all cycles
 
 # Plotting trends by species group facet
-# seed_trends <- 
-#   ggplot(seed_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-#                            color = sign, fill = sign)) +
-#   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-#   geom_line(linewidth = 0.5) +
-#   scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-#                                    "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-#   scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-#                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-#   scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-#                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-#   facet_wrap(~spp_grp, scales = 'free_y') + 
-#   labs(y = "Seedlings (stems/sq.m)", x = "Year") +
-#   scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-#                      limits = c(2005, to)) +
-#   theme_FHM() + 
-#   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-#         legend.position = 'bottom')
-# 
-# seed_trends
-# 
-# svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_seedlings_by_species_cycle.svg"),
-#     height = 8, width = 7)
-# seed_trends
-# dev.off()
+seed_trends <-
+  ggplot(seed_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
+                           color = sign, fill = sign)) +
+  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
+  geom_line(linewidth = 0.5) +
+  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
+                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
+  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
+                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
+  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
+                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
+  facet_wrap(~spp_grp, scales = 'free_y') +
+  labs(y = "Seedlings (stems/sq.m)", x = "Year") +
+  scale_x_continuous(breaks = c(seq(from, to, by = 3), to),
+                     limits = c(2005, to)) +
+  theme_FHM() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+        legend.position = 'bottom')
+
+seed_trends
+
+svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_seedlings_by_species_cycle.svg"),
+    height = 8, width = 11)
+seed_trends
+dev.off()
 
 # Saplings
 sap_smooth2 <- 
@@ -764,31 +784,31 @@ spp_list
 
 length(spp_list)
 
-# sap_trends <- 
-#   ggplot(sap_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-#                            color = sign, fill = sign)) +
-#   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-#   geom_line(linewidth = 0.5) +
-#   scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-#                                    "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-#   scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-#                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-#   scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-#                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-#   facet_wrap(~spp_grp, scales = 'free_y') + 
-#   labs(y = "Saplings (stems/sq.m)", x = "Year") +
-#   scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-#                      limits = c(2005, to)) +
-#   theme_FHM() + 
-#   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
-#         legend.position = 'bottom')
-# 
-# sap_trends
-# 
-# svg(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_saplings_by_species_cycle.svg"),
-#     height = 8, width = 7)
-# sap_trends
-# dev.off()
+sap_trends <-
+  ggplot(sap_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
+                           color = sign, fill = sign)) +
+  geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
+  geom_line(linewidth = 0.5) +
+  scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
+                                   "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
+  scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
+                               "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
+  scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
+                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
+  facet_wrap(~spp_grp, scales = 'free_y') +
+  labs(y = "Saplings (stems/sq.m)", x = "Year") +
+  scale_x_continuous(breaks = c(seq(from, to, by = 3), to),
+                     limits = c(2005, to)) +
+  theme_FHM() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+        legend.position = 'bottom')
+
+sap_trends
+
+svg(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_saplings_by_species_cycle.svg"),
+    height = 8, width = 11)
+sap_trends
+dev.off()
   
 net_seeds <- 
   ggplot(seed_smooth3, 
@@ -849,6 +869,7 @@ ggsave(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_c
 #----- Trends in invasive guilds over time -----
 #stunted woodlands included
 guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
+
 guild_list <- sort(unique(guilds$Group))
 
 guild_smooth <- purrr::map_dfr(guild_list,

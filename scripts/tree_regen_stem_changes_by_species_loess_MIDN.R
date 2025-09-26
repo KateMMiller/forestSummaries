@@ -227,7 +227,7 @@ cols = c(
   "Abies balsamea (balsam fir)" = '#911eb4',#ACAD only
   "Other conifer" = "#42d4f4",#ACAD only
   "Picea spp. (spruce)" = "#000075",#ACAD only
-  "Populus spp. (aspen)" = "#FFFF00")#ACAD only
+  "Populus spp. (aspen)" = "#6600cc")
 
 
 lines = c(
