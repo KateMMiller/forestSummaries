@@ -11,7 +11,7 @@ library(sf)
 library(vegan)
 library(ggpubr)
 
-#report_year = 2024
+#report_year = 2025
 if(!exists("path")){path = paste0('./output/', report_year, "/MIDN/")} #general path that should work for everyone
 
 # Make sure local copy of DB is current or connect to server
@@ -125,7 +125,8 @@ reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
-                           canopyForm = 'canopy', units = 'sq.m')) |> filter(!Plot_Name %in% "COLO-380") 
+                           canopyForm = 'canopy', units = 'sq.m')) |> 
+  filter(!Plot_Name %in% "COLO-380") 
 
 reg_size_cy <- reg_vs %>% group_by(Plot_Name, ParkSubUnit, cycle) %>% 
   summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = TRUE) %>% 
@@ -167,31 +168,32 @@ midn1_labs <- c("1" = "Cycle 1: 2007 \u2013 2010",
                 "2" = "Cycle 2: 2011 \u2013 2014",
                 "3" = "Cycle 3: 2015 \u2013 2018",
                 "4" = "Cycle 4: 2019 \u2013 2022",
-                "5" = "Cycle 5: 2023 \u2013 2024")
+                "5" = "Cycle 5: 2023 \u2013 2025")
 #midn2 <- c("APCO", "BOWA", "GETT", "HOFU", "VAFO")
 midn2_labs <- c("1" = "Cycle 1: 2007 \u2013 2010",
                 "2" = "Cycle 2: 2011 \u2013 2014",
                 "3" = "Cycle 3: 2015 \u2013 2018",
                 "4" = "Cycle 4: 2019 \u2013 2023",
-                "5" = "Cycle 5: 2024")
+                "5" = "Cycle 5: 2024 \u2013 2025")
 #ncbn <- c("GEWA", "THST")
 ncbn_labs <- c("1" = "Cycle 1: 2008 \u2013 2011",
                "2" = "Cycle 2: 2012 \u2013 2015",
                "3" = "Cycle 3: 2016 \u2013 2019",
                "4" = "Cycle 4: 2021 \u2013 2023",
-               "5" = "Cycle 5: 2024")
+               "5" = "Cycle 5: 2024 \u2013 2025")
 
 colo_labs <- c("1" = "Cycle 1: 2011 \u2013 2014",
                "2" = "Cycle 2: 2015 \u2013 2018",
                "3" = "Cycle 3: 2019 \u2013 2023",
-               "4" = "Cycle 4: 2024")
+               "4" = "Cycle 4: 2024 \u2013 2025")
 
 sahi_labs = c("1" = "Cycle 1: 2009",
               "2" = "Cycle 2: 2013",
               "3" = "Cycle 3: 2017",
               "4" = "Cycle 4: 2023")
 
-asis_labs = c("1" = "Cycle 1: 2019 \u2013 2024") #full cycle ends in 2024
+asis_labs = c("1" = "Cycle 1: 2019 \u2013 2024",
+              "2" = "Cycle 2: 2025") 
 
 
 cycle_labs <- switch(park,
@@ -215,7 +217,8 @@ table(reg_smooth$size_class)
 
 reg_trend_plot <- 
   ggplot(reg_smooth, aes(x = size_class, y = estimate, #color = size_class,#linetype = sign, 
-                         group = size_class)) + theme_FVM() +
+                         group = size_class)) + 
+  theme_FVM() +
   geom_bar(stat = 'identity', aes(fill = size_class), color = 'DimGrey') +
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8) +
@@ -351,7 +354,7 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to) |>
   filter(EventID %in% evs_4yr) |> 
   select(Plot_Name, dbi = Deer_Browse_Index)
 
-mean_dbi <- mean(dbi$dbi)
+mean_dbi <- mean(dbi$dbi, na.rm = T)
 mean_dbi 
 
 # dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> 
@@ -526,17 +529,23 @@ sor_fun <- function(df){
   return(sor)
 }
 
-sor_sap <- comb %>% filter(strata %in% c("tree", "sapling")) %>% 
-  group_by(Plot_Name) %>% nest() %>% 
-  mutate(sap_sor = purrr::map(data, sor_fun)) %>%
-  unnest(cols = c(sap_sor)) %>% select(Plot_Name, sap_sor) %>% data.frame() 
+plot_list <- sort(unique(comb$Plot_Name))
+
+sor_sap <- purrr::map(plot_list, function(plt){
+  df <- comb |> 
+    filter(Plot_Name %in% plot_list[plt]) |> 
+    filter(strata %in% c("tree", "sapling")) 
+    sor_sap <- data.frame(sap_sor = sor_fun(df))
+    }) |> list_rbind()
 
 sor_sap_mean <- mean(sor_sap$sap_sor, na.rm = T)
 
-sor_seed <- comb %>% filter(strata %in% c("tree", "seedling")) %>% 
-  group_by(Plot_Name) %>% nest() %>% 
-  mutate(seed_sor = purrr::map(data, sor_fun)) %>% 
-  unnest(cols = c(seed_sor)) %>% select(Plot_Name, seed_sor) %>% data.frame()
+sor_seed <- purrr::map(plot_list, function(plt){
+  df <- comb |> 
+    filter(Plot_Name %in% plot_list[plt]) |> 
+    filter(strata %in% c("tree", "seedling")) 
+  sor_seed <- data.frame(seed_sor = sor_fun(df))
+}) |> list_rbind()
 
 sor_seed_mean <- mean(sor_seed$seed_sor, na.rm = T)
 
