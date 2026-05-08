@@ -495,17 +495,23 @@ sor_fun <- function(df){
   return(sor)
 }
 
-sor_sap <- comb %>% filter(strata %in% c("tree", "sapling")) %>% 
-  group_by(Plot_Name) %>% nest() %>% 
-  mutate(sap_sor = purrr::map(data, sor_fun)) %>%
-  unnest(cols = c(sap_sor)) %>% select(Plot_Name, sap_sor) %>% data.frame() 
+plot_list <- sort(unique(comb$Plot_Name))
+
+sor_sap <- purrr::map(plot_list, function(plt){
+  df <- comb |> 
+    filter(Plot_Name %in% plot_list[plt]) |> 
+    filter(strata %in% c("tree", "sapling")) 
+  sor_sap <- data.frame(sap_sor = sor_fun(df))
+}) |> list_rbind()
 
 sor_sap_mean <- mean(sor_sap$sap_sor, na.rm = T)
 
-sor_seed <- comb %>% filter(strata %in% c("tree", "seedling")) %>% 
-  group_by(Plot_Name) %>% nest() %>% 
-  mutate(seed_sor = purrr::map(data, sor_fun)) %>% 
-  unnest(cols = c(seed_sor)) %>% select(Plot_Name, seed_sor) %>% data.frame()
+sor_seed <- purrr::map(plot_list, function(plt){
+  df <- comb |> 
+    filter(Plot_Name %in% plot_list[plt]) |> 
+    filter(strata %in% c("tree", "seedling")) 
+  sor_seed <- data.frame(seed_sor = sor_fun(df))
+}) |> list_rbind()
 
 sor_seed_mean <- mean(sor_seed$seed_sor, na.rm = T)
 
