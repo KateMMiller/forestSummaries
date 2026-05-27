@@ -2,7 +2,7 @@
 # Smoothed tree, sapling, seedling changes in abundance over time: NETN
 # ++++++++ MUST RUN source_script.R FIRST ++++++++
 #-------------------------------------------------------------------
-library(ggpubr)
+#library(ggpubr)
 span <- 4/5 #roughly linear between timesteps
 #span = 4/5
 
@@ -304,7 +304,7 @@ tree_BA_smooth3 <- left_join(tree_BA_smooth2,
   mutate(spp_grp = as.character(spp_grp)) |> 
   arrange(spp_grp)
 
-net_ba_year <- tree_BA_smooth3 |> group_by(term, SampleYear) |> summarize(net_ba = sum(estimate))
+net_ba_year <- tree_BA_smooth3 |>  summarize(net_ba = sum(estimate), .by = c(term, SampleYear))
 net_ba_year # No decline in BA over time
 
 # Plotting trends by species group facet

@@ -29,13 +29,13 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to) |> filter(IsStuntedW
   filter(EventID %in% evs_4yr)|> 
   select(Plot_Name, dbi = Deer_Browse_Index)
 
-mean_dbi <- mean(dbi$dbi)
-mean_dbi # MORR: 4.071
+mean_dbi <- signif(mean(dbi$dbi), 1)
+mean_dbi # MORR: 4.0
 
-dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> filter(IsStuntedWoodland == FALSE) |> 
-  select(Plot_Name, dbi = Deer_Browse_Index) 
-dbi_prev <- mean(dbiprev$dbi)
-dbi_prev # MORR: 4.179 
+# dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> filter(IsStuntedWoodland == FALSE) |> 
+#   select(Plot_Name, dbi = Deer_Browse_Index) 
+# dbi_prev <- mean(dbiprev$dbi)
+# dbi_prev # MORR: 4.179 
 
 # DBI distribution plot
 dbi_all <- joinStandData(park = park, from = from, to = to) |>  
@@ -78,7 +78,7 @@ dbi_plot
 
 figpath <- paste0(path, park, '/figures/')
 ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
-
+ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.png"), height = 6.15, width = 8, units = 'in')
 
 # Regen densities
 reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') |> 
@@ -207,23 +207,23 @@ sor_fun <- function(df){
 
 plot_list <- sort(unique(comb$Plot_Name))
 
-sor_sap <- purrr::map(plot_list, function(plt){
+sor_sap <- purrr::map(seq_along(plot_list), function(plt){
   df <- comb |> 
-    filter(Plot_Name %in% plot_list[plt]) |> 
-    filter(strata %in% c("tree", "sapling")) 
+    dplyr::filter(Plot_Name %in% plot_list[plt]) |> 
+    dplyr::filter(strata %in% c("tree", "sapling")) 
   sor_sap <- data.frame(sap_sor = sor_fun(df))
 }) |> list_rbind()
 
-sor_sap_mean <- mean(sor_sap$sap_sor, na.rm = T)
+sor_sap_mean <- round(mean(sor_sap$sap_sor, na.rm = T), 2)
 
-sor_seed <- purrr::map(plot_list, function(plt){
+sor_seed <- purrr::map(seq_along(plot_list), function(plt){
   df <- comb |> 
     filter(Plot_Name %in% plot_list[plt]) |> 
     filter(strata %in% c("tree", "seedling")) 
   sor_seed <- data.frame(seed_sor = sor_fun(df))
 }) |> list_rbind()
 
-sor_seed_mean <- mean(sor_seed$sor_seed, na.rm = T)
+sor_seed_mean <- round(mean(sor_seed$seed_sor, na.rm = T), 2)
 
 # Tree DBH distribution
 tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> 
@@ -346,18 +346,19 @@ results_plot <-
   ggplot(debt_final, 
          aes(x = 1, y = ordered(label_order, levels = rev(label_order)),
              fill = label_order)) +
-  geom_tile(aes(fill = status_fac), color = 'black', linewidth = 0.5)+
+  geom_tile(aes(fill = status_fac), color = 'black', linewidth = 0.5) +
   geom_text(aes(label = text_label,
                 fontface = ifelse(Metric == "Regen. Debt Status", 2, 1))) +
   scale_fill_manual(values = c('Acceptable' = '#BDEBA7',
                                'Caution' = "#FFFF79",
                                'Critical' = "#FF5B5B"),
+                    breaks = c("Acceptable", "Caution", "Critical"),
                     na.value = "white",
                     labels = c("Acceptable",
                                "Caution",
                                "Critical"),
                     name = NULL, 
-                    drop = FALSE)+
+                    drop = FALSE) +
   labs(x = NULL, y = NULL) + 
   theme_bw() +
   theme(axis.text.x = element_blank(),
@@ -372,6 +373,9 @@ results_plot <-
 results_plot
 
 ggsave(paste0(new_path, "figures/", "Figure_1_", park, "_Regen_Debt_table", ".svg"), height = 6, width = 4.5, units = 'in')
+
+ggsave(paste0(new_path, "figures/", "Figure_1_", park, "_Regen_Debt_table", ".png"), 
+       height = 6, width = 4.5, units = 'in')
 
 debt_final <- debt_final |> mutate(park = park)
 

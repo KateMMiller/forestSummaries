@@ -8,8 +8,8 @@ output:
     self_contained: true
     
 params:
-  park: 'MABI'
-  report_year: 2025
+  park: 'MORR'
+  report_year: 2026
 ---
 
 ```{r eval = F, include = F}
@@ -102,23 +102,20 @@ source('./scripts/tree_regen_stem_changes_by_species_loess_NETN.R') # smoothed c
 ```
 
 ```{r results = 'hide', include = F}
-cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete.</b>", ""), ifelse(park == "COLO", "<b>Note that Cycle 4 is only partially complete.</b>", ""), "</p>")
+cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", "</p>")
 
-cap_t1_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1 (cont.).</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete.</b>", ""), ifelse(park == "COLO", "<b>Note that Cycle 4 is only partially complete.</b>", ""), "</p>")
+cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. ", "</p>")
 
-cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete.</b> ", ""),  ifelse(park == "COLO", "<b>Note that Cycle 4 is only partially complete.</b>", ""), " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Protocol evolution over time has impacted invasive species % cover and counts. The estimated change in invasive species % cover and count in ", park_long, " (", park, ") that can be attributed to protocol change is ", InvCovComp, "% and ", InvCountComp, " species per plot for the most recent census. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2189101'>NETN Summary of Major Protocol Changes.</a>", "</p>")
-
-cap_t2_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2 (cont.).</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete.</b> ", ""),  ifelse(park == "COLO", "<b>Note that Cycle 4 is only partially complete.</b>", "")," Plots with at least 10% average cover or 4 or more invasive species present are in yellow. Protocol evolution over time has impacted invasive species % cover and counts. The estimated change in invasive species % cover and count in ", park_long, " (", park, ") that can be attributed to protocol change is ", InvCovComp, "% and ", InvCountComp, " species per plot for the most recent census. More details can be found in the <a href='https://irma.nps.gov/DataStore/Reference/Profile/2189101'>NETN Summary of Major Protocol Changes.</a>", "</p>")
-
-cap_t3 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where exotic species were detected. ", paste0(cycle_labs, collapse = "; "), ".  Priority invasive species capable of dominating Eastern US forest habitats are highlighed in yellow. ", ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete.</b>", ""),  ifelse(park == "COLO", "<b>Note that Cycle 4 is only partially complete.</b>", "")," Protocol evolution has impacted the number of invasive species monitored through time. Species were not consistently monitored before the year specified in the Year Added column. More details can be found in the <a href=https://irma.nps.gov/DataStore/Reference/Profile/2189101'>NETN Summary of Major Protocol Changes.</a>", "</p>")
-
-cap_t3_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3 (cont.).</b> Number of plots out of ", num_plots, " where exotic species were detected. ", paste0(cycle_labs, collapse = "; "), ".  Priority invasive species capable of dominating Eastern US forest habitats are highlighed in yellow. ", ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete.</b>", ""),  ifelse(park == "COLO", "<b>Note that Cycle 4 is only partially complete.</b>", "")," Protocol evolution has impacted the number of invasive species monitored through time. Species were not consistently monitored before the year specified in the Year Added column. More details can be found in the <a href=https://irma.nps.gov/DataStore/Reference/Profile/2189101'>NETN Summary of Major Protocol Changes.</a>", "</p>")
+cap_t3 <- if(park == "MORR"){
+    paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", "Priority invasive species are those that capable of dominating Eastern US forest habitats.", paste0(cycle_labs, collapse = "; "), "</p>")
+} else {
+  paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where exotic species were detected. ", paste0(cycle_labs, collapse = "; "), ".  Priority invasive species capable of dominating Eastern US forest habitats are highlighed in yellow. ", "</p>")
+  }
 
 cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
 
 cap_t5 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 5.</b> List of tree species included in Maps 3 and 4 and how each was displayed.", "</p>")
 
-cap_t5_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 5.</b> List of tree species included in Maps 3 and 4 and how each was displayed.", "</p>")
 ```
 
 ```{r include = F, eval = T, results = 'hide'}
@@ -134,11 +131,8 @@ reg_pass <- "#BFDFC7"
 # Have to manually split tables that are >30 rows because page break kept dropping a row
 #if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
 
-tab1_kab <- function(park, row_start = 1, row_end = 30, table_name = "table1"){
-  df <- if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
-    reg_cycle_tab
-  } else {
-      data.frame(reg_cycle_tab[row_start:row_end,])}
+tab1_kab <- function(park, row_start = 1, row_end = num_plots, table_name = "table1"){
+  df <- data.frame(reg_cycle_tab[row_start:row_end,])
   
   kable(df, col.names = tab1_row2, digits = 2, align = 'c', format = 'html', 
         table.attr = "style='width:95%;height:95%;'", row.names = F) %>% #, caption = cap_t1) %>%
@@ -169,17 +163,7 @@ tab1_kab <- function(park, row_start = 1, row_end = 30, table_name = "table1"){
 
 num_plots <- nrow(reg_cycle_tab)
 
-if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
-  tab1_kab(park)
-} else if(park %in% "FRSP"){
-  tab1_kab("FRSP", 1, 30, "table1a")
-  tab1_kab("FRSP", 31, 60, "table1b")
-  tab1_kab("FRSP", 61, 90, "table1c")
-  tab1_kab("FRSP", 91, num_plots, "table1d")
-} else if(park %in% c("COLO", "GETT", "PETE", "RICH")){
-  tab1_kab(park, 1, 30, "table1a")
-  tab1_kab(park, 31, num_plots, "table1b")
-}
+tab1_kab(park)
 
 ```
 
@@ -190,11 +174,8 @@ tab2_cols <- names(inv_cycle_tab)
 tab2_row2 <- gsub("inv_cov_|numspp_", "Cycle ", tab2_cols)
 border2_cols <- c(2 + cycle_latest, 2 + cycle_latest*2, 2 )
 
-tab2_kab <- function(park, row_start = 1, row_end = 30, table_name = "table2"){
-  df <- if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
-    inv_cycle_tab
-  } else {
-      data.frame(inv_cycle_tab[row_start:row_end,])}
+tab2_kab <- function(park, row_start = 1, row_end = num_plots, table_name = "table2"){
+  df <- data.frame(inv_cycle_tab[row_start:row_end,])
   
   kable(df, col.names = tab2_row2, digits = 2, align = 'c', format = 'html', 
         table.attr = "style='width:95%;height:95%;'", row.names = F) %>% #, caption = cap_t2, title = NULL) %>%
@@ -221,26 +202,39 @@ tab2_kab <- function(park, row_start = 1, row_end = 30, table_name = "table2"){
 
 num_plots <- nrow(inv_cycle_tab)
 
-if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
-  tab2_kab(park)
-} else if(park %in% "FRSP"){
-  tab2_kab("FRSP", 1, 30, "table2a")
-  tab2_kab("FRSP", 31, 60, "table2b")
-  tab2_kab("FRSP", 61, 90, "table2c")
-  tab2_kab("FRSP", 91, num_plots, "table2d")
-} else if(park %in% c("COLO", "GETT", "PETE", "RICH")){
-  tab2_kab(park, 1, 30, "table2a")
-  tab2_kab(park, 31, num_plots, "table2b")
-}
+tab2_kab(park)
+
 ```
 ```{r include = F, eval = T, results = 'hide'}
 # Table 3 setup
-tab3_cols <- c("Latin Name", "Common Name", "Invasive", "Year Added", gsub("cycle_", "Cycle ", 
-                                                 names(inv_spp_final[,5:ncol(inv_spp_final)])))
+tab3_cols <- if(park == "MORR"){c("Latin Name", "Common Name", 
+                                  gsub("cycle_", "Cycle ", names(inv_spp[,4:ncol(inv_spp)])))
+  } else {c("Latin Name", "Common Name", "Invasive", 
+            gsub("cycle_", "Cycle ", names(inv_spp[,4:ncol(inv_spp)])))}
 
-inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
+inv_spp <- if(park == "MORR"){
+  inv_spp |> filter(!ScientificName %in% "None present") |> 
+    select(-InvasiveNETN)
+} else {
+  inv_spp |> filter(!ScientificName %in% "None present")
+}
 
 tab3 <- 
+  if(park == "MORR"){
+  kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
+        table.attr = "style='width:93%;height:93%;'") %>% #, caption = cap_t3, title = NULL) %>%
+  kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
+                full_width = TRUE, position = 'center', font_size = 9) %>%
+  column_spec(1, italic = TRUE) %>%
+  column_spec(c(1, 2), border_left = T, border_right = T) %>%
+  column_spec(ncol(inv_spp), border_right = T) %>%
+  column_spec(1:ncol(inv_spp), border_left = T, border_right = T) %>%
+  column_spec(1, extra_css =  "border-left: 1.5px solid #000000;") %>%
+  row_spec(0:nrow(inv_spp), extra_css = "border-top: 1px solid #000000;") %>%
+  row_spec(0:nrow(inv_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
+  #landscape(margin = "1cm") %>%
+  save_kable(file = "table3.html", self_contained = F)
+  } else {
   kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
         table.attr = "style='width:93%;height:93%;'") %>% #, caption = cap_t3, title = NULL) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
@@ -255,6 +249,7 @@ tab3 <-
   row_spec(0:nrow(inv_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>%
   save_kable(file = "table3.html", self_contained = F)
+  }
 
 ```
 ```{r}
@@ -313,7 +308,7 @@ includeHTML("html_header.html")
 ```
 <br>
 ```{r out.width = "45%", out.height = "40%", out.extra = 'style="margin-left:130px; margin-top:-10px;"'}
-include_graphics(paste0(new_path, "figures/Figure_1_", park, "_Regen_Debt_table.png"))
+include_graphics(paste0(new_path, "figures/Figure_1_", park, "_Regen_Debt_table.svg"))
 ```
 
 ```{r results = 'asis'}
@@ -325,12 +320,12 @@ chronic regeneration failure. Sapling/Seedling Composition is the % of total ste
 <br>
 
 ```{r out.width = "80%", out.height = "40%", out.extra = 'style="margin-left:100px;margin-top:-25px;"'}
-include_graphics(paste0(new_path, "figures/", "Figure_2_", park, "_DBI_by_cycle.png"))
+include_graphics(paste0(new_path, "figures/", "Figure_2_", park, "_DBI_by_cycle.svg"))
 ```
 
 ```{r results = 'asis'}
 cat(paste0("<p><b>Figure 2.</b> Deer browse impacts by cycle in ", park_long, " (", park, "). ",
-    paste(cycle_labs, collapse = "; "), ". ", ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete.</b>", ""), ifelse(park == "COLO", "<b>Note that Cycle 4 only partially complete.</b>", ""),
+    paste(cycle_labs, collapse = "; "), ". ",
     sep = ""))
 
 ```
@@ -344,18 +339,17 @@ includeHTML("html_header.html")
 
 |       A. 
 ```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
-include_graphics(paste0(new_path, "figures/Figure_3A_", park, "_regen_by_size_class_by_cycle.png"))
+include_graphics(paste0(new_path, "figures/Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"))
 ```
 
 |       B. 
 ```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
-include_graphics(paste0(new_path, "figures/Figure_3B_", park, "_tree_dbh_dist_by_cycle.png"))
+include_graphics(paste0(new_path, "figures/Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"))
 ```
 
 ```{r results = 'asis'}
 cat(paste0("<p><b>Figure 3.</b> Stem density distributions by cycle in ", park_long, " (", park, "). ",
     paste(cycle_labs, collapse = "; "), ". ", 
-    ifelse(length(cycle_labs) == 5, "<b>Note that Cycle 5 is only partially complete. </b>", ""), ifelse(park == "COLO", "<b>Note that Cycle 4 is only partially complete. </b>", ""),
     "Figure A shows regeneration densities by size class. Figure B shows tree density by diameter at breast height (DBH) increments. Error bars are 95% bootstrapped confidence intervals to account for non-normal error. An asterisk denotes a linear DBH distribution that is indicative of long-term recruitment failure.</p>", sep = ""))
 ```
 
@@ -368,7 +362,7 @@ includeHTML("html_header.html")
 ```
 
 ```{r out.width = "98%", out.height = "95%"}
-include_graphics(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.png"))
+include_graphics(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.svg"))
 ```
 
 ```{r results = 'asis'}
@@ -386,7 +380,7 @@ includeHTML("html_header.html")
 ```
 
 ```{r out.width = "98%", out.height = "95%"}
-include_graphics(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.png"))
+include_graphics(paste0(new_path, "figures/Figure_5_", park, "_smoothed_tree_dens_BA_by_species_cycle.svg"))
 ```
 
 ```{r results = 'asis'}
@@ -404,7 +398,7 @@ includeHTML("html_header.html")
 ```
 
 ```{r out.width = "98%", out.height = "50%"}
-include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.png"))
+include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"))
 ```
 
 ```{r results = 'asis'}
@@ -425,57 +419,8 @@ includeHTML("html_header.html")
 cat(cap_t1)
 ```
 
-```{r}
-tab1_eval <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), FALSE, TRUE)
-tab1_evalb <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), TRUE, FALSE)
-tab1_evalc <- ifelse(park %in% "FRSP", TRUE, FALSE)
-```
-
-```{r echo = F, eval = tab1_eval, warning = F, message = F}
+```{r echo = F, eval = T, warning = F, message = F}
 includeHTML("table1.html")
-```
-
-```{r echo = F, eval = !tab1_eval, warning = F, message = F}
-includeHTML("table1a.html")
-```
-
-```{r results = 'asis', eval = tab1_evalb, warning = F, message = F}
-cat("### {.page-break-before}", "\n\n")
-includeHTML("html_header.html")
-```
-
-```{r results = 'asis', eval = tab1_evalb}
-cat(cap_t1_cont)
-```
-
-```{r echo = F, eval = tab1_evalb, warning = F, message = F}
-includeHTML("table1b.html")
-```
-
-```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
-cat("### {.page-break-before}", "\n\n")
-includeHTML("html_header.html")
-```
-
-```{r results = 'asis', eval = tab1_evalc}
-cat(cap_t1_cont)
-```
-
-```{r echo = F, eval = tab1_evalc, warning = F, message = F}
-includeHTML("table1c.html")
-```
-
-```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
-cat("### {.page-break-before}", "\n\n")
-includeHTML("html_header.html")
-```
-
-```{r results = 'asis', eval = tab1_evalc}
-cat(cap_t1_cont)
-```
-
-```{r echo = F, eval = tab1_evalc, warning = F, message = F}
-includeHTML("table1d.html")
 ```
 
 <!-- Start of page 7 -->
@@ -489,67 +434,11 @@ includeHTML("html_header.html")
 cat(cap_t2)
 ```
 
-```{r}
-tab2_eval <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), FALSE, TRUE)
-tab2_evalb <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), TRUE, FALSE)
-tab2_evalc <- ifelse(park %in% "FRSP", TRUE, FALSE)
-```
-
-```{r echo = F, eval = tab2_eval, warning = F, message = F}
+```{r echo = F, eval = T, warning = F, message = F}
 includeHTML("table2.html")
 ```
-
-```{r echo = F, eval = !tab2_eval, warning = F, message = F}
-includeHTML("table2a.html")
-```
 <br>
 
-```{r results = 'asis', eval = tab2_evalb, warning = F, message = F}
-cat("### {.page-break-before}", "\n\n")
-includeHTML("html_header.html")
-```
-
-```{r results = 'asis', eval = tab2_evalb}
-cat(cap_t2_cont)
-```
-
-```{r echo = F, eval = tab2_evalb, warning = F, message = F}
-includeHTML("table2b.html")
-cat("\n")
-```
-<br>
-
-```{r results = 'asis', eval = tab2_evalc, warning = F, message = F}
-cat("### {.page-break-before}", "\n\n")
-includeHTML("html_header.html")
-```
-
-```{r results = 'asis', eval = tab2_evalc}
-cat(cap_t2_cont)
-```
-
-```{r echo = F, eval = tab2_evalc, warning = F, message = F}
-includeHTML("table2c.html")
-cat("\n")
-
-```
-<br>
-
-```{r results = 'asis', eval = tab2_evalc, warning = F, message = F}
-cat("### {.page-break-before}", "\n\n")
-includeHTML("html_header.html")
-```
-
-```{r results = 'asis', eval = tab2_evalc}
-cat(cap_t2_cont)
-```
-
-```{r echo = F, eval = tab2_evalc, warning = F, message = F}
-includeHTML("table2d.html")
-cat("\n")
-
-```
-<br>
 <!-- Start of page 8 -->
 
 ###   {.page-break-before}
