@@ -64,17 +64,20 @@ reg_cycle <- reg_cycle2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm
 
 #max(reg_cycle[,4:ncol(reg_cycle)])
 
-reg_no <- reg_cycle|> rowwise() |> mutate(tot_reg = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+reg_no <- reg_cycle |> rowwise() |> mutate(tot_reg = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
   filter(tot_reg == 0)
 
-no_reg <- reg_no$Plot_Name
+reg_no <- reg_cycle |> mutate(tot_reg = sum(c_across(starts_with("cycle"))), .by = "Plot_Name") |> 
+  filter(tot_reg == 0)
 
-reg_cycle <- reg_cycle|> filter(!(Plot_Name %in% no_reg)) #check total # of plots in all dfs is right
+reg_cycle <- if(nrow(reg_no) > 0){
+  reg_cycle |> filter(!(Plot_Name %in% reg_no$Plot_Name)) #check total # of plots in all dfs is right
+} else {reg_cycle}
 
 reg_cycle_incom <- reg_cycle %>% filter_at(vars(last_col()), all_vars(is.na(.))) %>% select(-tail(names(.), 1))
 reg_cycle_com <- reg_cycle %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
 
-if(nrow(reg_no) >0){
+if(nrow(reg_no) > 0){
   write_to_shp(reg_no, 
                shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_cycle_no_reg", ".shp" ))
 }

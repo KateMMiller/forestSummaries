@@ -4,7 +4,6 @@
 #-------------------------------------------------------------------
 #library(ggpubr)
 span <- 4/5 #roughly linear between timesteps
-#span = 4/5
 
 if(!exists('trspp_grps')){stop("Must run source_script_NETN.R before this script will work.")}
 head(trspp_grps)
