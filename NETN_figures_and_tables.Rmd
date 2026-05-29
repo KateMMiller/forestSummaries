@@ -57,7 +57,7 @@ cycle_latest <<- as.numeric(netn_params$cycle_latest[netn_params$park == park])
 # # from_prev <<- as.numeric(netn_params$from_prev[netn_params$park == park])
 # # to_prev <<- as.numeric(netn_params$to_prev[netn_params$park == park])
 QAQC <<- FALSE
-locType <<- 'VS'
+locType <<- 'all'
 # #+++ NOTE: IF GET add_header_above error, need to update cycle_latest in NETN_params.csv  +++
 park_long <- netn_names$LongName[netn_names$ParkCode == park]
 park_title <- netn_names$LongName_title[netn_names$ParkCode == park]

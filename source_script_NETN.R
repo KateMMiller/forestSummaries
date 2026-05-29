@@ -54,7 +54,7 @@ park_crs = ifelse(park %in% c("ACAD", "MIMA"), 26919, 26918)
 num_plots = case_when(park == "ACAD" ~ 176,
                       park == "MABI" ~ 24,
                       park == "MIMA" ~ 20,
-                      park == "MORR" ~ 28,
+                      park == "MORR" ~ 29, # including plot 14 in all but regen_debt_metrics_NETN and tree_regen_stem_changes
                       park == "ROVA" ~ 40,
                       park == "SAGA" ~ 21,
                       park == "SARA" ~ 32,

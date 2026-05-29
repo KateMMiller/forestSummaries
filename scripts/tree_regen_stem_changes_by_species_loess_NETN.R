@@ -22,7 +22,9 @@ trees <- left_join(trees1, plot_evs, by = c("Plot_Name", "cycle", "SampleYear"))
   arrange(Plot_Name, SampleYear)  
   
 tree_grps <- left_join(trees, trspp_grps |> select(Species, spp_grp, sppcode), 
-                       by = c("ScientificName" = "Species"))
+                       by = c("ScientificName" = "Species")) |> 
+  filter(!ScientificName %in% "None present")
+
 if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in tree_grps$spp_group, meaning at least one species is missing a group.")} #check if any spp. is missing a group
 

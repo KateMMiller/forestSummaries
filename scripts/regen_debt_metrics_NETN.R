@@ -16,7 +16,7 @@ num_plots = case_when(park == "ACAD" ~ 172, #no stunted woodlands so 172 instead
                       park == "WEFA" ~ 10)
 
 # Plot list
-plotevs1 <- joinLocEvent(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) 
+plotevs1 <- joinLocEvent(park = park, from = from_4yr, to = to, locType = "VS") |> filter(IsStuntedWoodland == FALSE) 
 plotevs2 <- plotevs1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |> 
   slice_max(SampleYear) |> ungroup() 
 evs_4yr <- plotevs2$EventID # EventIDs that represent the most recent visit to each plot
@@ -25,7 +25,7 @@ plotevs <- plotevs2 |> select(Plot_Name, SampleYear)
 
 # Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
-dbi <- joinStandData(park = park, from = from_4yr, to = to) |> filter(IsStuntedWoodland == FALSE) |> 
+dbi <- joinStandData(park = park, from = from_4yr, to = to, locType = "VS") |> filter(IsStuntedWoodland == FALSE) |> 
   filter(EventID %in% evs_4yr)|> 
   select(Plot_Name, dbi = Deer_Browse_Index)
 
@@ -38,7 +38,7 @@ mean_dbi # MORR: 4.0
 # dbi_prev # MORR: 4.179 
 
 # DBI distribution plot
-dbi_all <- joinStandData(park = park, from = from, to = to) |>  
+dbi_all <- joinStandData(park = park, from = from, to = to, locType = "VS") |>  
   filter(IsStuntedWoodland == FALSE)  |>
   select(Plot_Name, cycle, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 
@@ -81,7 +81,7 @@ ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, w
 ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.png"), height = 6.15, width = 8, units = 'in')
 
 # Regen densities
-reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m') |> 
+reg <- joinRegenData(park = park, from = from_4yr, to = to, units = 'sq.m', locType = "VS") |> 
   filter(EventID %in% evs_4yr)
 
 length(unique(reg$Plot_Name))
@@ -167,7 +167,7 @@ reg_sap <- reg |>
   summarize(sap_den = sum(sap_den, na.rm = T), .groups = 'drop') |> 
   pivot_wider(names_from = sppcode, values_from = sap_den, values_fill = 0)
 
-trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live') |> 
+trees <- joinTreeData(park = park, from = from_4yr, to = to, status = 'live', locType = "VS") |> 
   filter(EventID %in% evs_4yr) |> 
   mutate(genus = word(ScientificName, 1),
          species = ifelse(is.na(word(ScientificName, 2)), "SPP", word(ScientificName, 2)),
@@ -226,7 +226,7 @@ sor_seed <- purrr::map(seq_along(plot_list), function(plt){
 sor_seed_mean <- round(mean(sor_seed$seed_sor, na.rm = T), 2)
 
 # Tree DBH distribution
-tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live') |> 
+tree_dist <- sumTreeDBHDist(park = park, from = from_4yr, to = to, status = 'live', locType = "VS") |> 
   filter(EventID %in% evs_4yr) 
 length(unique(tree_dist$Plot_Name))
 
