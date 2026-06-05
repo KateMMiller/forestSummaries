@@ -33,6 +33,7 @@ reg_cycle_table1 <- reg |>  summarize(seed_den = round(sum(seed_den, na.rm = TRU
                                      sap_den = round(sum(sap_den, na.rm = TRUE), 2),
                                      stock = round(sum(stock, na.rm = TRUE), 2),
                                      .by = c(Plot_Name, cycle)) 
+
 reg_cycle_table <- left_join(plotevs |> select(Plot_Name, cycle, Plot = PlotCode, Panel = PanelCode),
                              reg_cycle_table1, 
                              by = c("Plot_Name", "cycle"))
@@ -42,8 +43,6 @@ reg_cycle_table[, reg_cols][is.na(reg_cycle_table[, reg_cols])] <- 0
 
 reg_cycle_wide <- reg_cycle_table %>% 
   pivot_wider(names_from = cycle, values_from = c(seed_den, sap_den, stock))
-
-head(reg_cycle_wide)
 
 write.csv(reg_cycle_wide, 
           paste0(new_path, "tables/", "Table_1_", park, "_regen_by_cycle.csv"), row.names = FALSE)
@@ -126,7 +125,6 @@ if(nrow(size_no) >0){
   write_to_shp(size_no, 
                shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_size_class_cycle", cycle_latest, "_no_reg", ".shp" ))
 }
-
 
 write_to_shp(reg_size_4yr, 
              shp_name = paste0(new_path, "shapefiles/", park, 
@@ -522,15 +520,12 @@ trees_park <- do.call(joinTreeData, args = list(park, from_4yr, to = to, status 
 dom_trspp <- trees_park %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>%
   group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
 
-#view(dom_trspp)
-###
-
 tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
   filter(!ScientificName %in% c("None present", "Not Sampled"))
 
 if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in tree_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
-head(tree_grps)
+
 #Park specific exceptions to default groupings
 if(park == "MORR"){
   tree_grps <- tree_grps %>% 
@@ -760,7 +755,6 @@ if(nrow(cancov_cycle_incom) >0){
 }
 
 write_to_shp(cancov_cycle_com, shp_name = paste0(new_path, "shapefiles/", park, "_canopy_cover.shp"))
-
 
 #---- Map 9 Invasive % Cover by Cycle ----
 invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive')) %>% 

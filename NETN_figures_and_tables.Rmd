@@ -410,6 +410,20 @@ cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover 
 ```
 <br>
 
+```{r}
+include_fig7 <- if(park == "MORR"){TRUE} else {FALSE}
+```
+
+```{r out.width = "98%", out.height = "50%", eval = include_fig7}
+include_graphics(paste0(new_path, "figures/Figure_7_", park, "_invasive_cover_vs_stocking_index.svg"))
+```
+
+```{r results = 'asis', eval = include_fig7}
+cat("<p><b>Figure 7.</b> Relationship between invasive shrub cover and regeneration stocking index with loess smoother (blue line) in ", park_long, ". Red dashed line indicates the 10% invasive shrub cover line that regeneration tends to disappear at levels beyond. The green dashed horizontal line indicates the level above which forests are considered sufficiently stocked. Grey dots indicate an individual plot visit.</p>", "\n\n", sep = "")
+```
+<br>
+
+
 <!-- Start of page 6 -->
 
 ### {.page-break-before}
