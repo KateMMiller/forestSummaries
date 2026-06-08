@@ -8,7 +8,7 @@ output:
     self_contained: true
     
 params:
-  park: 'MORR'
+  park: 'ROVA'
   report_year: 2026
 ---
 
@@ -105,7 +105,13 @@ source('./scripts/tree_regen_stem_changes_by_species_loess_NETN.R') # smoothed c
 cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", 
 if(park == "MORR"){"Note that Plot 14 and 25 are in a deer exclosure established in 2007."}, "</p>")
 
+cap_t1_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1 (cont.).</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >100. These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", 
+if(park == "MORR"){"Note that Plot 14 and 25 are in a deer exclosure established in 2007."}, "</p>")
+
 cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. ", 
+if(park == "MORR"){"Note that Plot 14 and 25 are in a deer exclosure established in 2007."}, "</p>")
+
+cap_t2_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2 (cont.).</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. ", 
 if(park == "MORR"){"Note that Plot 14 and 25 are in a deer exclosure established in 2007."}, "</p>")
 
 cap_t3 <- if(park == "MORR"){
@@ -165,7 +171,19 @@ tab1_kab <- function(park, row_start = 1, row_end = num_plots, table_name = "tab
 
 num_plots <- nrow(reg_cycle_tab)
 
-tab1_kab(park)
+if(!park %in% c("ROVA", "SARA", "ACAD")){
+  tab1_kab(park)
+} else if(park %in% c("ROVA", "SARA")){
+  tab1_kab(park, 1, 30, "table1a")
+  tab1_kab(park, 31, num_plots, "table1b")
+} else if(park %in% "ACAD"){
+  tab1_kab("ACAD", 1, 30, "table1a")
+  tab1_kab("ACAD", 31, 60, "table1b")
+  tab1_kab("ACAD", 61, 90, "table1c")
+  tab1_kab("ACAD", 91, 120, "table1d")
+  tab1_kab("ACAD", 121, 150, "table1e")
+  tab1_kab("ACAD", 151, num_plots, "table1f")
+}
 
 ```
 
@@ -204,7 +222,19 @@ tab2_kab <- function(park, row_start = 1, row_end = num_plots, table_name = "tab
 
 num_plots <- nrow(inv_cycle_tab)
 
-tab2_kab(park)
+if(!park %in% c("ROVA", "SARA", "ACAD")){
+  tab2_kab(park)
+} else if(park %in% c("ROVA", "SARA")){
+  tab2_kab(park, 1, 30, "table2a")
+  tab2_kab(park, 31, num_plots, "table2b")
+} else if(park %in% "ACAD"){
+  tab2_kab("ACAD", 1, 30, "table2a")
+  tab2_kab("ACAD", 31, 60, "table2b")
+  tab2_kab("ACAD", 61, 90, "table2c")
+  tab2_kab("ACAD", 91, 120, "table2d")
+  tab2_kab("ACAD", 121, 150, "table2e")
+  tab2_kab("ACAD", 151, num_plots, "table2f")
+}
 
 ```
 ```{r include = F, eval = T, results = 'hide'}
@@ -435,8 +465,83 @@ includeHTML("html_header.html")
 cat(cap_t1)
 ```
 
-```{r echo = F, eval = T, warning = F, message = F}
+```{r}
+tab1_eval <- ifelse(park %in% c("ACAD", "ROVA", "SARA"), FALSE, TRUE)
+tab1_evalb <- ifelse(park %in% c("ACAD", "ROVA", "SARA"), TRUE, FALSE)
+tab1_evalc <- ifelse(park %in% "ACAD", TRUE, FALSE)
+```
+
+```{r echo = F, eval = tab1_eval, warning = F, message = F}
 includeHTML("table1.html")
+```
+
+```{r echo = F, eval = !tab1_eval, warning = F, message = F}
+includeHTML("table1a.html")
+```
+
+```{r results = 'asis', eval = tab1_evalb, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab1_evalb}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab1_evalb, warning = F, message = F}
+includeHTML("table1b.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab1_evalc, warning = F, message = F}
+includeHTML("table1c.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab1_evalc, warning = F, message = F}
+includeHTML("table1d.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab1_evalc, warning = F, message = F}
+includeHTML("table1e.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab1_evalc}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab1_evalc, warning = F, message = F}
+includeHTML("table1f.html")
 ```
 
 <!-- Start of page 7 -->
@@ -450,9 +555,86 @@ includeHTML("html_header.html")
 cat(cap_t2)
 ```
 
-```{r echo = F, eval = T, warning = F, message = F}
+
+```{r}
+tab2_eval <- ifelse(park %in% c("ACAD", "ROVA", "SARA"), FALSE, TRUE)
+tab2_evalb <- ifelse(park %in% c("ACAD", "ROVA", "SARA"), TRUE, FALSE)
+tab2_evalc <- ifelse(park %in% "ACAD", TRUE, FALSE)
+```
+
+```{r echo = F, eval = tab2_eval, warning = F, message = F}
 includeHTML("table2.html")
 ```
+
+```{r echo = F, eval = !tab2_eval, warning = F, message = F}
+includeHTML("table2a.html")
+```
+
+```{r results = 'asis', eval = tab2_evalb, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab2_evalb}
+cat(cap_t2_cont)
+```
+
+```{r echo = F, eval = tab2_evalb, warning = F, message = F}
+includeHTML("table2b.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc}
+cat(cap_t1_cont)
+```
+
+```{r echo = F, eval = tab2_evalc, warning = F, message = F}
+includeHTML("table2c.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc}
+cat(cap_t2_cont)
+```
+
+```{r echo = F, eval = tab2_evalc, warning = F, message = F}
+includeHTML("table2d.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc}
+cat(cap_t2_cont)
+```
+
+```{r echo = F, eval = tab2_evalc, warning = F, message = F}
+includeHTML("table2e.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc, warning = F, message = F}
+cat("### {.page-break-before}", "\n\n")
+includeHTML("html_header.html")
+```
+
+```{r results = 'asis', eval = tab2_evalc}
+cat(cap_t2_cont)
+```
+
+```{r echo = F, eval = tab2_evalc, warning = F, message = F}
+includeHTML("table2f.html")
+```
+
 <br>
 
 <!-- Start of page 8 -->

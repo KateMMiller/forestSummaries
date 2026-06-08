@@ -11,7 +11,7 @@ library(sf)
 
 #importData()
 forestNETN::importCSV(path = "C:/Users/KMMiller/OneDrive - DOI/NETN/R_Dev/data/NETN_forest_baks/", 
-                      zip_name = "NETN_Forest_20260528.zip")
+                      zip_name = "NETN_Forest_20260605.zip")
 
 # Fix 2026 data issues until they're resolved in DB
 VIEWS_NETN$QuadSpecies_NETN$TSN[
@@ -25,17 +25,17 @@ VIEWS_NETN$QuadSpecies_NETN$ScientificName[
   VIEWS_NETN$QuadSpecies_NETN$SampleYear == 2026 &  
   VIEWS_NETN$QuadSpecies_NETN$ScientificName == "Rubus pensilvanicus"] <- "Rubus phoenicolasius"
 
-# VIEWS_NETN$MicroplotSaplings_NETN$ScientificName[
-#   VIEWS_NETN$MicroplotSaplings_NETN$Plot_Name == "ROVA-038" &
-#   VIEWS_NETN$MicroplotSaplings_NETN$SampleYear == 2026 &
-#   VIEWS_NETN$MicroplotSaplings_NETN$MicroplotCode == "B" &
-#   VIEWS_NETN$MicroplotSaplings_NETN$ScientificName == "Acer saccharinum"] <- "Acer saccharum"
+VIEWS_NETN$MicroplotSaplings_NETN$ScientificName[
+  VIEWS_NETN$MicroplotSaplings_NETN$Plot_Name == "ROVA-038" &
+  VIEWS_NETN$MicroplotSaplings_NETN$SampleYear == 2026 &
+  VIEWS_NETN$MicroplotSaplings_NETN$MicroplotCode == "B" &
+  VIEWS_NETN$MicroplotSaplings_NETN$ScientificName == "Acer saccharinum"] <- "Acer saccharum"
 # 
-# VIEWS_NETN$MicroplotSaplings_NETN$TSN[
-#   VIEWS_NETN$MicroplotSaplings_NETN$Plot_Name == "ROVA-038" &
-#     VIEWS_NETN$MicroplotSaplings_NETN$SampleYear == 2026 &
-#     VIEWS_NETN$MicroplotSaplings_NETN$MicroplotCode == "B" &
-#     VIEWS_NETN$MicroplotSaplings_NETN$TSN == 28757] <- 28731
+VIEWS_NETN$MicroplotSaplings_NETN$TSN[
+  VIEWS_NETN$MicroplotSaplings_NETN$Plot_Name == "ROVA-038" &
+    VIEWS_NETN$MicroplotSaplings_NETN$SampleYear == 2026 &
+    VIEWS_NETN$MicroplotSaplings_NETN$MicroplotCode == "B" &
+    VIEWS_NETN$MicroplotSaplings_NETN$TSN == 28757] <- 28731
 
 # Downgrade Fraxinus to subcanopy species
 VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"] <- TRUE
