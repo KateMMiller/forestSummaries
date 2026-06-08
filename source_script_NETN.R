@@ -9,33 +9,59 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
-importData()
+#importData()
+forestNETN::importCSV(path = "C:/Users/KMMiller/OneDrive - DOI/NETN/R_Dev/data/NETN_forest_baks/", 
+                      zip_name = "NETN_Forest_20260605.zip")
+
+# Fix 2026 data issues until they're resolved in DB
+VIEWS_NETN$QuadSpecies_NETN$TSN[
+  VIEWS_NETN$QuadSpecies_NETN$Plot_Name == "MORR-022" &
+  VIEWS_NETN$QuadSpecies_NETN$SampleYear == 2026 &  
+  VIEWS_NETN$QuadSpecies_NETN$TSN == 504874 &
+  VIEWS_NETN$QuadSpecies_NETN$ScientificName == "Rubus pensilvanicus"] <- 25017
+
+VIEWS_NETN$QuadSpecies_NETN$ScientificName[
+  VIEWS_NETN$QuadSpecies_NETN$Plot_Name == "MORR-022" &
+  VIEWS_NETN$QuadSpecies_NETN$SampleYear == 2026 &  
+  VIEWS_NETN$QuadSpecies_NETN$ScientificName == "Rubus pensilvanicus"] <- "Rubus phoenicolasius"
+
+VIEWS_NETN$MicroplotSaplings_NETN$ScientificName[
+  VIEWS_NETN$MicroplotSaplings_NETN$Plot_Name == "ROVA-038" &
+  VIEWS_NETN$MicroplotSaplings_NETN$SampleYear == 2026 &
+  VIEWS_NETN$MicroplotSaplings_NETN$MicroplotCode == "B" &
+  VIEWS_NETN$MicroplotSaplings_NETN$ScientificName == "Acer saccharinum"] <- "Acer saccharum"
+# 
+VIEWS_NETN$MicroplotSaplings_NETN$TSN[
+  VIEWS_NETN$MicroplotSaplings_NETN$Plot_Name == "ROVA-038" &
+    VIEWS_NETN$MicroplotSaplings_NETN$SampleYear == 2026 &
+    VIEWS_NETN$MicroplotSaplings_NETN$MicroplotCode == "B" &
+    VIEWS_NETN$MicroplotSaplings_NETN$TSN == 28757] <- 28731
 
 # Downgrade Fraxinus to subcanopy species
 VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"] <- TRUE
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE
 
-# Set parameters
-park = 'MORR'#'ACAD'
-from = 2006
-from_4yr = 2022 #2021
-to = 2024
-report_year = 2024 # used for file path and output naming, in case differs from last year sampled
-QAQC = FALSE
-locType = 'all'
-cycle_latest = 5
+# # Set parameters
+# park = 'MORR'#'ACAD'
+# from = 2006
+# from_4yr = 2023 
+# to = 2026
+# report_year = 2026 # used for file path and output naming, in case differs from last year sampled
+# QAQC = FALSE
+# locType = 'all'
+# cycle_latest = 5
 park_crs = ifelse(park %in% c("ACAD", "MIMA"), 26919, 26918)
 num_plots = case_when(park == "ACAD" ~ 176,
                       park == "MABI" ~ 24,
                       park == "MIMA" ~ 20,
-                      park == "MORR" ~ 28,
+                      park == "MORR" ~ 29, # including plot 14 in all but regen_debt_metrics_NETN and tree_regen_stem_changes
                       park == "ROVA" ~ 40,
                       park == "SAGA" ~ 21,
                       park == "SARA" ~ 32,
                       park == "WEFA" ~ 10)
 plot_size = ifelse(park == "ACAD", 225, 400)
-from_prev = 2016
-to_prev = 2019
+# from_prev = 2023
+# to_prev = 2026
 
 args_all = list(park = park, from = from, to = to, QAQC = QAQC, locType = locType)
 args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = locType)

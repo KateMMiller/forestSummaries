@@ -1,0 +1,296 @@
+/* QAQC report stylesheet */
+
+/*.tabset{
+  color:black;
+  font-size: 16px;
+} */
+
+/* Body and headers */
+.main-container{
+  max-width:624px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+body {
+  font-family: "Arial", sans-serif;
+  font-size: 10px;
+  color: black;
+  margin:0 0 0 5px;
+  /*width:1200px;*/
+  position:relative;  
+}
+
+element.style{
+  zoom: 150%;
+}
+/*
+img {
+  margin-top:0;
+  padding-top:0;
+  margin-left:0;
+  padding-left:0;
+}*/
+
+p {
+  font-family: "Arial", Arial, sans-serif;
+  font-size: 10px;
+}
+
+.indent {
+  text-indent: 20px;
+}
+
+h4, .h4, h5, .h5, h6, .h6 {
+margin-top: 0; 
+margin-bottom: 0;
+}
+
+
+
+h1 {
+  font-family: "Arial", Arial,sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: black;
+  padding: 10px 0;
+  /*margin: 20px 0;*/
+}
+
+h2 {
+  font-family: "Arial",Arial,sans-serif;
+  font-size: 16px;
+  /*font-weight: bold;*/
+  color: black;
+  margin: 18px 0 18px 0;
+}
+
+
+h3 {
+  font-family: "Arial",Arial,sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  color: black;
+}
+
+/* Figs and legend title */
+h4 {
+  font-family: "Arial",Arial,sans-serif;
+  font-size:12px;
+  font-weight: bold;
+  color: black;
+  padding: 0;
+  margin: 12px 0 4px 0;
+  /*color: #555;*/
+}
+
+/* Header font */
+h5 {
+  font-family: "Arial",Arial,sans-serif;
+  text-align:left;
+  font-size:10px;
+  padding-bottom:0;
+  margin-bottom:0;
+}
+
+/* Banner */
+.banner{
+  background: black !important; 
+  height: 85px;
+  position:relative;
+  /*width: auto;*/
+  max-width: 624px;
+  padding: 2px 2px 2px 2px;
+  /*margin-left: auto;
+  margin-right: auto;*/
+  margin: 0 auto;
+}
+
+
+.header{
+ height: 80px;
+ width: 624px;
+ margin-left:auto;
+ margin-right:auto;
+ text-align: left;
+ color: white;
+ font-size: 14px;
+ padding: 0px 2px 0px 2px;
+ /*margin:4px 5px;*/
+ font-family: "Arial",Arial,sans-serif;
+ /*position: fixed;*/
+ }
+
+#col-left-header{
+  float:left;
+  text-align:left;
+  width: 60%;
+  padding: 0 5px 0 5px;
+}
+
+#col-right-header{
+  float:right;
+  text-align:left;
+  margin-left:0;
+  width: 10%;
+  padding: 5px 5px 5px 0;
+}
+
+#col-middle-header{
+  float:right;
+  text-align:left;
+  margin-right:0;
+  width: 30%;
+  /*padding:5px 0; */
+  padding: 0px 5px 0px 5px;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.header img{
+  display: inline-block;
+  height: 70px;
+  position: relative;
+  padding-right: 4px;
+}
+
+.header h5 {
+  /*position: relative;*/
+  text-align: left;
+  color: white !important;
+  font-size: 10px;
+  padding: 0 0 0 0;
+  margin: 5px 5px 0 5px; 
+  font-family: "Arial",Arial,sans-serif;
+}
+
+.double-column {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 100%;
+  flex: 2;
+}
+
+/*
+.caption {
+  font-size: 10px;
+  font-family: "Arial", Arial, sans-serif;
+}
+*/
+table{
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 0 0 4px 0;
+  margin: 0 0 10px 0;
+  font-size:9px;
+  font-family: "Arial",Arial,sans-serif;
+  /*page-break-inside: avoid;*/
+}
+table th tr td .quads{
+  font-size:9px;
+}
+
+.lighttable-minimal thead tr:last-child th{
+  border-bottom: 1px solid black;
+}
+
+table th {
+  border: 1px solid black;
+  border-bottom: 1px solid black;
+  border-top: 1px solid black;
+  border-right: 1px solid black;
+  border-left: 1px solid black;
+  font-weight: bold;
+  /*border-spacing: 2px 5px;*/
+  padding: 2px 10px 2px 10px;
+  font-family: "Arial", Arial, sans-serif;
+  font-size: 9px;
+}
+
+table tf {
+  padding-bottom: 5px;
+}
+
+table tr td {
+  border: 1px solid black;
+  border-bottom: 1px solid black;
+  border-top: 1px solid black;
+  border-right: 1px solid black;
+  border-left: 1px solid black;
+  /*border-spacing: 2px 5px; */
+  font-family: "Arial", Arial, sans-serif;
+  font-size: 9px;
+  overflow: auto; 
+}
+
+table td{
+  /*border-spacing: 2px 5px;*/
+  padding: 2px 5px;
+  margin: 0 0 2px 0;
+  font-family: "Arial", Arial, sans-serif;
+  font-size: 9px;
+  overflow: auto; 
+}
+
+.table-striped tr:nth-child(even){
+  background-color: #ECECEC;
+}
+
+/*tr:nth-child(even) {
+  background-color: #ECECEC;
+}*/
+
+@page {
+  border-bottom: 1px solid black;
+  padding: 0 0 0 0;
+  margin-top: 4px;
+  margin-bottom: 14px;
+  font-size: 10px;
+/*  margin-right: 4px;
+  margin-left: 4px; */
+  
+  @bottom-left{
+     content: "May 2026";
+  } 
+  
+  @bottom-right{
+    content: "Page " counter(page) ' of ' counter(pages);
+  }
+}
+
+/* left page */ 
+ .shorttitle { 
+   position: running(runningTitle);
+ } 
+  
+@media print { 
+  -webkit-print-color-adjust: exact !important;
+  /*body{
+    zoom:150%;
+  }*/
+  table{
+    zoom:80%;
+  }
+} 
+
+
+
+  
+/* @page :left { */
+/*@page{
+   @top-left { 
+     content: element(runningTitle); 
+     width: 624px; 
+     font-family: "Arial",Arial,sans-serif;
+     font-size:10px;
+     font-weight: bold;
+     color: black;
+     padding: 0;
+     margin: 0 0 4px 0;
+   } 
+ }*/

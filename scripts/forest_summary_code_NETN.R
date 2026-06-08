@@ -29,22 +29,20 @@ reg <- do.call(joinRegenData,
                         canopyForm = 'canopy', units = 'sq.m'))
 
 
-reg_cycle_table <- reg %>% group_by(Plot_Name, cycle) %>% 
-                           summarize(seed_den = round(sum(seed_den, na.rm = TRUE), 2),
+reg_cycle_table1 <- reg |>  summarize(seed_den = round(sum(seed_den, na.rm = TRUE), 2),
                                      sap_den = round(sum(sap_den, na.rm = TRUE), 2),
-                                     stock = round(sum(stock, na.rm = TRUE), 2), 
-                                     .groups = 'drop') %>% 
-                           left_join(plotevs %>% 
-                                       select(Plot_Name, cycle, Plot = PlotCode, Panel = PanelCode),
-                                     ., by = c("Plot_Name", "cycle"))
+                                     stock = round(sum(stock, na.rm = TRUE), 2),
+                                     .by = c(Plot_Name, cycle)) 
+
+reg_cycle_table <- left_join(plotevs |> select(Plot_Name, cycle, Plot = PlotCode, Panel = PanelCode),
+                             reg_cycle_table1, 
+                             by = c("Plot_Name", "cycle"))
 
 reg_cols <- c("seed_den", "sap_den", "stock")
 reg_cycle_table[, reg_cols][is.na(reg_cycle_table[, reg_cols])] <- 0 
 
 reg_cycle_wide <- reg_cycle_table %>% 
   pivot_wider(names_from = cycle, values_from = c(seed_den, sap_den, stock))
-
-head(reg_cycle_wide)
 
 write.csv(reg_cycle_wide, 
           paste0(new_path, "tables/", "Table_1_", park, "_regen_by_cycle.csv"), row.names = FALSE)
@@ -65,17 +63,20 @@ reg_cycle <- reg_cycle2 %>% mutate(MIN = min(across(starts_with("cycle")), na.rm
 
 #max(reg_cycle[,4:ncol(reg_cycle)])
 
-reg_no <- reg_cycle|> rowwise() |> mutate(tot_reg = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
+reg_no <- reg_cycle |> rowwise() |> mutate(tot_reg = sum(c_across((starts_with("cycle"))), na.rm = T)) |> 
   filter(tot_reg == 0)
 
-no_reg <- reg_no$Plot_Name
+reg_no <- reg_cycle |> mutate(tot_reg = sum(c_across(starts_with("cycle"))), .by = "Plot_Name") |> 
+  filter(tot_reg == 0)
 
-reg_cycle <- reg_cycle|> filter(!(Plot_Name %in% no_reg)) #check total # of plots in all dfs is right
+reg_cycle <- if(nrow(reg_no) > 0){
+  reg_cycle |> filter(!(Plot_Name %in% reg_no$Plot_Name)) #check total # of plots in all dfs is right
+} else {reg_cycle}
 
 reg_cycle_incom <- reg_cycle %>% filter_at(vars(last_col()), all_vars(is.na(.))) %>% select(-tail(names(.), 1))
 reg_cycle_com <- reg_cycle %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
 
-if(nrow(reg_no) >0){
+if(nrow(reg_no) > 0){
   write_to_shp(reg_no, 
                shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_cycle_no_reg", ".shp" ))
 }
@@ -125,7 +126,6 @@ if(nrow(size_no) >0){
                shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_size_class_cycle", cycle_latest, "_no_reg", ".shp" ))
 }
 
-
 write_to_shp(reg_size_4yr, 
              shp_name = paste0(new_path, "shapefiles/", park, 
                                "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
@@ -170,19 +170,20 @@ netn1_labs = c("1" = "Cycle 1: 2006 & 2008",
                "2" = "Cycle 2: 2010 & 2012", 
                "3" = "Cycle 3: 2014 & 2016", 
                "4" = "Cycle 4: 2018 & 2022",
-               "5" = "Cycle 5: 2023")
+               "5" = "Cycle 5: 2023 & 2025")
 # netn2: MORR, ROVA, WEFA
-netn2_labs = c("1" = "Cycle 1: 2007 \u2013 2009",
-               "2" = "Cycle 2: 2011 \u2013 2013", 
-               "3" = "Cycle 3: 2015 \u2013 2017", 
-               "4" = "Cycle 4: 2019 \u2013 2022",
-               "5" = "Cycle 5: 2024") 
+netn2_labs = c("1" = "Cycle 1: 2007 & 2009",
+               "2" = "Cycle 2: 2011 & 2013", 
+               "3" = "Cycle 3: 2015 & 2017", 
+               "4" = "Cycle 4: 2019 & 2022",
+               "5" = "Cycle 5: 2024 & 2026") 
 
 ACAD_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
                "2" = "Cycle 2: 2010 \u2013 2013", 
                "3" = "Cycle 3: 2014 \u2013 2017", 
                "4" = "Cycle 4: 2018 \u2013 2021",
-               "5" = "Cycle 5: 2022 \u2013 2024")
+               "5" = "Cycle 5: 2022 \u2013 2025",
+               "6" = "Cycle 6: 2026")
 
 cycle_labs <- switch(park,
                      "SARA" = netn1_labs, 
@@ -217,6 +218,9 @@ reg_trend_plot <-
 reg_trend_plot
   
 ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"),
+       height = 5, width = 7.5, units = 'in')
+
+ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.png"),
        height = 5, width = 7.5, units = 'in')
 
 #---- Figure 3B Diam. dist. trends by size class ----
@@ -319,6 +323,9 @@ dbh_trend_plot <-
 dbh_trend_plot
 
 ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
+       height = 4.6, width = 7.8, units = 'in')
+
+ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.png"),
        height = 4.6, width = 7.8, units = 'in')
 
 #---- Map 3 Regen by composition ----
@@ -513,15 +520,12 @@ trees_park <- do.call(joinTreeData, args = list(park, from_4yr, to = to, status 
 dom_trspp <- trees_park %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>%
   group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T)) %>% arrange(desc(ba))
 
-#view(dom_trspp)
-###
-
 tree_grps <- left_join(tree_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
   filter(!ScientificName %in% c("None present", "Not Sampled"))
 
 if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
   warning("There's at least 1 NA in tree_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
-head(tree_grps)
+
 #Park specific exceptions to default groupings
 if(park == "MORR"){
   tree_grps <- tree_grps %>% 
@@ -751,7 +755,6 @@ if(nrow(cancov_cycle_incom) >0){
 }
 
 write_to_shp(cancov_cycle_com, shp_name = paste0(new_path, "shapefiles/", park, "_canopy_cover.shp"))
-
 
 #---- Map 9 Invasive % Cover by Cycle ----
 invcov <- do.call(joinQuadSpecies, args = c(args_all, speciesType = 'invasive')) %>% 
@@ -1082,13 +1085,13 @@ inv_plots <- do.call(sumSpeciesList, args = c(args_all, speciesType = "invasive"
 
 inv_plots_wide <- inv_plots %>% pivot_wider(names_from = cycle, 
                                             values_from = c(inv_cov, numspp)) %>% 
-  select(-Plot_Name) %>% mutate(PanelCode = ifelse(PanelCode %in% c(1:2), 1, 2))
+  select(-Plot_Name) #%>% mutate(PanelCode = ifelse(PanelCode %in% c(1:2), 1, 2))
 
 write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park, 
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
 # Table 3 Exotic species by number of plots cycle -------------------------
-#for 2024 including all exotic species found in plots instead of only invasives
+# for 2024 including all exotic species found in plots instead of only invasives, except for MORR
 inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% 
   group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
@@ -1144,10 +1147,14 @@ colSums(vincetoxicum[,-1])
 inv_spp2 <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName, InvasiveNETN),
                      by = "ScientificName") %>% select(ScientificName, CommonName, everything())
 
-inv_spp <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
+inv_spp3 <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
                          mutate(InvasiveNETN = case_when(InvasiveNETN == 'TRUE' ~ 'Yes',
                                                          InvasiveNETN =='FALSE' ~ 'No')) %>% 
                          relocate(InvasiveNETN, .after = CommonName) |> arrange(ScientificName)
+
+inv_spp <- if(park == "MORR"){
+  inv_spp3 |> filter(InvasiveNETN == "Yes")
+  } else {inv_spp3}
 
 write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
