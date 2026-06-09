@@ -45,7 +45,7 @@ library(vegan)
 # assign params to global env. for source files to find. Makes iterating easier.
 park <<- params$park #For running 'generate_all_NETN_reports.R'
 report_year <- params$report_year
-path <<- paste0('./output/', report_year, "/NETN/")#'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/NETN/' #ces path
+path <<- paste0('./output/', report_year, "/NETN/")
 
 # output files go here
 netn_names <<- read.csv("NETN_MetaData.csv")
@@ -114,13 +114,15 @@ if(park == "MORR"){"Note that Plot 14 and 25 are in a deer exclosure established
 cap_t2_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2 (cont.).</b> Average % cover and number of invasive species detected in each plot by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", " Plots with at least 10% average cover or 4 or more invasive species present are in yellow. ", 
 if(park == "MORR"){"Note that Plot 14 and 25 are in a deer exclosure established in 2007."}, "</p>")
 
-cap_t3 <- if(park == "MORR"){
+cap_t3 <- if(park %in% "MORR"){
     paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", "Priority invasive species are those that capable of dominating Eastern US forest habitats. Note that Plot 14 and 25 are in a deer exclosure, and Plot 14 was not part of the original sample design. ", paste0(cycle_labs, collapse = "; "), "</p>")
+} else if(park %in% "ROVA"){
+    paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where priority invasive species were detected. ", "Priority invasive species are those that capable of dominating Eastern US forest habitats.", paste0(cycle_labs, collapse = "; "), "</p>")
 } else {
   paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where exotic species were detected. ", paste0(cycle_labs, collapse = "; "), ".  Priority invasive species capable of dominating Eastern US forest habitats are highlighed in yellow. ", "</p>")
   }
 
-cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.",  "</p>")
+cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.", if(park == "ROVA"){"Note that emerald ash borer, hemlock woolly adelgid, and elongate hemlock scale are established throughout the forest and not considered early detection."}, "</p>")
 
 cap_t5 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 5.</b> List of tree species included in Maps 3 and 4 and how each was displayed.", "</p>")
 
@@ -252,7 +254,7 @@ inv_spp <- if(park == "MORR"){
 }
 
 tab3 <- 
-  if(park == "MORR"){
+  if(park %in% c("MORR", "ROVA")){
   kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
         table.attr = "style='width:93%;height:93%;'") %>% #, caption = cap_t3, title = NULL) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',

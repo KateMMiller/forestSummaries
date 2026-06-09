@@ -1152,7 +1152,7 @@ inv_spp3 <- inv_spp2 %>%  filter(ScientificName != 'None present') %>%
                                                          InvasiveNETN =='FALSE' ~ 'No')) %>% 
                          relocate(InvasiveNETN, .after = CommonName) |> arrange(ScientificName)
 
-inv_spp <- if(park == "MORR"){
+inv_spp <- if(park %in% c("MORR", "ROVA")){ # too many species to include all
   inv_spp3 |> filter(InvasiveNETN == "Yes")
   } else {inv_spp3}
 
@@ -1228,6 +1228,7 @@ ised_spp <- left_join(ised_join,
                       prepTaxa() |> select(ScientificName, CommonName, Tree, Shrub, Vine, Herbaceous, Graminoid),
                       by = "ScientificName") |> 
   mutate(type = case_when(Tree == 1 ~ 'tree', 
+                          Vine == 1 ~ 'vine',
                           Shrub == 1 ~ 'shrub',
                           Vine == 1 ~ 'shrub',
                           Graminoid == 1 ~ 'graminoid',
@@ -1252,11 +1253,17 @@ ed_all <-
     ed_all <- rbind(ised_spp, pest_eds2)
   } else {ised_spp}
 
-ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) |> 
+ed_all2 <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) |> 
   distinct() # was getting duplicates if pest was recorded as a condition and in a note
 
-write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
+ed_all2$type[ed_all2$ScientificName == "Rhamnus cathartica"] <- "tree/shrub"
 
+
+ed_all_final <- if(park == "ROVA"){
+  ed_all2 |> filter(!CommonName %in% c("hemlock woolly adelgid", "elongate hemlock scale", "emerald ash borer"))
+  } else {ed_all_final} # EAB, EHS, and HWA aren't aren't ED in ROVA any more
+
+write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
 
 # Table 5: Tree species included in Map 3+4 -------------------------------
 
