@@ -1,0 +1,9 @@
+ParkCode,ShortName,LongName_title,LongName,Network,Network_long,TPlotNum,TPlotSize,SapPlotNum,SapPlotSize,SeedPlotNum,SeedPlotSize,ShrubPlotNum,ShrubPlotSize,VPlotNum,VPlotSize,HPlotNum,HPlotSize
+ACAD,Acadia,Acadia National Park,Acadia National Park,NETN,Northeast Temperate Network,1,225,3,12.56,3,12.56,3,12.56,1,225,8,1
+MABI,Marsh-Billings-Rockefeller,Marsh-Billings-Rockefeller <br> National Historical Park,Marsh-Billings-Rockefeller National Historical Park,NETN,Northeast Temperate Network,1,400,3,12.56,3,12.56,3,12.56,1,400,8,1
+MIMA,Minute Man,Minute Man National Historical Park,Minute Man National Historical Park,NETN,Northeast Temperate Network,1,400,3,12.56,3,12.56,3,12.56,1,400,8,1
+MORR,Morristown,Morristown National Historical Park,Morristown National Historical Park,NETN,Northeast Temperate Network,1,400,3,12.56,3,12.56,3,12.56,1,400,8,1
+ROVA,Roosevelt-Vanderbilt,Roosevelt-Vanderbilt National Historic Sites,Roosevelt-Vanderbilt National Historic Sites,NETN,Northeast Temperate Network,1,400,3,12.56,3,12.56,3,12.56,1,400,8,1
+SAGA,Saint-Gaudens,Saint-Gaudens National Historical Park,Saint-Gaudens National Historical Park,NETN,Northeast Temperate Network,1,400,3,12.56,3,12.56,3,12.56,1,400,8,1
+SARA,Saratoga,Saratoga National Historical Park,Saratoga National Historical Park,NETN,Northeast Temperate Network,1,400,3,12.56,3,12.56,3,12.56,1,400,8,1
+WEFA,Weir Farm,Weir Farm National Historical Park,Weir Farm National Historical Park,NETN,Northeast Temperate Network,1,400,3,12.56,3,12.56,3,12.56,1,400,8,1

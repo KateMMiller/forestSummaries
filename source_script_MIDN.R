@@ -6,40 +6,42 @@
 # Note that the stocking index calculated in both the summary code and regen debt code is on the 
 # McWilliams 100 point scale, not the 1m2 scale that MIDN used to use.
 
+# Make sure packages are updated
+#devtools::install_github("KateMMiller/forestMIDN")
+#devtools::install_github("KateMMiller/forestTrends")
+
 # Imports/Libraries
 library(forestMIDN)
 library(forestTrends)
 library(tidyverse)
 library(sf)
 
+# report_year = 2024 # only here for testing. Defined in MIDN_figures_and_tables.RMD params.
+if(!exists("path")){path = paste0('./output/', report_year, "/MIDN/")} #general path that should work for everyone
 
-#if(!exists("path")){path = 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'}
-#Kate's path: C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'
-
-#park = "FRSP"
-if(!exists("path")){path = 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/'}
-
+# Make sure local copy of DB is current or connect to server
 importData()
 
-
 # assign params to global env. for source files to find. Makes iterating easier.
-#temp: so can run individual parks w/ .rmd file
-# park <<- 'GETT'
+# temp: so can run individual parks w/ .rmd file
+##Comment out before running for all parks##
+#assign params to global env. for source files to find. Makes iterating easier.
+#
 # midn_names <- read.csv("MIDN_MetaData.csv")
 # midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
-# #path <<- 'C:/01_NETN/Forest_Health/Data_Summaries/2024 Data Summaries/MIDN/'
+# park <<- "VAFO"
 # from <<- as.numeric(midn_params$from[midn_params$park == park])
 # from_4yr <<- as.numeric(midn_params$from_4yr[midn_params$park == park])
 # to <<- as.numeric(midn_params$to[midn_params$park == park])
 # cycle_latest <<- as.numeric(midn_params$cycle_latest[midn_params$park == park])
-# from_prev <<- as.numeric(midn_params$from_prev[midn_params$park == park])
-# to_prev <<- as.numeric(midn_params$to_prev[midn_params$park == park])
+# 
 # QAQC <<- FALSE
 # locType <<- 'VS'
-# 
+# #+++ NOTE: IF GET add_header_above error, need to update cycle_latest in MIDN_params.csv  +++
 # park_long <- midn_names$LongName[midn_names$ParkCode == park]
 # park_title <- midn_names$LongName_title[midn_names$ParkCode == park]
 # network_long <- midn_names$Network_long[midn_names$ParkCode == park]
+# report_year <- 2024
 
 
 
@@ -51,13 +53,13 @@ park_crs = ifelse(park %in% c("APCO", "BOWA"), 26917, 26918)
 num_plots = case_when(park == "APCO" ~ 28,
                       park == "ASIS" ~ 24, # Will be 24
                       park == "BOWA" ~ 8,
-                      park == "COLO" ~ 48,
+                      park == "COLO" ~ 47, # Plot 380 has not been sampled since 2014. Change to 48, if re sampled?
                       park == "FRSP" ~ 104,
                       park == "GETT" ~ 33,
                       park == "GEWA" ~ 8,
                       park == "HOFU" ~ 16,
                       park == "PETE" ~ 52,
-                      park == "RICH" ~ 31,
+                      park == "RICH" ~ 31, #Should be 32, but plot 219 wasn't sampled in 2021. Plot count was already adjusted by KMM
                       park == "SAHI" ~ 4,
                       park == "THST" ~ 8,
                       park == "VAFO" ~ 28
@@ -72,12 +74,16 @@ args_vs = list(park = park, from = from, to = to, QAQC = QAQC, locType = "VS")
 parks <- c("APCO", "ASIS", "BOWA", "COLO", "FRSP", "GETT", "GEWA", 
            "HOFU", "PETE", "RICH", "SAHI", "THST", "VAFO")
 
+if(!dir.exists(paste0("./output/"))){dir.create(paste0("./output/"))}
+if(!dir.exists(paste0("./output/", report_year))){dir.create(paste0("./output/", report_year, "/"))}
+if(!dir.exists(paste0("./output/", report_year, "/MIDN/"))){dir.create(paste0("./output/", report_year, "/MIDN/"))}
+
 invisible(lapply(parks, function(x) {
   if(!dir.exists(paste0(path, x))){dir.create(paste0(path, x))}
 })
 )
 
-new_path = paste0(path, park, "/", as.character(to), "/")
+new_path = paste0(path, park, "/")
 
 if(!dir.exists(new_path)){dir.create(new_path)}
 
@@ -95,3 +101,4 @@ trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 # source('./scripts/forest_summary_code_MIDN.R')
 # source('./scripts/regen_debt_metrics_MIDN.R')
 # source('./scripts/tree_regen_stem_changes_by_species_loess_MIDN.R')
+

@@ -14,6 +14,8 @@ plotevs2 <- plotevs1 |> group_by(ParkUnit, PanelCode, Plot_Name, IsQAQC) |>
 evs_4yr <- plotevs2$EventID # EventIDs that represent the most recent visit to each plot
 plotevs <- plotevs2 |> select(Plot_Name, SampleYear)
 
+
+# Figure 2: DBI -----------------------------------------------------------
 # Deer Browse Index
 dbi <- joinStandData(park = park, from = from_4yr, to = to) |> 
   filter(EventID %in% evs_4yr) |> 
@@ -64,8 +66,9 @@ ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac))
 # dbi_plot
 # dev.off()
 
-figpath <- paste0(path, park, "/", to, '/figures/')
+figpath <- paste0(path, park, "/figures/")
 ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.svg"), height = 6.15, width = 8, units = 'in')
+ggsave(paste0(figpath, "Figure_2_", park, "_DBI_by_cycle.png"), height = 6.15, width = 8, units = 'in', dpi = 600)
 
 # Regen densities
 # reg is all spp. reg$NatCan is used for metrics that only include native canopy forming spp.
@@ -193,17 +196,23 @@ sor_fun <- function(df){
   return(sor)
 }
 
-sor_sap <- comb %>% filter(strata %in% c("tree", "sapling")) %>% 
-  group_by(Plot_Name) %>% nest() %>% 
-  mutate(sap_sor = purrr::map(data, sor_fun)) %>%
-  unnest(cols = c(sap_sor)) %>% select(Plot_Name, sap_sor) %>% data.frame() 
+plot_list <- sort(unique(comb$Plot_Name))
+
+sor_sap <- purrr::map(plot_list, function(plt){
+  df <- comb |> 
+    filter(Plot_Name %in% plot_list[plt]) |> 
+    filter(strata %in% c("tree", "sapling")) 
+  sor_sap <- data.frame(sap_sor = sor_fun(df))
+}) |> list_rbind()
 
 sor_sap_mean <- mean(sor_sap$sap_sor, na.rm = T)
 
-sor_seed <- comb %>% filter(strata %in% c("tree", "seedling")) %>% 
-  group_by(Plot_Name) %>% nest() %>% 
-  mutate(seed_sor = purrr::map(data, sor_fun)) %>% 
-  unnest(cols = c(seed_sor)) %>% select(Plot_Name, seed_sor) %>% data.frame()
+sor_seed <- purrr::map(plot_list, function(plt){
+  df <- comb |> 
+    filter(Plot_Name %in% plot_list[plt]) |> 
+    filter(strata %in% c("tree", "seedling")) 
+  sor_seed <- data.frame(seed_sor = sor_fun(df))
+}) |> list_rbind()
 
 sor_seed_mean <- mean(sor_seed$seed_sor, na.rm = T)
 
@@ -348,9 +357,8 @@ results_plot <-
 
 results_plot
 
-figpath2 <- paste0(path, park, "/", to, '/figures/') # not hard coded
-
-ggsave(paste0(figpath2, "Figure_1_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+ggsave(paste0(figpath, "Figure_1_", park, "_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+ggsave(paste0(figpath, "Figure_1_", park, "_Regen_Debt_table.png"), height = 6, width = 4.5, units = 'in', dpi = 600)
 
 debt_final <- debt_final |> mutate(park = park)
 
