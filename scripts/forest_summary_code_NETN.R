@@ -1261,13 +1261,13 @@ ed_all2$type[ed_all2$ScientificName == "Rhamnus cathartica"] <- "tree/shrub"
 
 ed_all_final <- if(park == "ROVA"){
   ed_all2 |> filter(!CommonName %in% c("hemlock woolly adelgid", "elongate hemlock scale", "emerald ash borer"))
-  } else {ed_all_final} # EAB, EHS, and HWA aren't aren't ED in ROVA any more
+  } else {ed_all2} # EAB, EHS, and HWA aren't aren't ED in ROVA any more
 
 write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
 
 # Table 5: Tree species included in Map 3+4 -------------------------------
 
-grp_spp <- full_join(reg_spp,tree_spp, by = "ScientificName") %>% arrange(ScientificName)
+grp_spp <- full_join(reg_spp, tree_spp, by = "ScientificName") %>% arrange(ScientificName)
 write.csv(grp_spp, paste0(new_path, "tables/", "Table_5_", park, "_tree_species_in_Map3_4.csv"),
           row.names = FALSE)
 

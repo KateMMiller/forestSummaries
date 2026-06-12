@@ -9,34 +9,12 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
-#importData()
-forestNETN::importCSV(path = "C:/Users/KMMiller/OneDrive - DOI/NETN/R_Dev/data/NETN_forest_baks/", 
-                      zip_name = "NETN_Forest_20260605.zip")
+#if(!exists("VIEWS_NETN")){
+  importData() 
+  # importCSV(path = "../data/", zip_name = 'NETN_Forest_20250926.zip') #DP from 2025
+#  }
 
 # Fix 2026 data issues until they're resolved in DB
-VIEWS_NETN$QuadSpecies_NETN$TSN[
-  VIEWS_NETN$QuadSpecies_NETN$Plot_Name == "MORR-022" &
-  VIEWS_NETN$QuadSpecies_NETN$SampleYear == 2026 &  
-  VIEWS_NETN$QuadSpecies_NETN$TSN == 504874 &
-  VIEWS_NETN$QuadSpecies_NETN$ScientificName == "Rubus pensilvanicus"] <- 25017
-
-VIEWS_NETN$QuadSpecies_NETN$ScientificName[
-  VIEWS_NETN$QuadSpecies_NETN$Plot_Name == "MORR-022" &
-  VIEWS_NETN$QuadSpecies_NETN$SampleYear == 2026 &  
-  VIEWS_NETN$QuadSpecies_NETN$ScientificName == "Rubus pensilvanicus"] <- "Rubus phoenicolasius"
-
-VIEWS_NETN$MicroplotSaplings_NETN$ScientificName[
-  VIEWS_NETN$MicroplotSaplings_NETN$Plot_Name == "ROVA-038" &
-  VIEWS_NETN$MicroplotSaplings_NETN$SampleYear == 2026 &
-  VIEWS_NETN$MicroplotSaplings_NETN$MicroplotCode == "B" &
-  VIEWS_NETN$MicroplotSaplings_NETN$ScientificName == "Acer saccharinum"] <- "Acer saccharum"
-# 
-VIEWS_NETN$MicroplotSaplings_NETN$TSN[
-  VIEWS_NETN$MicroplotSaplings_NETN$Plot_Name == "ROVA-038" &
-    VIEWS_NETN$MicroplotSaplings_NETN$SampleYear == 2026 &
-    VIEWS_NETN$MicroplotSaplings_NETN$MicroplotCode == "B" &
-    VIEWS_NETN$MicroplotSaplings_NETN$TSN == 28757] <- 28731
-
 # Downgrade Fraxinus to subcanopy species
 VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"] <- TRUE
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE

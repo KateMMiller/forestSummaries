@@ -38,7 +38,8 @@ mean_dbi # MORR: 4.0
 # dbi_prev # MORR: 4.179 
 
 # DBI distribution plot
-dbi_all <- joinStandData(park = park, from = from, to = to, locType = "VS") |>  
+# drop cycle 1, because didn't start sampling DBI until 2009.
+dbi_all <- joinStandData(park = park, from = 2010, to = to, locType = "VS") |>
   filter(IsStuntedWoodland == FALSE)  |>
   select(Plot_Name, cycle, dbi = Deer_Browse_Index) |> filter(!Plot_Name %in% "COLO-380") 
 

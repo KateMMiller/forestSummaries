@@ -8,8 +8,8 @@ output:
     self_contained: true
     
 params:
-  park: 'ROVA'
-  report_year: 2026
+  park: 'SARA'
+  report_year: 2025
 ---
 
 ```{r eval = F, include = F}
@@ -359,7 +359,7 @@ include_graphics(paste0(new_path, "figures/", "Figure_2_", park, "_DBI_by_cycle.
 
 ```{r results = 'asis'}
 cat(paste0("<p><b>Figure 2.</b> Deer browse impacts by cycle in ", park_long, " (", park, "). ",
-    paste(cycle_labs, collapse = "; "), ". ",
+    paste(cycle_labs, collapse = "; "), ". Note that this index was not collected in cycle 1.",
     sep = ""))
 
 ```

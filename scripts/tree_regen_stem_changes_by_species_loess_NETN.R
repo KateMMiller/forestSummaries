@@ -76,41 +76,40 @@ if(park == "SARA"){
     mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
                                ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
-                               ScientificName == "Populus" ~ "POPSPP",
-                               ScientificName == "Populus grandidentata" ~ "POPSPP",
-                               ScientificName == "Populus tremuloides" ~ "POPSPP",
+                               ScientificName %in% c("Populus", "Populus grandidentata", 
+                                                     "Populus tremuloides") ~ "Populus spp. (aspen)",
                                TRUE ~ sppcode)) |> 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
-                               ScientificName == "Populus" ~ "Populus spp. (aspen)",
-                               ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
-                               ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+                               ScientificName ==  ~ "Populus spp. (aspen)",
+                               ScientificName %in% c("Populus", "Populus grandidentata", 
+                                                     "Populus tremuloides") ~ "Populus spp. (aspen)",
                                TRUE ~ spp_grp))
 }
 if(park == "MABI"){
   tree_grps <- tree_grps |> 
     mutate(sppcode = case_when(ScientificName == "Acer saccharum" ~ "ACESAC3",
                                ScientificName == "Betula lenta" ~ "BETSPP",
-                               ScientificName == "Larix decidua" ~ "EXOPLA",
-                               ScientificName == "Picea abies" ~ "EXOPLA",
-                               ScientificName == "Pinus sylvestris" ~ "EXOPLA",
+                               ScientificName %in% c("Larix decidua", "Picea abies", 
+                                                     "Pinus sylvestris") ~ "EXOPLA",
                                TRUE ~ sppcode)) |> 
     mutate(spp_grp = case_when(ScientificName == "Acer saccharum" ~ "Acer saccharum (sugar maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
-                               ScientificName == "Larix decidua" ~ "Exotic plantation spp.",
-                               ScientificName == "Picea abies" ~ "Exotic plantation spp.",
-                               ScientificName == "Pinus sylvestris" ~ "Exotic plantation spp.",
+                               ScientificName  %in% c("Larix decidua", "Picea abies", 
+                                                      "Pinus sylvestris") ~ "Exotic plantation spp.",
                                TRUE ~ spp_grp))
 } 
 if(park == "SAGA"){
   tree_grps <- tree_grps |> 
     mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
                                ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
                                TRUE ~ sppcode)) |> 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
                                TRUE ~ spp_grp))
 } 
@@ -118,43 +117,36 @@ if(park == "MIMA"){
   tree_grps <- tree_grps |> 
     mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
                                ScientificName == "Acer rubrum" ~ "ACESPP",
-                               ScientificName == "Cladrastis kentukea" ~ "OTHEXO",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Juniperus virginiana" ~ "SUBCAN",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
-                               ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
+                               ScientificName == "Pinus rigida" ~ "OTHNAT",
+                               ScientificName %in% c("Cladrastis kentukea", "Robinia pseudoacacia") ~ "OTHEXO",
                                TRUE ~ sppcode)) |> 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
-                               ScientificName == "Cladrastis kentukea" ~ "Other Exotic",
-                               ScientificName == "Juniperus virginiana" ~ "Other Native",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName == "Juniperus virginiana" ~ "Other native subcanopy spp.",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
-                               ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
+                               ScientificName == "Pinus rigida" ~ "Other native canopy spp.",
+                               ScientificName %in% c("Cladrastis kentukea", "Robinia pseudoacacia") ~ "Other exotic spp.",
                                TRUE ~ spp_grp))
 }
 if(park == "ACAD"){
   tree_grps <- tree_grps |> 
     mutate(sppcode = case_when(ScientificName == "Abies balsamea" ~ "ABIBAL",
-                               ScientificName == "Larix laricina" ~ "OTHCON",
-                               ScientificName == "Picea" ~ "PICSPP",
-                               ScientificName == "Picea glauca" ~ "PICSPP",
-                               ScientificName == "Picea mariana" ~ "PICSPP",
-                               ScientificName == "Picea rubens" ~ "PICSPP",
-                               ScientificName == "Picea rubens" ~ "PICSPP",
-                               ScientificName == "Populus" ~ "POPSPP",
-                               ScientificName == "Populus grandidentata" ~ "POPSPP",
-                               ScientificName == "Populus tremuloides" ~ "POPSPP",
-                               ScientificName == "Thuja occidentalis" ~ "OTHCON",
+                               ScientificName %in% c("Picea glauca", "Picea mariana",
+                                                     "Picea rubens", "Picea") ~ "PICSPP",
+                               ScientificName %in% c("Populus", "Populus grandidentata", 
+                                                     "Populus tremuloides") ~ "POPSPP",
+                               ScientificName %in% c("Larix laricina", "Thuja occidentalis") ~ "OTHCON",
                                TRUE ~ sppcode)) |> 
     mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
-                               ScientificName == "Larix laricina" ~ "Other conifer",
-                               ScientificName == "Picea" ~ "Picea spp. (spruce)",
-                               ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
-                               ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
-                               ScientificName == "Picea glauca" ~ "Picea spp. (spruce)",
-                               ScientificName == "Populus" ~ "Populus spp. (aspen)",
-                               ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
-                               ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
-                               ScientificName == "Thuja occidentalis" ~ "Other conifer",
+                               ScientificName %in% c("Picea glauca", "Picea mariana",
+                                                     "Picea rubens", "Picea") ~ "Picea spp. (spruce)",
+                               ScientificName %in% c("Populus", "Populus grandidentata", 
+                                                     "Populus tremuloides")  ~ "Populus spp. (aspen)",
+                               ScientificName  %in% c("Larix laricina", "Thuja occidentalis") ~ "Other conifer",
                                TRUE ~ spp_grp))
 }
 
@@ -395,7 +387,7 @@ cols = c(
   "Other exotic spp." = "#ca0020",
   "Other native canopy spp." = "#d9d9d9",
   "Pinus spp. (pine)" = "#5A462B",
-  "Pinus strobus (eastern white pine)" = "#5A1111",
+  "Pinus strobus (white pine)" = "#5A1111",
   "Pinus taeda (loblolly pine)" = "#5A1111", #assumes no overlap in PINSTR and PINTAE
   "Pinus virginiana (Virginia pine)" = "#E5740D",
   "Pinus resinosa (red pine)" = "#E5740D",
@@ -436,7 +428,7 @@ lines = c(
   "Other exotic spp." = "dashed",
   "Other native canopy spp." = "solid",
   "Pinus spp. (pine)" = "dotdash",
-  "Pinus strobus (eastern white pine)" = "dotdash",
+  "Pinus strobus (white pine)" = "dotdash",
   "Pinus taeda (loblolly pine)" = "dotdash",
   "Pinus virginiana (Virginia pine)" = "dotdash",
   "Pinus resinosa (red pine)" = "dotdash",
@@ -463,7 +455,7 @@ net_stems <-
   labs(x = NULL, y = "Tree Density (stems/ha)") +
   # geom_line(data = mor_rec_tot |> filter(unit_type == "stem"),
   #           aes(x = cycle, y = park_total), color = 'black') +
-  theme_FHM()+
+  theme_FHM() +
   # may have to update for different parks
   scale_color_manual(values = cols,  name = NULL) +
   scale_linetype_manual(values = lines,  name = NULL) +
@@ -471,7 +463,7 @@ net_stems <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', # b/c shares page with 4B 
-        legend.key.width = unit(1.5, 'cm'),
+        legend.key.width = unit(1.75, 'cm'),
         plot.margin = margin(0.1, 0.4, 1.5, 0.4, 'cm')) #+ 
 #guides(color = guide_legend(nrow = spp_rows))
 
@@ -497,7 +489,7 @@ net_ba <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
-        legend.key.width = unit(1.5, 'cm'),
+        legend.key.width = unit(1.75, 'cm'),
         plot.margin = margin(0.5, 0.4, 0.1, 0.4, 'cm')) #+ 
 # guides(color = guide_legend(nrow = spp_rows))
 
@@ -572,13 +564,11 @@ if(park == "WEFA"){
 }
 if(park == "SARA"){
   reg_grps <- reg_grps |> 
-    mutate(sppcode = case_when(ScientificName == "Populus" ~ "POPSPP",
-                               ScientificName == "Populus grandidentata" ~ "POPSPP",
-                               ScientificName == "Populus tremuloides" ~ "POPSPP",
+    mutate(sppcode = case_when(ScientificName %in% c("Populus", "Populus grandidentata", 
+                                                     "Populus tremuloides") ~ "POPSPP",
                                TRUE ~ sppcode)) |> 
-    mutate(spp_grp = case_when(ScientificName == "Populus" ~ "Populus spp. (aspen)",
-                               ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
-                               ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+    mutate(spp_grp = case_when(ScientificName %in% c("Populus", "Populus grandidentata", 
+                                                     "Populus tremuloides") ~ "Populus spp. (aspen)",
                                TRUE ~ spp_grp))
 }
 if(park == "MABI"){
@@ -596,10 +586,12 @@ if(park == "SAGA"){
   reg_grps <- reg_grps |> 
     mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
                                ScientificName == "Acer rubrum" ~ "ACESPP",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
                                TRUE ~ sppcode)) |> 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
                                TRUE ~ spp_grp))
 } 
@@ -607,43 +599,38 @@ if(park == "MIMA"){
   reg_grps <- reg_grps |> 
     mutate(sppcode = case_when(ScientificName == "Acer platanoides" ~ "ACEPLA",
                                ScientificName == "Acer rubrum" ~ "ACESPP",
-                               ScientificName == "Cladrastis kentukea" ~ "OTHEXO",
-                               ScientificName == "Juniperus virginiana" ~ "OTHNAT",
+                               ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName == "Juniperus virginiana" ~ "SUBCAN",
+                               ScientificName %in% c("Pinus" ,"Pinus rigida") ~ "OTHNAT",
                                ScientificName == "Pinus strobus" ~ "PINSTR",
-                               ScientificName == "Robinia pseudoacacia" ~ "OTHEXO",
+                               ScientificName %in% c("Cladrastis kentukea", "Robinia pseudoacacia") ~ "OTHEXO",
                                TRUE ~ sppcode)) |> 
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Acer platanoides" ~ "Acer platanoides (Norway maple)",
-                               ScientificName == "Cladrastis kentukea" ~ "Other Exotic",
-                               ScientificName == "Juniperus virginiana" ~ "Other Native",
+                               ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName %in% c("Juniperus virginiana") ~ "Subcanopy",
+                               ScientificName %in% c("Pinus", "Pinus rigida") ~ "Other native canopy spp.",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
-                               ScientificName == "Robinia pseudoacacia" ~ "Other Exotic",
+                               ScientificName %in% c("Cladrastis kentukea", "Robinia pseudoacacia") ~ "Other Exotic",
                                TRUE ~ spp_grp))
 }
 if(park == "ACAD"){
   reg_grps <- reg_grps |> 
     mutate(sppcode = case_when(ScientificName == "Abies balsamea" ~ "ABIBAL",
-                               ScientificName == "Larix laricina" ~ "OTHCON",
                                ScientificName == "Picea" ~ "PICSPP",
-                               ScientificName == "Picea glauca" ~ "PICSPP",
-                               ScientificName == "Picea mariana" ~ "PICSPP",
-                               ScientificName == "Picea rubens" ~ "PICSPP",
-                               ScientificName == "Populus" ~ "POPSPP",
-                               ScientificName == "Populus grandidentata" ~ "POPSPP",
-                               ScientificName == "Populus tremuloides" ~ "POPSPP",
-                               ScientificName == "Thuja occidentalis" ~ "OTHCON",
+                               ScientificName %in% c("Picea glauca", "Picea mariana",
+                                                     "Picea rubens", "Picea") ~ "PICSPP",
+                               ScientificName %in% c("Populus", "Populus grandidentata", 
+                                                     "Populus tremuloides") ~ "POPSPP",
+                               ScientificName %in% c("Larix laricina", "Thuja occidentalis") ~ "OTHCON",
                                ScientificName == "Sorbus decora" ~ "SUBCAN",
                                TRUE ~ sppcode)) |> 
     mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
-                               ScientificName == "Larix laricina" ~ "Other conifer",
-                               ScientificName == "Picea" ~ "Picea spp. (spruce)",
-                               ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
-                               ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
-                               ScientificName == "Picea glauca" ~ "Picea spp. (spruce)",
-                               ScientificName == "Populus" ~ "Populus spp. (aspen)",
-                               ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
-                               ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
-                               ScientificName == "Thuja occidentalis" ~ "Other conifer",
+                               ScientificName %in% c("Picea glauca", "Picea mariana",
+                                                     "Picea rubens", "Picea") ~ "Picea spp. (spruce)",
+                               ScientificName %in% c("Populus", "Populus grandidentata", 
+                                                     "Populus tremuloides")  ~ "Populus spp. (aspen)",
+                               ScientificName  %in% c("Larix laricina", "Thuja occidentalis") ~ "Other conifer",
                                ScientificName == "Sorbus decora" ~ "Subcanopy",
                                TRUE ~ spp_grp))
 }
@@ -840,7 +827,7 @@ net_seeds <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
-        legend.key.width = unit(1.5, 'cm'),
+        legend.key.width = unit(1.75, 'cm'),
         plot.margin = margin(0.1, 0.4, 1.5, 0.4, 'cm'))# + 
 #guides(color = guide_legend(nrow = 5))
 
@@ -864,7 +851,7 @@ net_saps <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right', 
-        legend.key.width = unit(1.5, 'cm'),
+        legend.key.width = unit(1.75, 'cm'),
         plot.margin = margin(0.5, 0.4, 0.1, 0.4, 'cm')) #+
 #guides(color = guide_legend(nrow = spp_rows))
 
@@ -1053,7 +1040,7 @@ guild_plot <-
                      limits = c(from, to)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
         legend.position = 'right',  
-        legend.key.width = unit(1.5, 'cm'), 
+        legend.key.width = unit(1.75, 'cm'), 
         legend.title = element_text(size = 10),
         legend.text = element_text(size = 10), 
         plot.margin = margin(0.4, 0.4, 0.1, 0.4, "cm"))
