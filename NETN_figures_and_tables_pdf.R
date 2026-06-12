@@ -43,6 +43,8 @@ pdf_print("WEFA")
 report_year = 2025
 out_path = paste0('./output/', report_year, "/NETN/")
 
+render_NETN_report("SARA", 2025)
+
 parks = c("MABI", "MIMA", "SAGA", "SARA")
 years = rep(2025, 4)
 
