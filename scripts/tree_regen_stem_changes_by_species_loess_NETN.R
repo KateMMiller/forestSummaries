@@ -850,39 +850,6 @@ shrub_reg <- left_join(reg_cycle_table, shrub_guild, by = c("Plot_Name", "cycle"
   mutate(year_fac = as.factor(SampleYear), 
          year_cen = SampleYear - 2006)
 
-# ggplot(shrub_reg, 
-#        aes(x = cycle, y = seed_den)) +
-#   geom_point(color = 'dimgrey') + 
-#   geom_line(color = "#b5b5b5") + 
-#   forestNETN::theme_FHM() +
-#   # scale_x_continuous(limits = c(1,5.2), breaks = c(1:5))+
-#   # geom_text(aes(label = ifelse(cycle == 5, paste0("  ", as.numeric(substr(Plot_Name, 7, 8))), "")), 
-#   #           hjust = 0)
-#   facet_wrap(~Plot_Name) + 
-#   labs(x = "cycle", y = "Seedling density (stems/sq.m)")
-# 
-# ggplot(shrub_reg, 
-#        aes(x = cycle, y = sap_den)) +
-#   geom_point(color = 'dimgrey') + 
-#   geom_line(color = "#b5b5b5") + 
-#   forestNETN::theme_FHM() +
-#   # scale_x_continuous(limits = c(1,5.2), breaks = c(1:5))+
-#   # geom_text(aes(label = ifelse(cycle == 5, paste0("  ", as.numeric(substr(Plot_Name, 7, 8))), "")), 
-#   #           hjust = 0)
-#   facet_wrap(~Plot_Name) + 
-#   labs(x = "cycle", y = "Sapling density (stems/sq.m)")
-
-
-# ggplot(shrub_reg, aes(x = quad_pct_cover, y = seed_den)) +
-#   geom_point() + theme_FHM() + geom_smooth(se = F) + facet_wrap(~cycle)
-# 
-# ggplot(shrub_reg, aes(x = quad_pct_cover, y = stock)) +
-#   geom_point() + theme_FHM() + geom_smooth(se = F) + facet_wrap(~Plot_Name)
-
-# Fit broken stick to model
-# library(segmented)
-#mod <- nlme::lme(stock ~ quad_pct_cover, random = ~1|Plot_Name, data = shrub_reg)
-#summary(mod)
 
 if(park == "MORR"){
 ggplot(shrub_reg, aes(quad_pct_cover, stock)) +

@@ -9,10 +9,12 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
-#if(!exists("VIEWS_NETN")){
-  importData() 
-  # importCSV(path = "../data/", zip_name = 'NETN_Forest_20250926.zip') #DP from 2025
-#  }
+#if(!exists("VIEWS_NETN", envir = VIEWS_NETN)){
+  #importData() 
+#   importCSV(path = "../data/", zip_name = 'NETN_Forest_20250926.zip') #DP from 2025
+   importCSV(path = "../data/", zip_name = 'NETN_Forest_20260612.zip') #DP from 2025
+   
+   #  }
 
 # Fix 2026 data issues until they're resolved in DB
 # Downgrade Fraxinus to subcanopy species
