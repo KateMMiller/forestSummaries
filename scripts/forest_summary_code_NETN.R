@@ -1152,7 +1152,7 @@ inv_spp3 <- inv_spp2 %>%  filter(ScientificName != 'None present') %>%
                                                          InvasiveNETN =='FALSE' ~ 'No')) %>% 
                          relocate(InvasiveNETN, .after = CommonName) |> arrange(ScientificName)
 
-inv_spp <- if(park %in% c("MORR", "ROVA")){ # too many species to include all
+inv_spp <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA")){ # too many species to include all
   inv_spp3 |> filter(InvasiveNETN == "Yes")
   } else {inv_spp3}
 
