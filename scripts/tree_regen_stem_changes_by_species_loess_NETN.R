@@ -82,7 +82,6 @@ if(park == "SARA"){
     mutate(spp_grp = case_when(ScientificName == "Acer rubrum" ~ "Acer spp. (maple)",
                                ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
                                ScientificName == "Pinus strobus" ~ "Pinus strobus (white pine)",
-                               ScientificName ==  ~ "Populus spp. (aspen)",
                                ScientificName %in% c("Populus", "Populus grandidentata", 
                                                      "Populus tremuloides") ~ "Populus spp. (aspen)",
                                TRUE ~ spp_grp))
@@ -238,33 +237,6 @@ tree_stem_smooth3 <- left_join(tree_stem_smooth2,
   mutate(spp_grp = as.character(spp_grp)) |> 
   arrange(spp_grp)
 
-# Plotting trends by species group facet
-# tree_stem_trends <- 
-#   ggplot(tree_stem_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-#                                 color = sign, fill = sign)) +
-#   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-#   geom_line(linewidth = 0.5) +
-#   scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-#                                    "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-#   scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-#                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-#   scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-#                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-#   facet_wrap(~spp_grp, scales = 'free_y') + 
-#   labs(y = "Trees (stems/ha)", x = "Year") +
-#   scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-#                      limits = c(2005, to)) +
-#   theme_FHM() + 
-#   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-#         legend.position = 'bottom')
-# 
-# tree_stem_trends
-# 
-# svg(paste0(new_path, "figures/", "Figure_XA_", park, "_smoothed_Tree_stems_by_species_cycle.svg"),
-#     height = 8, width = 7)
-# tree_stem_trends
-# dev.off()
-
 #--- Tree BA
 tree_BA_smooth <- purrr::map_dfr(spp_list, 
                                  function(spp){
@@ -336,35 +308,6 @@ ggplot(net_ba_cycle, aes(x = cycle, y = mean_ba)) +
   geom_smooth(color = "#B5B5B5", span = 0.9, se = F) + 
   forestNETN::theme_FHM() 
 
-
-# Plotting trends by species group facet
-# tree_BA_trends <- 
-#   ggplot(tree_BA_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-#                                 color = sign, fill = sign)) +
-#   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-#   geom_line(linewidth = 0.5) +
-#   scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-#                                    "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-#   scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-#                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-#   scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-#                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-#   facet_wrap(~spp_grp, scales = 'free_y') + 
-#   labs(y = "Tree Basal Area (sq.m/ha)", x = "Year") +
-#   scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-#                      limits = c(2005, to)) +
-#   theme_FHM() + 
-#   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-#         legend.position = 'bottom')
-# 
-# tree_BA_trends
-# 
-# svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_Tree_BA_by_species_cycle.svg"),
-#     height = 8, width = 7)
-# tree_BA_trends
-# dev.off()
-# 
-# table(tree_stem_smooth3$spp_grp)
 
 # Colors to start with. Can change them per park if needed
 cols = c(
@@ -564,10 +507,12 @@ if(park == "WEFA"){
 }
 if(park == "SARA"){
   reg_grps <- reg_grps |> 
-    mutate(sppcode = case_when(ScientificName %in% c("Populus", "Populus grandidentata", 
+    mutate(sppcode = case_when(ScientificName == "Betula lenta" ~ "BETSPP",
+                               ScientificName %in% c("Populus", "Populus grandidentata", 
                                                      "Populus tremuloides") ~ "POPSPP",
                                TRUE ~ sppcode)) |> 
-    mutate(spp_grp = case_when(ScientificName %in% c("Populus", "Populus grandidentata", 
+    mutate(spp_grp = case_when(ScientificName == "Betula lenta" ~ "Betula spp. (birch)",
+                               ScientificName %in% c("Populus", "Populus grandidentata", 
                                                      "Populus tremuloides") ~ "Populus spp. (aspen)",
                                TRUE ~ spp_grp))
 }
@@ -735,32 +680,6 @@ spp_list
 
 length(spp_list) # may be longer than Map 3 b/c includes all cycles
 
-# Plotting trends by species group facet
-# seed_trends <- 
-#   ggplot(seed_smooth3, aes(x = SampleYear, y = estimate, linetype = sign,
-#                            color = sign, fill = sign)) +
-#   geom_ribbon(aes(ymin = lower95, ymax = upper95), alpha = 0.2) +
-#   geom_line(linewidth = 0.5) +
-#   scale_linetype_manual(values = c("notmod" = 'dashed', "nonsign" = 'dashed',
-#                                    "signinc" = 'solid', "signdec" = 'solid'), drop = FALSE) +
-#   scale_fill_manual(values = c("notmod" = "white", "nonsign" =  "#696969",
-#                                "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE)+
-#   scale_color_manual(values = c("notmod" = "#CACACA", "nonsign" = "black",
-#                                 "signinc" = "#228822", "signdec" = "#CD5C5C"), drop = FALSE) +
-#   facet_wrap(~spp_grp, scales = 'free_y') + 
-#   labs(y = "Seedlings (stems/sq.m)", x = "Year") +
-#   scale_x_continuous(breaks = c(seq(from, to, by = 3), to), 
-#                      limits = c(2005, to)) +
-#   theme_FHM() + 
-#   theme(axis.text.x = element_text(angle = 45, vjust = 0.5), 
-#         legend.position = 'bottom')
-# 
-# seed_trends
-# 
-# svg(paste0(new_path, "figures/", "Figure_XB_", park, "_smoothed_seedlings_by_species_cycle.svg"),
-#     height = 8, width = 7)
-# seed_trends
-# dev.off()
 
 # Saplings
 sap_smooth2 <- 

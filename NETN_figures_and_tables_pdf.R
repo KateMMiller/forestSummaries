@@ -9,43 +9,42 @@ render_NETN_report <- function(parkcode, year){
            output_file = paste0(parkcode, 
                                 "_Figures_and_Tables_", 
                                 format(Sys.time(), '%b_%Y'), ".html"),
-           output_dir = paste0(out_path, parkcode, "/"),
+           output_dir = out_path,
            output_options = list(self_contained = TRUE))
 }
 
 pdf_print <- function(parkcode){
   report_dir <- paste0(out_path)
   report_name <- paste0(parkcode, "_Figures_and_Tables_", format(Sys.time(), "%b_%Y"))
-  chrome_print(input = paste0(out_path, parkcode, "/", report_name, ".html"), 
-               output = paste0(out_path, parkcode, "/", report_name, ".pdf"),
+  chrome_print(input = paste0(out_path, report_name, ".html"), 
+               output = paste0(out_path, report_name, ".pdf"),
                format = 'pdf')
   cat('Report printed to: ', paste0(out_path, report_name, ".pdf"))
 }
 
+# Even year group of parks
 report_year = 2026
 out_path = paste0('./output/', report_year, "/NETN/")
 
-render_NETN_report("ROVA", 2026)
-pdf_print("ROVA")
+parks = c("MORR", "ROVA", "WEFA")
+years = rep(2026, 3)
 
-render_NETN_report("WEFA", 2026)
+purrr::map2(parks, years, ~render_NETN_report(.x, .y))
+pdf_print("MORR") # not sure why purrr::map won't iterate on pdf_print
+pdf_print("ROVA")
 pdf_print("WEFA")
 
+# Odd year group of parks
 report_year = 2025
 out_path = paste0('./output/', report_year, "/NETN/")
 
-# render_NETN_report("ACAD", 2025)
-# pdf_print("ACAD")
+parks = c("MABI", "MIMA", "SAGA", "SARA")
+years = rep(2025, 4)
 
-render_NETN_report("MABI", 2025)
-pdf_print("MABI")
-
-render_NETN_report("MIMA", 2025)
+purrr::map2(parks, years, ~render_NETN_report(.x, .y))
+pdf_print("MABI") # not sure why purrr::map won't iterate on pdf_print
 pdf_print("MIMA")
-
-render_NETN_report("SAGA", 2025)
 pdf_print("SAGA")
-
-render_NETN_report("SARA", 2025)
 pdf_print("SARA")
+
 
