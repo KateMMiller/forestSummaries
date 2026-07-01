@@ -1,0 +1,69 @@
+---
+output: 
+  html_document:
+    css: www/styles_NETN_pages.css
+    anchor_sections: FALSE
+    includes:
+        in_header: "header_manual.html"
+params: 
+  park: "ACAD"
+  park_long: "Acadia National Park"
+  report_year: 2026
+---
+## Tree Growth and Mortality plots for `paste0(params$park_long, " 2006 through ", report_year)` {.tabset .tabset-pills}
+
+```{r}
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'center', warning = FALSE, message = F)
+options(knitr.kable.NA = '-')
+```
+
+```{r}
+library(forestNETN)
+library(patchwork)
+library(tidyverse)
+
+importCSV("C:/Temp/", zip_name = "NETN_Forest_20260701.zip")
+#params <- data.frame(park = "ACAD", report_year = 2026)
+parkcode = params$park
+report_year = params$report_year
+```
+
+```{r}
+subnits <- switch(parkcode, 
+                  "ACAD" = c("MDI_East", "MDI_West", "Schoodic", "Isle_au_Haut"),
+                  #"MIMA" = c("Battle_Road", "North_Bridge"),
+                  #"MORR" = c("Jockey_Hollow", "NJ_Brigade"),
+                  "ROVA" = c("ELRO", "HOFR_East", "HOFR_West", "VAMA"),
+                  NULL
+                  ) 
+
+pct_cutoff <- ifelse(parkcode == "ACAD", 0.1, 1)
+
+top_tree_spp <- joinTreeData(park = parkcode, from = 2006, to = report_year, status = 'live') |> 
+  mutate(num_trees = n()) |> 
+  summarize(num_species = n(),
+            pct_total = (num_species/first(num_trees))*100,
+            .by = ScientificName) |> arrange(desc(pct_total)) |> 
+  filter(pct_total > pct_cutoff) |> 
+  select(species = ScientificName) |> arrange(species)
+  
+
+```
+
+### All plots
+
+```{r, all_plots}
+plotTreeGrowth(park = parkcode)
+```
+
+
+### Plots with >=5% mortality over monitoring period
+```{r}
+
+```
+
+### Species-level plots
+```{r}
+plotTreeGrowth(park = parkcode)
+```
+
