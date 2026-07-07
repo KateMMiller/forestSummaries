@@ -6,16 +6,20 @@
 } */
 
 /* Body and headers */
-/*.main-container{
-  max-width:1200px;
-}*/
+body .main-container{
+  max-width:100%;
+  width:100%;
+}
+
+.container-fluid{
+  width:100%;
+}
 
 body {
   font-family: "NPSRawlinsonOTTwo","Times New Roman", serif;
   font-size: 12px;
   color: black;
   margin:0 auto;
-  width:1800px;
   position:relative;  
 }
 
@@ -75,7 +79,7 @@ h5 {
   height: 105px;
   position:relative;
   /*width: auto;*/
-  max-width: 1800px;/* 960px;*/
+  max-width: 100%;/* 960px;*/
   padding: 0 0 10px 0;
   /*margin-left: auto;
   margin-right: auto;*/
@@ -85,7 +89,7 @@ h5 {
 
 .header{
  height: 100px;
- width: 1800px;
+ width: 100%px;
  margin-left:auto;
  margin-right:auto;
  text-align: left;
@@ -99,7 +103,7 @@ h5 {
 
 #col-left-header{
   float:left;
-  width: 65%;
+  width: 75%;
   padding: 5px 0;
 }
 
@@ -114,7 +118,7 @@ h5 {
 #col-middle-header{
   float:right;
   text-align:left;
-  width: 24%;
+  width: 14%;
   padding: 5px 0;
 }
 
@@ -164,7 +168,7 @@ summary > h3{
 
 .section{
   /*width:1200px;*/
-  width:inherit;
+  width:98%;
   /*margin:0 -50px;*/
   padding:0;
   position:inherit;
@@ -182,7 +186,7 @@ summary > h3{
 /* Navbar */
 .navbar {
  visibility: hidden;
- width:1800px;
+ width:98%;
  margin:0 auto;
 }
 
@@ -200,8 +204,6 @@ summary > h3{
     color: #8CAF88;
     font-family: "FrutigerLTStd-Light",FrutigerLTStd-Light, sans-serif;
     font-size: 16px;
-    margin:0 auto;
-    padding:0 auto;
     text-indent:0;
     
     
@@ -210,9 +212,7 @@ summary > h3{
     color: #ffffff;
     background-color: #8CAF88;
     /*padding: 10px 15px;*/
-    width:100%;
-    margin:0 auto;
-
+    width:98%;
 }
 
 
