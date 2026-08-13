@@ -8,12 +8,13 @@ library(forestNETN)
 library(forestTrends)
 library(tidyverse)
 library(sf)
+library(ggpubr)
 
 #if(!exists("VIEWS_NETN", envir = VIEWS_NETN)){
-  #importData() 
+importData()
 #   importCSV(path = "../data/", zip_name = 'NETN_Forest_20250926.zip') #DP from 2025
-   importCSV(path = "../data/", zip_name = 'NETN_Forest_20260612.zip') #DP from 2025
-   
+   #importCSV(path = "../data/", zip_name = 'NETN_Forest_20260612.zip') #DP from 2025
+#importCSV(path = "../data", zip_name = "NETN_Forest_20260626.zip")   
    #  }
 
 # Fix 2026 data issues until they're resolved in DB
@@ -22,9 +23,9 @@ VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"]
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE
 
 # # Set parameters
-# park = 'MORR'#'ACAD'
+# park = 'ROVA'
 # from = 2006
-# from_4yr = 2023 
+# from_4yr = 2023
 # to = 2026
 # report_year = 2026 # used for file path and output naming, in case differs from last year sampled
 # QAQC = FALSE

@@ -13,6 +13,7 @@ write_to_shp <- function(data, x = "X", y = "Y", shp_name){
 plotevs <- do.call(joinLocEvent, args_all)
 plotevs_vs <- do.call(joinLocEvent, args_vs)
 plotevs_4yr <- plotevs %>% filter(between(SampleYear, from_4yr, to))
+evs_4yr <- plotevs_4yr$EventID
 
 #---- Table 1. Regen densities by plot and year ----
 reg <- do.call(joinRegenData, 
@@ -77,7 +78,7 @@ write_to_shp(reg_size_4yr,
              shp_name = paste0(new_path, "shapefiles/", park, 
                                "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
 
-#---- Figure 1A Regen trends by size class ----
+#---- Figure 3A Regen trends by size class ----
 # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
 reg_vs <- do.call(joinRegenData, 
                   args = c(args_vs, speciesType = 'native', 
@@ -112,11 +113,14 @@ reg_smooth$size_class <- factor(reg_smooth$size_class,
 cycle_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
                "2" = "Cycle 2: 2010 \u2013 2013", 
                "3" = "Cycle 3: 2014 \u2013 2017", 
-               "4" = "Cycle 4: 2018 \u2013 2021",
-               "5" = "Cycle 5: 2022 \u2013 2023")
+               "4" = "Cycle 4: 2018 \u2013 2022",
+               "5" = "Cycle 5: 2022 \u2013 2025",
+               "6" = "Cycle 6: 2026"
+               )
 
 reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
+num_col = ifelse(max(reg_smooth$cycle) > 5, 3, 5)
 
 reg_trend_plot <- 
   ggplot(reg_smooth, aes(x = size_class, y = estimate, color = size_class,#linetype = sign, 
@@ -125,7 +129,7 @@ reg_trend_plot <-
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8)+
   labs(x  = "Cycle", y = bquote(Stems/m^2))+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5)+
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = num_col)+
   scale_color_manual(values = reg_colors, name = "Size Class",
                      labels = reg_labels)+
   scale_fill_manual(values = reg_colors, name = "Size Class",
@@ -137,10 +141,10 @@ reg_trend_plot <-
 
 reg_trend_plot
   
-ggsave(paste0(new_path, "figures/", "Figure_1A_", park, "_regen_by_size_class_by_cycle.svg"),
+ggsave(paste0(new_path, "figures/", "Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')
 
-#---- Figure 1B Diam. dist. trends by size class ----
+#---- Figure 3B Diam. dist. trends by size class ----
   # Note that I'm combining 5-6 years into cycle 4; need to add note to figure caption
   # Including all species and canopy forms
 tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live'))
@@ -183,7 +187,7 @@ dbh_labels <- c("10",
                 "90",
                 "100+")
 
-#---- Figure 1C Sapling Diam. dist. trends by size class ----
+#---- Figure 3C Sapling Diam. dist. trends by size class ----
 sap_dd <- do.call(sumSapDBHDist, args = c(args_vs, status = 'live'))
 head(sap_dd)
 sap_dbh_cols <- c('dens_1_1.9', 'dens_2_2.9', 'dens_3_3.9', 'dens_4_4.9', 
@@ -235,8 +239,8 @@ sap_dbh_trend_plot <-
 
 sap_dbh_trend_plot
 
-ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_sap_dbh_dist_by_cycle.svg"),
-       height = 4.6, width = 7.8, units = 'in')
+# ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_sap_dbh_dist_by_cycle.svg"),
+#        height = 4.6, width = 7.8, units = 'in')
 
 # check flat diameter distribution
 head(tree_dbh_sm)
@@ -271,7 +275,11 @@ cycle_labs_tr = c("1" = ifelse(AIC_test$best_mod[AIC_test$cycle == 1] == 'linear
                   "4" = ifelse(AIC_test$best_mod[AIC_test$cycle == 4] == 'linear',
                                paste0(cycle_labs[4], "*"), cycle_labs[4]),
                   "5" = ifelse(AIC_test$best_mod[AIC_test$cycle == 5] == 'linear',
-                               paste0(cycle_labs[5], "*"), cycle_labs[5]))
+                               paste0(cycle_labs[5], "*"), cycle_labs[5]),
+                  "6" = ifelse(AIC_test$best_mod[AIC_test$cycle == 6] == 'linear',
+                               paste0(cycle_labs[6], "*"), cycle_labs[6]))
+
+num_col <- ifelse(max(tree_dbh_sm$cycle) > 5, 3, 5)
 
 dbh_trend_plot <- 
   ggplot(tree_dbh_sm, aes(x = dbh_class, y = estimate))+ theme_FHM()+
@@ -279,7 +287,7 @@ dbh_trend_plot <-
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8)+
   labs(x  = "Cycle", y = "Stems/ha")+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 5)+
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = num_col)+
   scale_color_manual(values = reg_colors, name = "DBH Size Class",
                      labels = reg_labels)+
   scale_fill_manual(values = reg_colors, name = "DBH Size Class",
@@ -290,8 +298,27 @@ dbh_trend_plot <-
         legend.position = 'none')
 
 dbh_trend_plot
+str(tree_dbh_sm)
 
-ggsave(paste0(new_path, "figures/", "Figure_1B_", park, "_tree_dbh_dist_by_cycle.svg"),
+tree_dd <- do.call(sumTreeDBHDist, args = c(args_vs, status = 'live'))
+
+dbh_cols <- c('dens_10_19.9', 'dens_20_29.9', 'dens_30_39.9', 'dens_40_49.9', 
+              'dens_50_59.9', 'dens_60_69.9', 'dens_70_79.9', 'dens_80_89.9',
+              'dens_90_99.9', 'dens_100p')
+
+tree_dd_sum <- tree_dd |> summarize(across(.cols = contains("dens"), .fns = mean), .by = cycle)
+
+head(tree_dd_sum)
+
+#dbh_trend_plot2 <- 
+ggplot(tree_dbh_sm |> filter(class < 90), aes(x = class, y = estimate, group = cycle, color = factor(cycle))) + theme_FHM() +
+  geom_line(size = 1) + 
+  scale_colour_brewer(palette = 2) +
+  scale_x_continuous(breaks = seq(10, 90, 10)) +
+  labs(color = "Cycle", y = "Stem Density (stems/ha)", x = "DBH size class (10 cm)")
+
+dbh_trend_plot 
+ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
        height = 4.6, width = 7.8, units = 'in')
 
 #---- Map 3 Regen by composition ----
@@ -333,6 +360,9 @@ reg_all <- reg_all %>%
                                  substr(word(ScientificName, 1), 1, 3), 
                                  substr(word(ScientificName, 2), 1, 3))))) 
 table(reg_all$spp_grp)
+head(reg_all)
+
+#reg_grps <- left_join(reg_all, trspp_grps, by = c("ScientificName" = "Species")) |> select(-New)
 
 reg_wide <- reg_all %>% group_by(Plot_Name, spp_grp) %>% 
   summarize(regen_den = sum(regen_den, na.rm = TRUE), .groups = 'drop') %>% 
@@ -353,17 +383,53 @@ names(sort(desc(colSums(reg_wide[,c(4:(ncol(reg_wide)-2))]))))
 write_to_shp(reg_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_regen_by_spp_cycle", cycle_latest, ".shp"))
 
+#Table of regen species and groups used in Map 3 (Table 5)
+reg_spp_grp <- reg_all |> select(ScientificName, spp_grp, spp_grp) |> distinct() |>
+  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                             spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                             spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                             TRUE ~ spp_grp)) |> 
+  rename('Group: Map 3. Regeneration' = spp_grp) |> 
+  arrange(ScientificName)
+
 #---- Map 4 Tree canopy composition ----
 trees_4yr <- do.call(joinTreeData, args = c(args_4yr, status = 'live'))
 
-#table(joinTreeData(from = 2019, to = 2022)$ScientificName, joinTreeData(from = 2019, to = 2022)$ParkUnit)
+trees_park <- do.call(joinTreeData, args = list(park, from_4yr, to = to, status = 'live')) # just selected park
 
-table(trees_4yr$ScientificName)
+dom_trspp <- trees_park |> summarize(ba = sum(BA_cm2, na.rm = T), .by = c(Plot_Name, ScientificName))  |> 
+  summarize(ba = sum(ba, na.rm = T), .by = ScientificName) |>  arrange(desc(ba))
 
-dom_trspp <- trees_4yr %>% group_by(Plot_Name, ScientificName) %>% summarize(ba = sum(BA_cm2, na.rm = T)) %>% 
-  group_by(ScientificName) %>% summarize(ba = sum(ba, na.rm = T), .groups = 'drop') %>% arrange(desc(ba))
+tree_grps <- left_join(trees_4yr, trspp_grps, by = c("ScientificName" = "Species")) |> 
+  filter(!ScientificName %in% c("None present", "Not Sampled"))
 
-dom_trspp
+if(nrow(tree_grps[which(is.na(tree_grps$spp_grp)),]) > 0){
+  warning("There's at least 1 NA in tree_grps$spp_grp, meaning at least one species is missing a group.")} #check if any spp. is missing a group
+
+tree_grps <- tree_grps |>  
+  mutate(sppcode = case_when(ScientificName == "Abies balsamea" ~ "ABIBAL",
+                             ScientificName == "Larix laricina" ~ "OTHCON",
+                             ScientificName == "Picea" ~ "PICSPP",
+                             ScientificName == "Picea glauca" ~ "PICSPP",
+                             ScientificName == "Picea mariana" ~ "PICSPP",
+                             ScientificName == "Picea rubens" ~ "PICSPP",
+                             ScientificName == "Picea rubens" ~ "PICSPP",
+                             ScientificName == "Populus" ~ "POPSPP",
+                             ScientificName == "Populus grandidentata" ~ "POPSPP",
+                             ScientificName == "Populus tremuloides" ~ "POPSPP",
+                             ScientificName == "Thuja occidentalis" ~ "OTHCON",
+                             TRUE ~ sppcode)) |> 
+  mutate(spp_grp = case_when(ScientificName == "Abies balsamea" ~ "Abies balsamea (balsam fir)",
+                             ScientificName == "Larix laricina" ~ "Other conifer",
+                             ScientificName == "Picea" ~ "Picea spp. (spruce)",
+                             ScientificName == "Picea rubens" ~ "Picea spp. (spruce)",
+                             ScientificName == "Picea mariana" ~ "Picea spp. (spruce)",
+                             ScientificName == "Picea glauca" ~ "Picea spp. (spruce)",
+                             ScientificName == "Populus" ~ "Populus spp. (aspen)",
+                             ScientificName == "Populus grandidentata" ~ "Populus spp. (aspen)",
+                             ScientificName == "Populus tremuloides" ~ "Populus spp. (aspen)",
+                             ScientificName == "Thuja occidentalis" ~ "Other conifer",
+                             TRUE ~ spp_grp))
 
 trees_4yr <- trees_4yr %>% 
   mutate(spp_grp = case_when(ScientificName %in% Betula ~ "BETSPP",
@@ -392,6 +458,15 @@ tree_wide$logtot <- log(tree_wide$total + 1)
 names(tree_wide)
 write_to_shp(tree_wide, shp_name = 
                paste0(new_path, "shapefiles/", park, "_tree_by_spp_cycle", cycle_latest, ".shp"))
+
+#Table of tree species and groups used in Map 4 (Table 5)
+tree_spp <- tree_grps %>% select(ScientificName, spp_grp, sppcode) |>  unique() |> 
+  mutate(spp_grp = case_when(spp_grp == "Other Native" ~ "Other native canopy spp.",
+                             spp_grp == "Subcanopy" ~ "Other native subcanopy spp.",
+                             spp_grp == "Other Exotic" ~ "Other exotic spp.",
+                             TRUE ~ spp_grp)) |> 
+  rename('Group: Map 4. Tree Canopy' = spp_grp) |> select(-sppcode) |> 
+  arrange(ScientificName)
 
 #---- Map 5 Regen stocking index ----
 reg_4yr <- do.call(joinRegenData,
@@ -543,8 +618,9 @@ invspp <- invspp1 %>%
                        substr(word(ScientificName, 2), 1, 3))))) %>% 
   arrange(sppcode, Plot_Name) %>% 
   select(Plot_Name, X, Y, sppcode, quad_cov) %>% 
-  pivot_wider(names_from = sppcode, values_from = quad_cov, values_fill = 0) %>% 
-  select(-NONPRE)
+  pivot_wider(names_from = sppcode, values_from = quad_cov, values_fill = 0) 
+
+invspp <- if("NONPRE" %in% names(invspp)){invspp  |> select(-NONPRE)}else{invspp} 
 
 invspp$totcov = rowSums(invspp[,4:ncol(invspp)])
 
@@ -554,7 +630,7 @@ write_to_shp(invspp, shp_name =
 #---- Map 9 Tree Pests/Diseases ----
 # First compile plot-level disturbances that may include priority pests/pathogens
 disturb <- do.call(joinStandDisturbance, args = args_4yr) %>% 
-  filter(DisturbanceLabel != "None") %>% 
+  filter(DisturbanceSummary != "None") %>% 
   mutate(pest = case_when(grepl("beech leaf disease|BLD|Beech leaf disease", DisturbanceNote) ~ "BLD",
                           grepl("Emerald|emerald|EAB", DisturbanceNote) ~ "EAB",
                           grepl("Red pine scale|RPS|red pine scale", DisturbanceNote) ~ "RPS",
@@ -731,12 +807,13 @@ ised_taxon <- left_join(ised_taxon2, taxa %>% select(TaxonID, TSN, ScientificNam
 
 ised_join <- left_join(spp_all, ised_taxon, by = c("TSN", "ScientificName", "ParkUnit" = "Unit")) %>% 
   filter(IsEarlyDetection == 1) %>% 
-  select(-SampleYear, -cycle, -TSN, BA_cm2, -DBH_mean, -stock, -shrub_pct_freq,
+  select(#-SampleYear, 
+         -cycle, -TSN, BA_cm2, -DBH_mean, -stock, -shrub_pct_freq,
          -quad_pct_freq, -IsEarlyDetection) %>% 
   arrange(Plot_Name, ScientificName) %>% 
   left_join(plotevs_4yr %>% select(Plot_Name, X = xCoordinate, Y = yCoordinate),
             ., by = "Plot_Name") %>% filter(!is.na(ScientificName)) %>% 
-  select(Plot_Name, X, Y, ScientificName, quad_avg_cov)
+  select(Plot_Name, SampleYear, X, Y, ScientificName, quad_avg_cov)
 
 write.csv(ised_join, paste0(new_path, "tables/", park, "_early_detection_plant_species.csv"),
           row.names = FALSE)
@@ -761,6 +838,50 @@ if(nrow(pest_eds) > 0){
 write.csv(pest_eds, paste0(new_path, 'tables/', park, "_pest_detections.csv"), row.names = F)
 }
 
+#---- ED all species ----
+ised_spp <- left_join(ised_join, 
+                      prepTaxa() |> select(ScientificName, CommonName, Tree, Shrub, Vine, Herbaceous, Graminoid),
+                      by = "ScientificName") |> 
+  mutate(type = case_when(Tree == 1 ~ 'tree', 
+                          Vine == 1 ~ 'vine',
+                          Shrub == 1 ~ 'shrub',
+                          Vine == 1 ~ 'shrub',
+                          Graminoid == 1 ~ 'graminoid',
+                          Herbaceous == 1 ~ 'herbaceous',
+                          TRUE ~ "UNK")) |> 
+  select(-Tree, -Shrub, -Vine, -Herbaceous, -Graminoid)|> arrange(type, ScientificName)
+
+pest_names <- read.csv("tree_conditions_table.csv")
+
+ed_all <-
+  if(ncol(pest_eds) >= 5){
+    pest_pres <- names(pest_eds[names(pest_eds) %in% priority_pests])
+    pest_eds_long <- pest_eds |>  select(-pres) |> 
+      pivot_longer(cols = all_of(pest_pres), 
+                   names_to = "pest", values_to = "pres") #|> 
+    #select(-pres) #including this line includes every pest found in the park for every plot with  1+ pest, whether or not it's present
+    
+    pest_eds2 <- left_join(pest_eds_long, pest_names, by = c("pest" = "Code")) |> 
+      select(-pest) |> mutate(quad_avg_cov = NA_real_, type = 'pest')|> arrange(ScientificName)|>
+      filter(pres == 1) |> select(-pres)
+    
+    ed_all <- rbind(ised_spp, pest_eds2)
+  } else {ised_spp}
+
+ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonName, type) |> 
+  distinct() # was getting duplicates if pest was recorded as a condition and in a note
+
+ed_all_final$type[ed_all_final$ScientificName == "Rhamnus cathartica"] <- "tree/shrub"
+
+write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
+
+# Table 5: Tree species included in Map 3+4 -------------------------------
+
+grp_spp <- full_join(reg_spp_grp, tree_spp, by = "ScientificName") %>% arrange(ScientificName)
+
+write.csv(grp_spp, paste0(new_path, "tables/", "Table_5_", park, "_tree_species_in_Map3_4.csv"),
+          row.names = FALSE)
+
 #---- CWD by cycle
 cwd1 <- do.call(joinCWDData, args = args_vs) %>% select(Plot_Name, cycle, CWD_Vol)
 
@@ -777,7 +898,7 @@ cwd_wide <- cwd %>% pivot_wider(names_from = cycle,
                                 values_fill = 0) 
 
 
-apply(cwd_wide[,4:7], 2, mean)
+apply(cwd_wide[,4:ncol(cwd_wide)], 2, mean)
 
 max_cwd <- max(cwd_wide[,c(4:8)])
 

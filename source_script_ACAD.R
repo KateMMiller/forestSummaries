@@ -11,6 +11,9 @@ library(sf)
 
 importData()
 
+# forestNETN::importCSV(path = "C:/Users/KMMiller/OneDrive - DOI/NETN/R_Dev/data/NETN_forest_baks/",
+#                       zip_name = "NETN_Forest_20260605.zip")
+# forestNETN::importData(instance = "server", server = "inp2300irmadb01\\ntwk")
 # Downgrade Fraxinus to subcanopy species
 VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"] <- TRUE
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE
@@ -18,12 +21,12 @@ VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"]
 # Set parameters
 park = 'ACAD'
 from = 2006
-from_4yr = 2021
-to = 2024
-report_year = 2024 # used for file path and output naming, in case differs from last year sampled
+from_4yr = 2023
+to = 2026
+report_year = 2026 # used for file path and output naming, in case differs from last year sampled
 QAQC = FALSE
 locType = 'all'
-cycle_latest = 5
+cycle_latest = 6
 park_crs = ifelse(park %in% c("ACAD", "MIMA"), 26919, 26918)
 num_plots = case_when(park == "ACAD" ~ 176,
                       park == "MABI" ~ 24,
@@ -34,8 +37,8 @@ num_plots = case_when(park == "ACAD" ~ 176,
                       park == "SARA" ~ 32,
                       park == "WEFA" ~ 10)
 plot_size = ifelse(park == "ACAD", 225, 400)
-from_prev = 2016
-to_prev = 2019
+from_prev = 2019
+to_prev = 2022
 
 args_all = list(park = park, from = from, to = to, QAQC = QAQC, locType = locType)
 args_4yr = list(park = park, from = from_4yr, to = to, QAQC = QAQC, locType = locType)

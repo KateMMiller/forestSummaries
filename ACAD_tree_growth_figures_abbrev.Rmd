@@ -118,7 +118,7 @@ leaflet(height = 800, width = "90%") |>
                                     '<b>Plot Note: </b>', forest_plots$PlotNotes, "<br>",
                                     '<b>Directions: </b>', forest_plots$Directions, "<br>",
                                     paste0('<img src = "./output/2026/tree_growth_plots/', forest_plots$Plot_Name, '.png">', 
-                                           'alt = ', 'Tree growth plot for plot', forest_plots$Plot_Name), "<br>")
+                                           ' alt = ', '"Tree growth plot for plot ', forest_plots$Plot_Name), '"<br>')
                      )
 
 forest_map
@@ -230,73 +230,6 @@ for(i in seq_along(top_tree_spp$species)){
 
 }
   
-```
-
-
-### Individual Plots {.tabset}
-
-#### MDI - East {.tabset}
-
-```{r results = "asis", eval = rend}
-for(i in seq_along(mdi_e_list$Plot_Name)){
-  plotname <- mdi_e_list$Plot_Name[[i]]
-  img_path <- paste0("./output/2026/tree_growth_plots/", plotname, ".png")
-  alt_text <- paste0("Plot of tree growth and mortality in ", plotname)
-  cat("##### ", plotname, "\n\n")
-  cat("\n\n")
-  tryCatch(cat("![", paste0(alt_text), "](", img_path, "){width='50%'}"),
-           error = function(e){cat("No trees for given species in specified unit.")})
-  cat("\n\n")
-  cat("\n\n")
-}
-```
-
-#### MDI - West {.tabset}
-```{r results = "asis", eval = rend}
-for(i in seq_along(mdi_w_list$Plot_Name)){
-  plotname <- mdi_w_list$Plot_Name[[i]]
-  img_path <- paste0("./output/2026/tree_growth_plots/", plotname, ".png")
-  alt_text <- paste0("Plot of tree growth and mortality in ", plotname)
-  cat("##### ", plotname, "\n\n")
-  cat("\n\n")
-  tryCatch(cat("![", paste0(alt_text), "](", img_path, "){width='50%'}"),
-           error = function(e){cat("No trees for given species in specified unit.")})
-  cat("\n\n")
-  cat("\n\n")
-}
-```
-
-
-#### Schoodic {.tabset}
-```{r results = "asis", eval = rend}
-for(i in seq_along(sch_list$Plot_Name)){
-  plotname <- sch_list$Plot_Name[[i]]
-  img_path <- paste0("./output/2026/tree_growth_plots/", plotname, ".png")
-  alt_text <- paste0("Plot of tree growth and mortality in ", plotname)
-  cat("##### ", plotname, "\n\n")
-  cat("\n\n")
-  tryCatch(cat("![", paste0(alt_text), "](", img_path, "){width='50%'}"),
-           error = function(e){cat("No trees for given species in specified unit.")})
-
-  cat("\n\n")
-  cat("\n\n")
-}
-```
-
-#### Isle au Haut {.tabset}
-```{r results = "asis", eval = rend}
-for(i in seq_along(iah_list$Plot_Name)){
-  plotname <- iah_list$Plot_Name[[i]]
-  img_path <- paste0("./output/2026/tree_growth_plots/", plotname, ".png")
-  alt_text <- paste0("Plot of tree growth and mortality in ", plotname)
-  cat("##### ", plotname, "\n\n")
-  cat("\n\n")
-  tryCatch(cat("![", paste0(alt_text), "](", img_path, "){width='50%'}"),
-           error = function(e){cat("No trees for given species in specified unit.")})
-
-  cat("\n\n")
-  cat("\n\n")
-}
 ```
 
 ### All plots and trees {.tabset}

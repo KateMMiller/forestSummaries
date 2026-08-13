@@ -87,7 +87,7 @@ Juglans,Juglans sp.,Other Native,OTHNAT,1,1,NA
 Juglans cinerea,Juglans sp.,Other Native,OTHNAT,1,1,NA
 Juglans nigra,Juglans sp.,Other Native,OTHNAT,1,1,NA
 Juglans sp.,Juglans sp.,Other Native,OTHNAT,1,1,NA
-Juniperus virginiana,Juniperus virginiana,Juniperus virginiana (eastern redcedar),JUNVIR,0,1,NA
+Juniperus virginiana,Juniperus virginiana,Subcanopy,SUBCAN,0,1,NA
 Larix decidua,Exotic,Other Exotic,OTHEXO,0,0,NA
 Larix laricina,Northern Conifer,Other Native,OTHNAT,1,1,NA
 Larix sp.,Exotic,Other Exotic,OTHEXO,0,0,NA
@@ -201,6 +201,7 @@ Salix sp.,Other Native,Other Native,OTHNAT,0,1,1
 Sassafras albidum,Understory Tree,Subcanopy,SUBCAN,0,1,NA
 Sophora japonica,Exotic,Other Exotic,OTHEXO,0,0,NA
 Sorbus americana,Understory Tree,Subcanopy,SUBCAN,0,1,NA
+Sorbus decora,Understory Tree,Subcanopy,SUBCAN,0,1,NA
 Taxus,Exotic,Other Exotic,OTHEXO,0,0,1
 Taxus cuspidata,Exotic,Other Exotic,OTHEXO,0,0,1
 Thuja occidentalis,Other Native,Other Native,OTHNAT,1,1,NA

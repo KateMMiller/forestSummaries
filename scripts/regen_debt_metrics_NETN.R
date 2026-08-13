@@ -29,7 +29,7 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to, locType = "VS") |> f
   filter(EventID %in% evs_4yr)|> 
   select(Plot_Name, dbi = Deer_Browse_Index)
 
-mean_dbi <- signif(mean(dbi$dbi), 1)
+mean_dbi <- signif(mean(dbi$dbi), 2)
 mean_dbi # MORR: 4.0
 
 # dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> filter(IsStuntedWoodland == FALSE) |> 

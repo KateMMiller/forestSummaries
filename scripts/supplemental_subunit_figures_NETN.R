@@ -18,9 +18,9 @@ importData()
 park = 'ACAD'
 subunit = 'ACAD_Schoodic'
 from = 2006
-from_4yr = 2021
-to = 2024
-report_year = 2024 # used for file path and output naming, in case differs from last year sampled
+from_4yr = 2023
+to = 2026
+report_year = 2026 # used for file path and output naming, in case differs from last year sampled
 QAQC = FALSE
 locType = 'all'
 cycle_latest = 5
@@ -34,8 +34,8 @@ num_plots = case_when(park == "ACAD" ~ 176,
                       park == "SARA" ~ 32,
                       park == "WEFA" ~ 10)
 plot_size = ifelse(park == "ACAD", 225, 400)
-from_prev = 2017
-to_prev = 2019
+from_prev = 2019
+to_prev = 2022
 
 if(!exists("path")){path = paste0('./output/', report_year, "/NETN/")} #general path that should work for everyone
 
@@ -142,19 +142,21 @@ netn1_labs = c("1" = "Cycle 1: 2006 & 2008",
                "2" = "Cycle 2: 2010 & 2012", 
                "3" = "Cycle 3: 2014 & 2016", 
                "4" = "Cycle 4: 2018 & 2022",
-               "5" = "Cycle 5: 2023")
+               "5" = "Cycle 5: 2023 \u2013 2025")
 # netn2: MORR, ROVA, WEFA
 netn2_labs = c("1" = "Cycle 1: 2007 \u2013 2009",
                "2" = "Cycle 2: 2011 \u2013 2013", 
                "3" = "Cycle 3: 2015 \u2013 2017", 
                "4" = "Cycle 4: 2019 \u2013 2022",
-               "5" = "Cycle 5: 2024") 
+               "5" = "Cycle 5: 2024 \u2013 2026") 
 
 ACAD_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
               "2" = "Cycle 2: 2010 \u2013 2013", 
               "3" = "Cycle 3: 2014 \u2013 2017", 
               "4" = "Cycle 4: 2018 \u2013 2021",
-              "5" = "Cycle 5: 2022 \u2013 2024")
+              "5" = "Cycle 5: 2022 \u2013 2024",
+              "6" = "Cycle 6: 2026"
+              )
 
 cycle_labs <- switch(park,
                      "SARA" = netn1_labs, 
@@ -171,6 +173,8 @@ reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
 table(reg_smooth$size_class)
 
+num_col = ifelse(max(reg_smooth$cycle) > 5, 3, 5)
+
 reg_trend_plot <- 
   ggplot(reg_smooth, aes(x = size_class, y = estimate, #color = size_class,#linetype = sign, 
                          group = size_class)) + theme_FHM() +
@@ -178,7 +182,7 @@ reg_trend_plot <-
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8) +
   labs(x  = "Cycle", y = bquote(Stems/m^2)) +
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = 5) +
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs), ncol = num_col) +
   # scale_color_manual(values = reg_colors, name = "Size Class",
   #                    labels = reg_labels) +
   scale_fill_manual(values = reg_colors, name = "Size Class",
@@ -288,7 +292,7 @@ dbh_trend_plot <-
   geom_errorbar(aes(ymin = lower95, ymax = upper95), width = 0.2, linewidth = 0.5, 
                 color = 'DimGrey', alpha = 0.8)+
   labs(x  = "Cycle", y = "Stems/ha")+
-  facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = 5)+
+  facet_wrap(~cycle, labeller = as_labeller(cycle_labs_tr), ncol = num_col)+
   # scale_color_manual(values = reg_colors, name = "DBH Size Class",
   #                    labels = reg_labels)+
   # scale_fill_manual(values = reg_colors, name = "DBH Size Class",
@@ -299,6 +303,13 @@ dbh_trend_plot <-
         legend.position = 'none')
 
 dbh_trend_plot
+
+ggplot(tree_dbh_sm |> filter(class < 90), aes(x = class, y = estimate, group = cycle, color = factor(cycle))) + theme_FHM() +
+  geom_line(size = 1) + 
+  scale_colour_brewer(palette = 2) +
+  scale_x_continuous(breaks = seq(10, 90, 10)) +
+  labs(color = "Cycle", y = "Stem Density (stems/ha)", x = "DBH size class (10 cm)")
+
 
 ggsave(paste0(new_path, "figures/", "Figure_3B_", subunit, "_tree_dbh_dist_by_cycle.svg"),
        height = 5, width = 7.5, units = 'in')

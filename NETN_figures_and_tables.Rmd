@@ -8,8 +8,8 @@ output:
     self_contained: true
     
 params:
-  park: 'SARA'
-  report_year: 2025
+  park: 'ROVA'
+  report_year: 2026
 ---
 
 ```{r eval = F, include = F}
@@ -87,12 +87,16 @@ save_html(html_header, "html_header.html")
 ```
 
 ```{r include = F, cache = F}
-source('source_script_NETN.R') # sets up parameters. 
+if(park == "ACAD"){
+  source('source_script_ACAD.R')
+} else {source('source_script_NETN.R')} # sets up parameters. 
 ```
 
 <!-- ++++ Ended update here ++++ -->
 ```{r include = F, cache = F}
-source('./scripts/forest_summary_code_NETN.R') # main figures and tables
+if(park == "ACAD"){
+  source('./scripts/forest_summary_code_ACAD.R') # main figures and tables
+} else {source('./scripts/forest_summary_code_NETN.R')}
 ```
 ```{r include = F, cache = F}
 source('./scripts/regen_debt_metrics_NETN.R') # regen debt table and DBI figure
@@ -184,7 +188,7 @@ if(!park %in% c("ROVA", "SARA", "ACAD")){
   tab1_kab("ACAD", 61, 90, "table1c")
   tab1_kab("ACAD", 91, 120, "table1d")
   tab1_kab("ACAD", 121, 150, "table1e")
-  tab1_kab("ACAD", 151, num_plots, "table1f")
+  tab1_kab("ACAD", 151, 176, "table1f")
 }
 
 ```
@@ -315,7 +319,8 @@ save_html(tab4, "table4.html")
 ```{r}
 if(nrow(grp_spp)>0){
 tab5 <- 
-  kable(grp_spp, col.names = c("Latin Name", "Group: Map 3. Regeneration", "Group: Map 4. Tree Canopy"),
+  kable(grp_spp,
+        col.names = c("Latin Name", "Group: Map 3. Regeneration", "Group: Map 4. Tree Canopy"),
         align = c('l', 'c', 'c'), format = 'html',
         table.attr = "style='width:95%;height:95%;'") |> 
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
@@ -379,13 +384,13 @@ cat(paste0("<p><b>Figure 2.</b> Deer browse impacts by cycle in ", park_long, " 
 includeHTML("html_header.html")
 ```
 
-|       A. 
-```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
+|     A. 
+```{r out.width = "90%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
 include_graphics(paste0(new_path, "figures/Figure_3A_", park, "_regen_by_size_class_by_cycle.svg"))
 ```
 
-|       B. 
-```{r out.width = "92%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
+|     B. 
+```{r out.width = "90%", out.height="40%", out.extra = 'style="margin-top:-10px;margin-left:20px;"'}
 include_graphics(paste0(new_path, "figures/Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"))
 ```
 
@@ -403,7 +408,7 @@ cat(paste0("<p><b>Figure 3.</b> Stem density distributions by cycle in ", park_l
 includeHTML("html_header.html")
 ```
 
-```{r out.width = "98%", out.height = "95%"}
+```{r out.width = "97%", out.height = "95%"}
 include_graphics(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_cycle.svg"))
 ```
 
@@ -477,80 +482,80 @@ cat(cap_t1)
 
 ```{r}
 tab1_eval <- ifelse(park %in% c("ACAD", "ROVA", "SARA"), FALSE, TRUE)
-tab1_evalb <- ifelse(park %in% c("ACAD", "ROVA", "SARA"), TRUE, FALSE)
-tab1_evalc <- ifelse(park %in% "ACAD", TRUE, FALSE)
+tab1b_eval <- ifelse(park %in% c("ACAD", "ROVA", "SARA"), TRUE, FALSE)
+tab1c_eval <- ifelse(park %in% "ACAD", FALSE, FALSE)
 ```
 
 ```{r echo = F, eval = tab1_eval, warning = F, message = F}
 includeHTML("table1.html")
 ```
 
-```{r echo = F, eval = !tab1_eval, warning = F, message = F}
+```{r echo = F, eval = tab1b_eval, warning = F, message = F}
 includeHTML("table1a.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalb, warning = F, message = F}
+```{r results = 'asis', eval = tab1b_eval, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalb}
+```{r results = 'asis', eval = tab1b_eval}
 cat(cap_t1_cont)
 ```
 
-```{r echo = F, eval = tab1_evalb, warning = F, message = F}
+```{r echo = F, eval = tab1b_eval, warning = F, message = F}
 includeHTML("table1b.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
+```{r results = 'asis', eval = tab1c_eval, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc}
+```{r results = 'asis', eval = tab1c_eval}
 cat(cap_t1_cont)
 ```
 
-```{r echo = F, eval = tab1_evalc, warning = F, message = F}
+```{r echo = F, eval = tab1c_eval, warning = F, message = F}
 includeHTML("table1c.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
+```{r results = 'asis', eval = tab1c_eval, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc}
+```{r results = 'asis', eval = tab1c_eval}
 cat(cap_t1_cont)
 ```
 
-```{r echo = F, eval = tab1_evalc, warning = F, message = F}
+```{r echo = F, eval = tab1c_eval, warning = F, message = F}
 includeHTML("table1d.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
+```{r results = 'asis', eval = tab1c_eval, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc}
+```{r results = 'asis', eval = tab1c_eval}
 cat(cap_t1_cont)
 ```
 
-```{r echo = F, eval = tab1_evalc, warning = F, message = F}
+```{r echo = F, eval = tab1c_eval, warning = F, message = F}
 includeHTML("table1e.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc, warning = F, message = F}
+```{r results = 'asis', eval = tab1c_eval, warning = F, message = F}
 cat("### {.page-break-before}", "\n\n")
 includeHTML("html_header.html")
 ```
 
-```{r results = 'asis', eval = tab1_evalc}
+```{r results = 'asis', eval = tab1c_eval}
 cat(cap_t1_cont)
 ```
 
-```{r echo = F, eval = tab1_evalc, warning = F, message = F}
+```{r echo = F, eval = tab1c_eval, warning = F, message = F}
 includeHTML("table1f.html")
 ```
 
