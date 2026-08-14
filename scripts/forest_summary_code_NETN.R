@@ -114,16 +114,16 @@ reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm
 reg_size_4yr$total <- rowSums(reg_size_4yr[,reg_sz_cols])
 head(reg_size_4yr)
 
-size_no <- reg_size_4yr |> filter(total == 0)
+size_no <- reg_size_4yr |> filter(total == 0) |> rename(X = xCoordinate, Y = yCoordinate)
 
 no_size <- size_no$Plot_Name
 
-reg_size_4yr <- reg_size_4yr|> filter(!(Plot_Name %in% no_size)) |> #check total # of plots in all dfs is right
+reg_size_4yr <- reg_size_4yr |> filter(!(Plot_Name %in% no_size)) |> #check total # of plots in all dfs is right
   select(Plot_Name, PlotCode, X = xCoordinate, Y = yCoordinate, SampleYear, 
          s15_30 = seed_15_30cm, s30_100 = seed_30_100cm, s100_150 = seed_100_150cm, s150p = seed_p150cm, 
          sap = sap_den, total) # abbreviate for shp
 
-if(nrow(size_no) >0){
+if(nrow(size_no) > 0){
   write_to_shp(size_no, 
                shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_size_class_cycle", cycle_latest, "_no_reg", ".shp" ))
 }
@@ -372,7 +372,7 @@ if(park == "MORR"){
                                TRUE ~ spp_grp))
   
 } 
-  if(park == "ROVA"){
+if(park == "ROVA"){
     reg_grps <- reg_grps %>% 
       mutate(sppcode = case_when(ScientificName == "Acer rubrum" ~ "ACESPP",
                                  ScientificName == "Acer platanoides" ~ "ACEPLA",
@@ -1457,7 +1457,7 @@ pinres2 <- pinres1 |> group_by(Plot_Name, PlotCode, cycle) |>
 
 pinres_plotevs <- plotevs %>% select(Plot_Name, PlotCode, cycle, X = xCoordinate, Y = yCoordinate) 
 
-pinres <- left_join(pinres_plotevs, frax2 |> select(-sppcode), by = c("Plot_Name", "PlotCode", "cycle")) %>%
+pinres <- left_join(pinres_plotevs, pinres2 |> select(-sppcode), by = c("Plot_Name", "PlotCode", "cycle")) %>%
   arrange(cycle, Plot_Name, PlotCode) 
 
 pinres$num_stems[is.na(pinres$num_stems)] <- 0
@@ -1492,7 +1492,6 @@ if(nrow(pinres_cycle_incom) > 0){
                shp_name = paste0(new_path,  "shapefiles/", park, "_pinres_trees_by_cycle_incomplete", ".shp" ))
 }
 
-
 if(nrow(pinres_cycle_com) > 0){
   write_to_shp(pinres_cycle_com, 
                shp_name = paste0(new_path, "shapefiles/", park, "_pinres_trees_by_cycle", ".shp" ))
@@ -1510,7 +1509,7 @@ if(park == "ROVA"){
   
   tsucan_plotevs <- plotevs %>% select(Plot_Name, PlotCode, cycle, X = xCoordinate, Y = yCoordinate) 
   
-  tsucan <- left_join(tsucan_plotevs, frax2 |> select(-sppcode), by = c("Plot_Name", "PlotCode", "cycle")) %>%
+  tsucan <- left_join(tsucan_plotevs, tsucan2 |> select(-sppcode), by = c("Plot_Name", "PlotCode", "cycle")) %>%
     arrange(cycle, Plot_Name, PlotCode) 
   
   tsucan$num_stems[is.na(tsucan$num_stems)] <- 0
