@@ -23,7 +23,7 @@ VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"]
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE
 
 # # Set parameters
-# park = 'ROVA'
+# park = 'WEFA'
 # from = 2006
 # from_4yr = 2023
 # to = 2026
