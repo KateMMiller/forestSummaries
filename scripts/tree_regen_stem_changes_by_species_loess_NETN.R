@@ -222,9 +222,10 @@ tree_spp_sum1[,c("stems", "BA_m2ha")][is.na(tree_spp_sum1[,c("stems", "BA_m2ha")
 
 conv_to_ha <- ifelse(park == "ACAD", 10000/225, 10000/400)
 
-tree_spp_sum <- tree_spp_sum1 |> group_by(Plot_Name, SampleYear, cycle, spp_grp, sppcode) |> 
+tree_spp_sum <- tree_spp_sum1 |> group_by(Plot_Name, SampleYear, spp_grp, sppcode) |> 
   summarize(stems_ha = (sum(stems)) * conv_to_ha,
-            BA_m2ha = sum(BA_m2ha), .groups = 'drop')
+            BA_m2ha = sum(BA_m2ha), .groups = 'drop') |> 
+  left_join(plot_evs |> select(Plot_Name, SampleYear, cycle), by = c("Plot_Name", "SampleYear"))
 
 head(tree_spp_sum)
 spp_list <- sort(unique(tree_spp_sum$sppcode))
