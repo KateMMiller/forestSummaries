@@ -253,7 +253,8 @@ tree_dbh_sm <- suppressWarnings(# warning is for 'c', which we're not using
   separate(dbh_class2, into = c("a", "b", "c"), sep = "_", remove = FALSE) %>% 
   mutate(class = as.numeric(b)) %>% select(-a, -b, -c, -dbh_class2))
 
-AIC_test <- map_dfr(seq_along(1:5), function(x){
+
+AIC_test <- map_dfr(seq_along(sort(unique(tree_dbh_sm$cycle))), function(x){
   df <- tree_dbh_sm %>% filter(cycle == x)
   lin_mod <- lm(estimate ~ class, data = df)
   exp_mod <- lm(log(estimate + e) ~ class, data = df)
@@ -311,11 +312,11 @@ tree_dd_sum <- tree_dd |> summarize(across(.cols = contains("dens"), .fns = mean
 head(tree_dd_sum)
 
 #dbh_trend_plot2 <- 
-ggplot(tree_dbh_sm |> filter(class < 90), aes(x = class, y = estimate, group = cycle, color = factor(cycle))) + theme_FHM() +
-  geom_line(size = 1) + 
-  scale_colour_brewer(palette = 2) +
-  scale_x_continuous(breaks = seq(10, 90, 10)) +
-  labs(color = "Cycle", y = "Stem Density (stems/ha)", x = "DBH size class (10 cm)")
+# ggplot(tree_dbh_sm |> filter(class < 90), aes(x = class, y = estimate, group = cycle, color = factor(cycle))) + theme_FHM() +
+#   geom_line(size = 1) + 
+#   scale_colour_brewer(palette = 2) +
+#   scale_x_continuous(breaks = seq(10, 90, 10)) +
+#   labs(color = "Cycle", y = "Stem Density (stems/ha)", x = "DBH size class (10 cm)")
 
 dbh_trend_plot 
 ggsave(paste0(new_path, "figures/", "Figure_3B_", park, "_tree_dbh_dist_by_cycle.svg"),
