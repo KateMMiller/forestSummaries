@@ -19,14 +19,14 @@ VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fraxinus"]
 #VIEWS_NETN$Taxa_NETN$IsCanopyExclusion[VIEWS_NETN$Taxa_NETN$Genus == "Fagus"] <- FALSE
 
 # Set parameters
-park = 'ACAD'
-from = 2006
-from_4yr = 2023
-to = 2026
-report_year = 2026 # used for file path and output naming, in case differs from last year sampled
-QAQC = FALSE
-locType = 'all'
-cycle_latest = 6
+# park = 'ACAD'
+# from = 2006
+# from_4yr = 2023
+# to = 2026
+# report_year = 2026 # used for file path and output naming, in case differs from last year sampled
+# QAQC = FALSE
+# locType = 'all'
+# cycle_latest = 6
 park_crs = ifelse(park %in% c("ACAD", "MIMA"), 26919, 26918)
 num_plots = case_when(park == "ACAD" ~ 176,
                       park == "MABI" ~ 24,
@@ -79,11 +79,10 @@ invisible(lapply(folders, function(x) {
 trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 
 # Source files
-# source('./scripts/forest_summary_code_NETN.R')
+# source('./scripts/forest_summary_code_ACAD.R')
 # source('./scripts/regen_debt_metrics_NETN.R')
 # source('./scripts/tree_regen_stem_changes_by_species_loess_NETN.R')
 
-# 
-# source("./scripts/forest_summary_code_ACAD.R")
+
 
 
