@@ -18,7 +18,7 @@ params:
 # 1. Update the NETN_params.csv to include the latest years for each park 
 # 2. Update the month and date in the www/styles_NETN_pages.css. 
 #    Look for it in the @page > @bottom-left section. 
-# 3. Update cycle_labs in forest_summary_code_NETN.R
+# 3. Update cycle_labs in source_script_NETN.R
 # 4. Update make_maps (see next code chunk) to TRUE, if ArcGIS maps will be
 #    created, and want to include Table 5.
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

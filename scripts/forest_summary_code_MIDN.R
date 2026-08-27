@@ -171,58 +171,8 @@ reg_smooth$size_class <- factor(reg_smooth$size_class,
                                            "seed_100_150cm", "seed_p150cm", 
                                            "sap_den"))
 
-# Set up cycle labels for figures
-#midn1 <- c("FRSP", "PETE", "RICH")
-midn1_labs <- c("1" = "Cycle 1: 2007 \u2013 2010",
-                "2" = "Cycle 2: 2011 \u2013 2014",
-                "3" = "Cycle 3: 2015 \u2013 2018",
-                "4" = "Cycle 4: 2019 \u2013 2022",
-                "5" = "Cycle 5: 2023 \u2013 2026")
-#midn2 <- c("APCO", "BOWA", "GETT", "HOFU", "VAFO")
-midn2_labs <- c("1" = "Cycle 1: 2007 \u2013 2010",
-                "2" = "Cycle 2: 2011 \u2013 2014",
-                "3" = "Cycle 3: 2015 \u2013 2018",
-                "4" = "Cycle 4: 2019 \u2013 2023",
-                "5" = "Cycle 5: 2024 \u2013 2026")
-#ncbn <- c("GEWA", "THST")
-ncbn_labs <- c("1" = "Cycle 1: 2008 \u2013 2011",
-               "2" = "Cycle 2: 2012 \u2013 2015",
-               "3" = "Cycle 3: 2016 \u2013 2019",
-               "4" = "Cycle 4: 2021 \u2013 2023",
-               "5" = "Cycle 5: 2024 \u2013 2026")
-
-colo_labs <- c("1" = "Cycle 1: 2011 \u2013 2014",
-               "2" = "Cycle 2: 2015 \u2013 2018",
-               "3" = "Cycle 3: 2019 \u2013 2023",
-               "4" = "Cycle 4: 2024 \u2013 2026")
-
-sahi_labs = c("1" = "Cycle 1: 2009",
-              "2" = "Cycle 2: 2013",
-              "3" = "Cycle 3: 2017",
-              "4" = "Cycle 4: 2023")
-
-asis_labs = c("1" = "Cycle 1: 2019 \u2013 2024",
-              "2" = "Cycle 2: 2025 \u2013 2026") #full cycle ends in 2024
-  
-
-cycle_labs <- switch(park,
-                     "FRSP" = midn1_labs, 
-                     "PETE" = midn1_labs,
-                     "RICH" = midn1_labs,
-                     "APCO" = midn2_labs,
-                     "BOWA" = midn2_labs,
-                     "GETT" = midn2_labs,
-                     "HOFU" = midn2_labs,
-                     "VAFO" = midn2_labs,
-                     "GEWA" = ncbn_labs,
-                     "THST" = ncbn_labs,
-                     "COLO" = colo_labs,
-                     "SAHI" = sahi_labs,
-                     "ASIS" = asis_labs)
-
 reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")
-table(reg_smooth$size_class)
 
 reg_trend_plot <- 
   ggplot(reg_smooth, aes(x = size_class, y = estimate, #color = size_class,#linetype = sign, 

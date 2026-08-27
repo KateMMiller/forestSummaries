@@ -150,12 +150,6 @@ reg_size_sum$size_class <- factor(reg_size_sum$size_class,
                                 levels = c("seed_15_30cm", "seed_30_100cm", 
                                            "seed_100_150cm", "seed_p150cm", 
                                            "sap_den"))
-# Set up cycle labels for figures
-cycle_labs <- c("1" = "Cycle 1: 2009",
-                "2" = "Cycle 2: 2013",
-                "3" = "Cycle 3: 2017",
-                "4" = "Cycle 4: 2023")
-
 
 reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")

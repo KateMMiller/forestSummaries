@@ -10,8 +10,8 @@ output:
     #   in_header: "header_MIDN.html"
     #   after_body: "footer_MIDN.html"
 params:
-  park: 'VAFO'
-  report_year: 2026
+  park: 'ASIS'
+  report_year: 2025
   make_maps: FALSE
 ---
 
@@ -20,7 +20,7 @@ params:
 # 1. Update the MIDN_params.csv to include the latest years for each park 
 # 2. Update the month and date in the www/styles_MIDN_pages.css. 
 #    Look for it in the @page > @bottom-left section. 
-# 3. Update cycle_labs in forest_summary_code_MIDN.R
+# 3. Update cycle_labs in source_script_MIDN.R
 # 4. Update make_maps (see next code chunk) to TRUE, if ArcGIS maps will be
 #    created, and want to include Table 5.
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -100,7 +100,9 @@ save_html(html_header, "html_header.html")
 source('source_script_MIDN.R') # sets up parameters. 
 ```
 ```{r include = F, cache = F}
-source('./scripts/forest_summary_code_MIDN.R') # main figures and tables
+if(park == 'ASIS'){
+  source("./scripts/forest_summary_code_ASIS.R")
+} else {source('./scripts/forest_summary_code_MIDN.R')} # main figures and tables
 ```
 ```{r include = F, cache = F}
 source('./scripts/regen_debt_metrics_MIDN.R') # regen debt table and DBI figure
@@ -340,7 +342,7 @@ include_graphics(paste0(new_path, "figures/", "Figure_2_", park, "_DBI_by_cycle.
 cat(paste0("<p><b>Figure 2.</b> Deer browse impacts by cycle in ", park_long, " (", park, "). ",
     paste(cycle_labs, collapse = "; "), ". ", 
     ifelse(park %in% c("VAFO", "HOFU", "GETT", "APCO", "BOWA", "PETE", "FRSP", "RICH"), 
-           "Note that Cycle 1 only includes 3 out of 4 panels of plots.",
+           "Note that Cycle 1 only includes 3 out of 4 panels of plots. ",
       ifelse(park %in% c("GEWA", "THST"), 
              "Note that CYcle 1 only includes 2 out of 4 panels of plots. ", 
              "")),

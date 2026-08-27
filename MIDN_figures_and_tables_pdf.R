@@ -38,28 +38,17 @@ render_MIDN_report("APCO", 2026)
 render_MIDN_report("BOWA", 2026)
 render_MIDN_report("COLO", 2026)
 render_MIDN_report("PETE", 2026)
+render_MIDN_report("ASIS", 2025)
+#render_MIDN_report("FRSP", 2026)
+#render_MIDN_report("RICH", 2026)
+
 
 pdf_print("VAFO") # not sure why purrr::map won't iterate on pdf_print
 pdf_print("HOFU")
 pdf_print("GETT")
-chrome_print(input = "ACAD_figures_and_tables.html",
-             output = paste0(out_path, "ACAD_Figures_and_Tables_",
-                             format(Sys.time(), "%b_%Y"), ".pdf"),
-             format = "pdf")
-
-# Odd year group of parks
-report_year = 2025
-out_path = paste0('./output/', report_year, "/NETN/")
-
-render_NETN_report("SARA", 2025)
-
-parks = c("MABI", "MIMA", "SAGA", "SARA")
-years = rep(2025, 4)
-
-purrr::map2(parks, years, ~render_NETN_report(.x, .y))
-pdf_print("MABI") # not sure why purrr::map won't iterate on pdf_print
-pdf_print("MIMA")
-pdf_print("SAGA")
-pdf_print("SARA")
-
-
+pdf_print("APCO") 
+pdf_print("BOWA")
+pdf_print("COLO")
+pdf_print("PETE")
+# pdf_print("FRSP")
+# pdf_print("RICH")

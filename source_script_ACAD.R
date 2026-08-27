@@ -76,6 +76,14 @@ invisible(lapply(folders, function(x) {
 })
 )
 
+cycle_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
+               "2" = "Cycle 2: 2010 \u2013 2013", 
+               "3" = "Cycle 3: 2014 \u2013 2017", 
+               "4" = "Cycle 4: 2018 \u2013 2022",
+               "5" = "Cycle 5: 2022 \u2013 2025",
+               "6" = "Cycle 6: 2026"
+)
+
 trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 
 # Source files

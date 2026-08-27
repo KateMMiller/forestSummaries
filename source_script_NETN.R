@@ -80,6 +80,37 @@ invisible(lapply(folders, function(x) {
 })
 )
 
+# Set up cycle labels for figures
+# netn1+2: SARA, MABI, SAGA, MIMA
+netn1_labs = c("1" = "Cycle 1: 2006 & 2008",
+               "2" = "Cycle 2: 2010 & 2012", 
+               "3" = "Cycle 3: 2014 & 2016", 
+               "4" = "Cycle 4: 2018 & 2022",
+               "5" = "Cycle 5: 2023 & 2025")
+# netn2: MORR, ROVA, WEFA
+netn2_labs = c("1" = "Cycle 1: 2007 & 2009",
+               "2" = "Cycle 2: 2011 & 2013", 
+               "3" = "Cycle 3: 2015 & 2017", 
+               "4" = "Cycle 4: 2019 & 2022",
+               "5" = "Cycle 5: 2024 & 2026") 
+
+ACAD_labs = c("1" = "Cycle 1: 2006 \u2013 2009",
+              "2" = "Cycle 2: 2010 \u2013 2013", 
+              "3" = "Cycle 3: 2014 \u2013 2017", 
+              "4" = "Cycle 4: 2018 \u2013 2021",
+              "5" = "Cycle 5: 2022 \u2013 2025",
+              "6" = "Cycle 6: 2026")
+
+cycle_labs <- switch(park,
+                     "SARA" = netn1_labs, 
+                     "MABI" = netn1_labs,
+                     "SAGA" = netn1_labs,
+                     "MIMA" = netn1_labs,
+                     "MORR" = netn2_labs,
+                     "ROVA" = netn2_labs,
+                     "WEFA" = netn2_labs,
+                     "ACAD" = ACAD_labs)
+
 trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 
 # Source files
