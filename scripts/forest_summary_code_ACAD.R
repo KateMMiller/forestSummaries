@@ -723,9 +723,11 @@ write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park,
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
 #---- Table 3 Invasive species by number of plots cycle
-inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
-  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% arrange(cycle) %>% 
-  group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
+inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) |>  
+  mutate(present = ifelse(ScientificName == "None present", 0, 1)) |> 
+  arrange(cycle) |>  
+  summarize(num_plots = sum(present), 
+            .by = c(ScientificName, cycle)) |> 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
 
@@ -774,8 +776,11 @@ vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic
 
 colSums(vincetoxicum[,-1])
 
-inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName),
-                     by = "ScientificName") %>% select(ScientificName, CommonName, everything())
+inv_spp <- left_join(inv_spp1, prepTaxa() |> select(ScientificName, CommonName, InvasiveNETN),
+                     by = "ScientificName") |> select(ScientificName, CommonName, InvasiveNETN, everything()) |> 
+  mutate(InvasiveNETN = ifelse(InvasiveNETN == TRUE, "Yes", "No")) |> 
+  arrange(desc(InvasiveNETN), ScientificName) 
+
 
 write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
@@ -873,6 +878,7 @@ ed_all_final <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, Co
   distinct() # was getting duplicates if pest was recorded as a condition and in a note
 
 ed_all_final$type[ed_all_final$ScientificName == "Rhamnus cathartica"] <- "tree/shrub"
+ed_all_final$type[ed_all_final$ScientificName == "Ligustrum"] <- "shrub"
 
 write.csv(ed_all_final, paste0(new_path, 'tables/', "Table_4_", park, "_early_detections.csv"), row.names = F)
 

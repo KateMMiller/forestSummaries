@@ -9,7 +9,7 @@ library(forestTrends)
 library(tidyverse)
 library(sf)
 
-importData()
+# importData()
 
 # forestNETN::importCSV(path = "C:/Users/KMMiller/OneDrive - DOI/NETN/R_Dev/data/NETN_forest_baks/",
 #                       zip_name = "NETN_Forest_20260605.zip")
