@@ -1076,9 +1076,9 @@ write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park,
 
 # Table 3 Exotic species by number of plots cycle -------------------------
 # for 2024 including all exotic species found in plots instead of only invasives, except for MORR
-inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
-  mutate(present = ifelse(ScientificName == "None present", 0, 1)) %>% 
-  group_by(ScientificName, cycle) %>% summarize(num_plots = sum(present), .groups = 'drop') %>% 
+inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) |>  
+  mutate(present = ifelse(ScientificName == "None present", 0, 1)) |> 
+  summarize(num_plots = sum(present), .by = c(ScientificName, cycle)) |>  
   arrange(cycle) %>% # moved arrange() b/c cycle_1 was coming out last instead of first
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
               names_prefix = "cycle_")
@@ -1136,7 +1136,7 @@ inv_spp3 <- inv_spp2 %>%  filter(ScientificName != 'None present') %>%
                                                          InvasiveNETN =='FALSE' ~ 'No')) %>% 
                          relocate(InvasiveNETN, .after = CommonName) |> arrange(ScientificName)
 
-inv_spp <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA")){ # too many species to include all
+inv_spp <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA", "WEFA")){ # too many species to include all
   inv_spp3 |> filter(InvasiveNETN == "Yes")
   } else {inv_spp3}
 
@@ -1241,6 +1241,7 @@ ed_all2 <- ed_all |> select(Plot_Name, SampleYear, X, Y, ScientificName, CommonN
   distinct() # was getting duplicates if pest was recorded as a condition and in a note
 
 ed_all2$type[ed_all2$ScientificName == "Rhamnus cathartica"] <- "tree/shrub"
+ed_all2$type[ed_all2$ScientificName == "Ligustrum"] <- "shrub"
 
 
 ed_all_final <- if(park == "ROVA"){

@@ -895,6 +895,18 @@ guild_smooth <- purrr::map_dfr(guild_list,
                                                  num_reps = 1) |> 
                                    mutate(guild = g)
                                })
+
+guild_f_smooth <- purrr::map_dfr(guild_list,
+                               function(g){
+                                 df <- guilds |> filter(Group %in% g)
+                                 case_boot_loess(df, x = "SampleYear", y = "quad_pct_freq", 
+                                                 ID = "Plot_Name", span = span,
+                                                 group = "Group",
+                                                 num_reps = 1) |> 
+                                   mutate(guild = g)
+                               })
+
+
 # relating shrub cover and regen
 shrub_guild <- guilds |> filter(Group == "Shrub")
 
@@ -944,6 +956,7 @@ guild_plot <-
   ggplot(guild_smooth, aes(x = SampleYear, y = estimate)) +
   geom_line(aes(color = guild, group = guild), linewidth = 1.5) +
   labs(x = NULL, y = "% Invasive Cover") +
+  {if(park == 'ACAD'){ylim(0, 0.5)}} +
   theme_FHM()+
   scale_color_manual(values = gcols,  name = "Invasive Guild") +
   scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
@@ -955,11 +968,36 @@ guild_plot <-
         legend.text = element_text(size = 10), 
         plot.margin = margin(0.4, 0.4, 0.1, 0.4, "cm"))
 
-guild_plot
-
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.svg"),
        height = 4.6, width = 8)
 
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.png"),
        height = 4.6, width = 8, dpi = 600)
+
+guild_f_plot <- 
+  ggplot(guild_f_smooth, aes(x = SampleYear, y = estimate)) +
+  geom_line(aes(color = guild, group = guild), linewidth = 1.5) +
+  labs(x = NULL, y = "Invasive Quadrat % Frequency") +
+  theme_FHM()+
+  {if(park == 'ACAD'){ylim(0, 0.5)}} +
+  scale_color_manual(values = gcols,  name = "Invasive Guild") +
+  scale_x_continuous(breaks = c(seq(from, to, by = 2), to), 
+                     limits = c(from, to)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5),
+        legend.position = 'right',  
+        legend.key.width = unit(1.75, 'cm'), 
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10), 
+        plot.margin = margin(0.4, 0.4, 0.1, 0.4, "cm"))
+
+guild_f_plot
+
+ggarrange(guild_plot, guild_f_plot, common.legend = T, legend = 'right', nrow = 2, labels = c("A.", "B."))
+
+ggsave(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_and_freq_by_cycle.svg"),
+       height = 11, width = 9.5)
+
+ggsave(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_and_freq_by_cycle.png"),
+       height = 11, width = 9.5, dpi = 600)
+
 

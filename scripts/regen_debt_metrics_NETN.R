@@ -30,7 +30,7 @@ dbi <- joinStandData(park = park, from = from_4yr, to = to, locType = "VS") |> f
   select(Plot_Name, dbi = Deer_Browse_Index)
 
 mean_dbi <- signif(mean(dbi$dbi), 2)
-mean_dbi # MORR: 4.0
+mean_dbi # MORR: 4.0; ACAD 2.8
 
 # dbiprev <- joinStandData(park = park, from = from_prev, to = to_prev) |> filter(IsStuntedWoodland == FALSE) |> 
 #   select(Plot_Name, dbi = Deer_Browse_Index) 
@@ -98,7 +98,7 @@ reg_natcan <- reg |> filter(NatCan == 1) |>
   summarize(sapden = sum(sap_den, na.rm = T),
             seedden = sum(seed_den, na.rm = T),
             stock = sum(stock, na.rm = T), .groups = 'drop') |> 
-            mutate(stocked = ifelse(stock > DBI_threshold, 1, 0)) # DBI > 3, so stocking must be 100
+            mutate(stocked = ifelse(stock >= DBI_threshold, 1, 0)) # DBI > 3, so stocking must be 100
 
 regsum_natcan <- reg_natcan |> 
   summarize(sapden = sum(sapden)/num_plots,

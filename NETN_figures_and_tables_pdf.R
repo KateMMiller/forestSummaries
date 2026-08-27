@@ -38,6 +38,10 @@ render_NETN_report("WEFA", 2026)
 pdf_print("MORR") # not sure why purrr::map won't iterate on pdf_print
 pdf_print("ROVA")
 pdf_print("WEFA")
+chrome_print(input = "ACAD_figures_and_tables.html",
+             output = paste0(out_path, "ACAD_Figures_and_Tables_",
+                             format(Sys.time(), "%b_%Y"), ".pdf"),
+             format = "pdf")
 
 # Odd year group of parks
 report_year = 2025
