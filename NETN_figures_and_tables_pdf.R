@@ -14,6 +14,16 @@ render_NETN_report <- function(parkcode, year){
            output_options = list(self_contained = TRUE))
 }
 
+render_ACAD_report <- function(year){
+  render(input = "ACAD_figures_and_tables.Rmd",
+         params = list(park = "ACAD", report_year = year),
+         #envir = VIEWS_NETN,
+         output_file = paste0("ACAD_Figures_and_Tables_", 
+                              format(Sys.time(), '%b_%Y'), ".html"),
+         output_dir = out_path,
+         output_options = list(self_contained = TRUE))
+}
+
 pdf_print <- function(parkcode){
   report_dir <- paste0(out_path)
   report_name <- paste0(parkcode, "_Figures_and_Tables_", format(Sys.time(), "%b_%Y"))
@@ -34,6 +44,7 @@ years = rep(2026, 3)
 render_NETN_report("MORR", 2026)
 render_NETN_report("ROVA", 2026)
 render_NETN_report("WEFA", 2026)
+render_ACAD_report(2026)
 
 pdf_print("MORR") # not sure why purrr::map won't iterate on pdf_print
 pdf_print("ROVA")
