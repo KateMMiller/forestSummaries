@@ -11,7 +11,7 @@ library(sf)
 library(ggpubr)
 
 #if(!exists("VIEWS_NETN", envir = VIEWS_NETN)){
-importData()
+#importData()
 #   importCSV(path = "../data/", zip_name = 'NETN_Forest_20250926.zip') #DP from 2025
    #importCSV(path = "../data/", zip_name = 'NETN_Forest_20260612.zip') #DP from 2025
 #importCSV(path = "../data", zip_name = "NETN_Forest_20260626.zip")   

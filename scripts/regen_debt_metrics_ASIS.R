@@ -191,7 +191,7 @@ sor_fun <- function(df){
 
 plot_list <- sort(unique(comb$Plot_Name))
 
-sor_sap <- purrr::map(plot_list, function(plt){
+sor_sap <- purrr::map(seq_along(plot_list), function(plt){
   df <- comb |> 
     filter(Plot_Name %in% plot_list[plt]) |> 
     filter(strata %in% c("tree", "sapling")) 
@@ -200,7 +200,7 @@ sor_sap <- purrr::map(plot_list, function(plt){
 
 sor_sap_mean <- mean(sor_sap$sap_sor, na.rm = T)
 
-sor_seed <- purrr::map(plot_list, function(plt){
+sor_seed <- purrr::map(seq_along(plot_list), function(plt){
   df <- comb |> 
     filter(Plot_Name %in% plot_list[plt]) |> 
     filter(strata %in% c("tree", "seedling")) 
