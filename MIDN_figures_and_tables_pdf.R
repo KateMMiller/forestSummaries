@@ -63,7 +63,7 @@ render_MIDN_report_subunit <- function(parkcode, sub, year){
          params = list(park = parkcode, subunit = sub, report_year = year),
          #envir = VIEWS_NETN,
          output_file = paste0(parkcode, "_", sub,  
-                              "_Figures_and_Tables_", 
+                              "_Figures_", 
                               format(Sys.time(), '%b_%Y'), ".html"),
          output_dir = out_path,
          output_options = list(self_contained = TRUE))
@@ -71,7 +71,7 @@ render_MIDN_report_subunit <- function(parkcode, sub, year){
 
 pdf_print_subunit <- function(parkcode, sub){
   report_dir <- paste0(out_path)
-  report_name <- paste0(parkcode, "_", sub, "_Figures_and_Tables_", format(Sys.time(), "%b_%Y"))
+  report_name <- paste0(parkcode, "_", sub, "_Figures_", format(Sys.time(), "%b_%Y"))
   chrome_print(input = paste0(out_path, report_name, ".html"), 
                output = paste0(out_path, report_name, ".pdf"),
                format = 'pdf')
