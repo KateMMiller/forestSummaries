@@ -11,6 +11,15 @@ output:
 params:
   report_year: 2024 # year report was generated for
 ---
+```{r eval = F, include = F}
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# 1. This report is was developed when ASIS only had 1 cycle of
+# data to summarize. Now that we are on the 2nd cycle, use the 
+# MIDN_figures_and_tables.Rmd to generate the summary for ASIS.
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+```
+
+
 ```{r setup, include = FALSE, results = 'hide'}
 # NOTE: Once ASIS has started a second cycle, you should be able to transition to the MIDN-level summaries.
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center', message = F, warning = F)
@@ -30,6 +39,10 @@ library(kableExtra)
 library(forestTrends)
 library(sf)
 library(vegan)
+
+server_add <- read.csv('../server.csv')[1,]
+forestMIDN::importData(instance = "server", server = server_add)
+make_maps = params$make_maps
 ```
 
 ```{r}
@@ -37,7 +50,6 @@ library(vegan)
 park <<- "ASIS" #assigns to global env. so easier for later code to find
 report_year <- params$report_year
 path <<- paste0('./output/', report_year, "/MIDN/")
-
 
 #path <<- 'C:/NETN/Monitoring_Projects/Forest_Health/Data_Summaries/' # output files go here
 midn_names <- read.csv("MIDN_MetaData.csv")
@@ -117,9 +129,12 @@ reg_pass <- "#BFDFC7"
 # Have to manually split tables that are >30 rows because page break kept dropping a row
 #if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
 tab1_kab <- function(park, table_name = "table1"){
-  kable(reg_cycle_tab, col.names = c("Plot", "Panel", "Seedlings per sq.m", "Saplings per sq.m", "Stocking Index"), 
-        digits = 2, align = 'c', format = 'html', 
+  kable(reg_cycle_tab, col.names = tab1_row2, digits = 2, align = 'c', format = 'html', 
         table.attr = "style='width:95%;height:95%;'", row.names = F) %>% #, caption = cap_t1) %>%
+  add_header_above(c(" " = 1, " " = 1,
+                     "Seedlings per sq.m" = cycle_latest,
+                     "Saplings per sq.m" = cycle_latest,
+                     "Stocking Index" = cycle_latest)) %>% 
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
                 full_width = FALSE, position = 'center', font_size = 9) %>%
   column_spec(1:ncol(reg_cycle_tab), border_left = T, border_right = T) %>%
@@ -400,15 +415,9 @@ includeHTML("table4.html")
 <!-- Start of page 10 -->
 
 ###   {.page-break-before}
-```{r results = 'asis', warning = F, message = F}
+```{r results = 'asis', warning = F, message = F, eval = make_maps}
 includeHTML("html_header.html")
-```
-
-```{r results = 'asis'}
 cat(cap_t5)
-```
-
-```{r echo = F, eval = T, warning = F, message = F}
 includeHTML("table5.html")
 ```
 <br>
