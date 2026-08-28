@@ -45,7 +45,6 @@ render_MIDN_report("THST", 2026)
 #render_MIDN_report("FRSP", 2026)
 #render_MIDN_report("RICH", 2026)
 
-
 pdf_print("VAFO") # not sure why purrr::map won't iterate on pdf_print
 pdf_print("HOFU")
 pdf_print("GETT")
@@ -58,3 +57,28 @@ pdf_print("THST")
 # pdf_print("ASIS")
 # pdf_print("FRSP")
 # pdf_print("RICH")
+
+render_MIDN_report_subunit <- function(parkcode, sub, year){
+  render(input = "MIDN_figures_subunits.Rmd",
+         params = list(park = parkcode, subunit = sub, report_year = year),
+         #envir = VIEWS_NETN,
+         output_file = paste0(parkcode, "_", sub,  
+                              "_Figures_and_Tables_", 
+                              format(Sys.time(), '%b_%Y'), ".html"),
+         output_dir = out_path,
+         output_options = list(self_contained = TRUE))
+}
+
+pdf_print_subunit <- function(parkcode, sub){
+  report_dir <- paste0(out_path)
+  report_name <- paste0(parkcode, "_", sub, "_Figures_and_Tables_", format(Sys.time(), "%b_%Y"))
+  chrome_print(input = paste0(out_path, report_name, ".html"), 
+               output = paste0(out_path, report_name, ".pdf"),
+               format = 'pdf')
+  cat('Report printed to: ', paste0(out_path, report_name, ".pdf"))
+}
+render_MIDN_report_subunit("PETE", "PETE_FIVE", 2026)
+render_MIDN_report_subunit("PETE", "PETE_EAST", 2026)
+
+pdf_print_subunit("PETE", "PETE_FIVE")
+pdf_print_subunit("PETE", "PETE_EAST")
