@@ -457,7 +457,7 @@ includeHTML("table5.html")
 ```
 <br>
 
-```{r error = T, results = 'hide', echo = FALSE, include = FALSE, eval = F}
+```{r error = T, results = 'hide', echo = FALSE, include = FALSE, eval = T}
 file.remove(c("table1.html", "table2.html", "table3.html", "table4.html", "table5.html"))
 ```
 
