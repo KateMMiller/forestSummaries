@@ -15,7 +15,7 @@ library(ggpubr)
 if(!exists("path")){path = paste0('./output/', report_year, "/MIDN/")} #general path that should work for everyone
 
 # Make sure local copy of DB is current or connect to server
-importData()
+# importData()
 
 # assign params to global env. for source files to find. Makes iterating easier.
 # temp: so can run individual parks w/ .rmd file

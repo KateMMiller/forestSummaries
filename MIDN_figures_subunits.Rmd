@@ -11,8 +11,8 @@ output:
     #   after_body: "footer_MIDN.html"
 params:
   park: 'PETE'
-  subunit: 'PETE_FIVE'
-  report_year: 2024 # year report was generated for
+  subunit: 'PETE_FIVE' #'PETE_EAST'
+  report_year: 2026 # year report was generated for
 ---
 
 ```{r eval = F, include = F}
@@ -42,6 +42,9 @@ library(kableExtra)
 library(forestTrends)
 library(sf)
 library(vegan)
+
+server_add <- read.csv('../server.csv')[1,]
+forestMIDN::importData(instance = "server", server = server_add)
 ```
 
 ```{r}
