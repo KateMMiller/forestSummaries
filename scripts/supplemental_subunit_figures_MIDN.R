@@ -1252,7 +1252,9 @@ ggsave(paste0(new_path, "figures/Figure_4_", subunit, "_smoothed_regen_by_specie
 ggsave(paste0(new_path, "figures/Figure_4_", subunit, "_smoothed_regen_by_species_cycle.png"),
        height = 11, width = 9.5, dpi = 600)
 #----- Trends in invasive guilds over time -----
-guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
+guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F)) |> 
+  filter(ParkSubUnit %in% subunit)
+
 guild_list <- sort(unique(guilds$Group))
 
 guild_smooth <- purrr::map_dfr(guild_list,
