@@ -77,31 +77,42 @@ no_reg <- reg_no$Plot_Name
 
 reg_cycle <- reg_cycle|> filter(!(Plot_Name %in% no_reg)) #check total # of plots in all dfs is right
 
+reg_cycle_incom <- reg_cycle %>% filter_at(vars(last_col()), all_vars(is.na(.))) %>% select(-tail(names(.), 1))
+reg_cycle_com <- reg_cycle %>% filter_at(vars(last_col()), all_vars(!is.na(.)))
+
 if(nrow(reg_no) >0){
   write_to_shp(reg_no, 
                shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_cycle_no_reg", ".shp" ))
 }
 
-write_to_shp(reg_cycle, 
-             shp_name = paste0(new_path, "shapefiles/", park, "_regen_by_cycle_", to, ".shp" ))
+if(nrow(reg_cycle_incom) >0){
+  write_to_shp(reg_cycle_incom, 
+               shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_cycle_incomplete", ".shp" ))
+}
 
 #---- Map 2 regen by size class ----
 reg_sz_cols <- c("seed_15_30cm", "seed_30_100cm", "seed_100_150cm", "seed_p150cm", "sap_den") 
 
-reg_size <- reg %>% group_by(Plot_Name, SampleYear) |> 
-  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T)
+reg_size <- reg  |> filter(EventID %in% evs_4yr) |> 
+  group_by(Plot_Name, PlotCode, SampleYear, EventID) |> 
+  summarize_at(vars(all_of(reg_sz_cols)), sum, na.rm = T) |> ungroup()
 
-reg_size_4yr <- reg_size %>% filter(between(SampleYear, from_4yr, to)) %>% 
-                             left_join(plotevs_4yr %>% select(Plot_Name, xCoordinate, yCoordinate),
-                                       ., by = 'Plot_Name') |> data.frame()
+reg_size_4yr <- reg_size %>% 
+  left_join(plotevs_4yr %>% select(Plot_Name, PlotCode, xCoordinate, yCoordinate),
+            ., by = c('Plot_Name', 'PlotCode')) |> 
+  select(-EventID)
 
-reg_size_4yr[, reg_sz_cols][reg_size_4yr[is.na(reg_size_4yr[,reg_sz_cols])]] <- 0
-head(reg_size_4yr)
+reg_size_4yr$seed_15_30cm[is.na(reg_size_4yr$seed_15_30cm)] <- 0
+reg_size_4yr$seed_30_100cm[is.na(reg_size_4yr$seed_30_100cm)] <- 0
+reg_size_4yr$seed_100_150cm[is.na(reg_size_4yr$seed_100_150cm)] <- 0
+reg_size_4yr$seed_p150cm[is.na(reg_size_4yr$seed_p150cm)] <- 0
+reg_size_4yr$sap_den[is.na(reg_size_4yr$sap_den)] <- 0
 
-colnames(reg_size_4yr) <- c("Plot_Name", "X", "Y", "SampleYear", 
-                             "s15_30", "s30_100", "s100_150", "s150p", "sap") #abbr. for shapefile
+colnames(reg_size_4yr) <- c("Plot_Name", "PlotCode", "X", "Y", "SampleYear", 
+                            "s15_30", "s30_100", "s100_150", "s150p", "sap") #abbr. for shapefile
 
-reg_size_4yr$total <- rowSums(reg_size_4yr[,5:ncol(reg_size_4yr)])
+
+reg_size_4yr$total <- rowSums(reg_size_4yr[,6:ncol(reg_size_4yr)])
 
 size_no <- reg_size_4yr |> filter(total == 0)
 
@@ -113,10 +124,6 @@ if(nrow(size_no) >0){
   write_to_shp(size_no, 
                shp_name = paste0(new_path,  "shapefiles/", park, "_regen_by_size_class_cycle", cycle_latest, "_no_reg", ".shp" ))
 }
-
-write_to_shp(reg_size_4yr, 
-             shp_name = paste0(new_path, "shapefiles/", park, 
-                               "_regen_by_size_class_cycle_", cycle_latest, ".shp"))
 
 write_to_shp(reg_size_4yr, 
              shp_name = paste0(new_path, "shapefiles/", park, 
@@ -134,6 +141,20 @@ reg_size_cy <- reg_vs %>% group_by(Plot_Name, cycle) %>%
                                     ., by = c("Plot_Name", "cycle")) 
 
 reg_size_cy[reg_sz_cols][reg_size_cy[is.na(reg_sz_cols)]] <- 0
+
+# Use forestTrends to generate loess-smoothed CIs
+reg_smooth1 <- map_dfr(reg_sz_cols, 
+                       ~case_boot_loess(reg_size_cy, x = 'cycle', y = .x, ID = 'Plot_Name', 
+                                        span = span, num_reps = 250, chatty = TRUE) %>% 
+                         mutate(size_class = .x)
+)
+# Smoother can result in negative values when really low. Converting those to 0 and converting CIs to NA
+# A bit hand-wavy, but so is loess smoothing.
+reg_smooth <- reg_smooth1
+reg_smooth$estimate_orig <- reg_smooth$estimate
+reg_smooth$estimate[reg_smooth$estimate_orig < 0] <- 0
+reg_smooth$lower95[reg_smooth$estimate_orig < 0] <- NA
+reg_smooth$upper95[reg_smooth$estimate_orig < 0] <- NA
 
 reg_size_sum <- reg_size_cy |> 
   pivot_longer(cols = seed_15_30cm:sap_den, names_to = "size_class", values_to = "density") |> 
@@ -154,9 +175,6 @@ reg_size_sum$size_class <- factor(reg_size_sum$size_class,
                                 levels = c("seed_15_30cm", "seed_30_100cm", 
                                            "seed_100_150cm", "seed_p150cm", 
                                            "sap_den"))
-# Set up cycle labels for figures
-cycle_labs <- c("1" = paste0("Cycle 1: 2019 \u2013 ", to))
-
 
 reg_labels <- c("15 \u2013 30 cm", "30 \u2013 100 cm", "100 \u2013 150 cm",
                 ">150 cm & < 1 cm DBH", "Saplings: 1 \u2013 9.9 cm DBH")

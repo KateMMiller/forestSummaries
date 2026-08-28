@@ -230,6 +230,7 @@ tab2_kab <- function(park, row_start = 1, row_end = 30, table_name = "table2"){
 }
 
 num_plots <- nrow(inv_cycle_tab)
+check_inv <- sum(rowSums(inv_cycle_tab[,3:ncol(inv_cycle_tab)], na.rm = T))
 
 if(!park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH")){
   tab2_kab(park)
@@ -251,6 +252,7 @@ tab3_cols <- c("Latin Name", "Common Name", "Invasive", "Year Added", gsub("cycl
 inv_spp <- inv_spp_final |> filter(!ScientificName %in% "None present")
 
 tab3 <- 
+if(nrow(inv_spp) > 0){
   kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
         table.attr = "style='width:93%;height:93%;'") %>% #, caption = cap_t3, title = NULL) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
@@ -265,7 +267,7 @@ tab3 <-
   row_spec(0:nrow(inv_spp), extra_css = "border-bottom: 1px solid #000000;") %>%
   #landscape(margin = "1cm") %>%
   save_kable(file = "table3.html", self_contained = F)
-
+} else {cat(paste0("No invasive plants have been detected in ", park_long))}
 ```
 ```{r}
 if(nrow(ed_all_final)>0){
@@ -415,12 +417,16 @@ approximated a linear trend between consecutive sample events per panel.</p>", s
 
 <!-- Start of page 5-->
 
+```{r}
+fig6_eval <- if(nrow(guilds) > 0){TRUE} else {FALSE}
+```
+
 ### {.page-break-before}
-```{r results = 'asis', warning = F, message = F}
+```{r results = 'asis', warning = F, message = F, eval = fig6_eval}
 includeHTML("html_header.html")
 ```
 
-```{r out.width = "98%", out.height = "50%"}
+```{r out.width = "98%", out.height = "50%", eval = fig6_eval}
 include_graphics(paste0(new_path, "figures/Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.png"))
 ```
 
@@ -429,6 +435,12 @@ cat("<p><b>Figure 6.</b> Loess smoothed changes in invasive plant percent cover 
     park_long, ". Specified loess span approximated a linear trend between consecutive sample events per panel.</p>", 
     sep = "")
 ```
+
+```{r results = 'asis', eval = !fig6_eval}
+cat("<p>Invasive plant detections not sufficient to model trends in percent cover by guild in ", 
+    park_long, ". This is a good and rare occurence. </p>")
+```
+
 <br>
 
 <!-- Start of page 6 -->
@@ -512,8 +524,9 @@ tab2_evalb <- ifelse(park %in% c("COLO", "FRSP", "GETT", "PETE", "RICH"), TRUE, 
 tab2_evalc <- ifelse(park %in% "FRSP", TRUE, FALSE)
 ```
 
-```{r echo = F, eval = tab2_eval, warning = F, message = F}
-includeHTML("table2.html")
+```{r echo = F, eval = tab2_eval, warning = F, message = F, results = 'asis'}
+if(check_inv > 0){includeHTML("table2.html")
+} else {cat(paste0("<p>No invasives plants were detected in ", park_long, ".</p>"))}
 ```
 
 ```{r echo = F, eval = !tab2_eval, warning = F, message = F}

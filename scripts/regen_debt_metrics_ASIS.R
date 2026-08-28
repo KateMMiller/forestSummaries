@@ -29,7 +29,7 @@ dbi_sum <- dbi_all |> group_by(cycle, dbi) |>
   summarize(num_plots = sum(!is.na(dbi)), .groups = 'drop') |>
   filter(!(is.na(dbi)))
 
- # pivot_wider(names_from = dbi, values_from = num_plots, names_glue = "DBI_{.name}", values_fill = 0)
+# pivot_wider(names_from = dbi, values_from = num_plots, names_glue = "DBI_{.name}", values_fill = 0)
 
 # Update to include all DBI values (1 and 2 lumped)
 dbi_grid <- expand.grid(cycle = unique(dbi_sum$cycle), dbi = 2:5)
@@ -51,7 +51,7 @@ ggplot(dbi_sum2, aes(x = cycle, y = num_plots, fill = dbi_fac, color = dbi_fac))
                     labels = c("Low", "Medium", "High", "Very High"), 
                     name = "Ungulate Browse Impact") +
   scale_y_continuous(breaks = c(0, 0.25, 0.50, 0.75, 1.00), labels = c(0, 25, 50, 75, 100)) +
-  scale_x_continuous(breaks = c(1)) +
+  scale_x_continuous(breaks = c(1, 2)) +
   labs(y = "Proportion of Plots")
 dbi_plot
 
@@ -350,9 +350,9 @@ results_plot <-
 results_plot
 
 #figpath2 <- paste0(path, park, "/", to, '/figures/') # not hard coded
+ggsave(paste0(figpath, "Figure_1_", park, "_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
+ggsave(paste0(figpath, "Figure_1_", park, "_Regen_Debt_table.png"), height = 6, width = 4.5, units = 'in', dpi = 600)
 
-ggsave(paste0(figpath, "Figure_1_Regen_Debt_table.svg"), height = 6, width = 4.5, units = 'in')
-ggsave(paste0(figpath, "Figure_1_Regen_Debt_table.png"), height = 6, width = 4.5, units = 'in', dpi = 600)
 
 debt_final <- debt_final |> mutate(park = park)
 

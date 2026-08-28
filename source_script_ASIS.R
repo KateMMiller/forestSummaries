@@ -15,7 +15,7 @@ library(sf)
 # report_year = 2024 # only here for testing. Defined in MIDN_figures_and_tables.RMD params.
 if(!exists("path")){path = paste0('./output/', report_year, "/MIDN/")} #general path that should work for everyone
 
-importData()
+# importData()
 
 # midn_names <- read.csv("MIDN_MetaData.csv")
 # midn_params <- read.csv("MIDN_params.csv") # !!!! MUST UPDATE EVERY YEAR !!!!
@@ -62,6 +62,10 @@ invisible(lapply(folders, function(x) {
   if(!dir.exists(paste0(new_path, x))){dir.create(paste0(new_path, x))}
 })
 )
+
+# Set up cycle labels for figures
+cycle_labs <- c("1" = "Cycle 1: 2019 \u2013 2024",
+                "2" = "Cycle 2: 2025 \u2013 2026")
 
 # Read in tree species groups for regen and tree pie charts
 trspp_grps <- read.csv("NPS_tree_species_groups.csv")

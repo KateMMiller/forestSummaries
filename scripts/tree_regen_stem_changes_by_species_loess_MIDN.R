@@ -563,6 +563,7 @@ ggsave(paste0(new_path, "figures/Figure_4_", park, "_smoothed_regen_by_species_c
 guilds <- do.call(sumQuadGuilds, c(args_vs, speciesType = 'invasive', splitHerb = F))
 guild_list <- sort(unique(guilds$Group))
 
+if(nrow(guilds) > 0){
 guild_smooth <- purrr::map_dfr(guild_list,
                                function(g){
                                  df <- guilds |> filter(Group %in% g)
@@ -602,4 +603,4 @@ ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover
 ggsave(paste0(new_path, "figures/", "Figure_6_", park, "_smoothed_invasive_cover_by_guild_cycle.png"),
        height = 4.6, width = 8, dpi = 600)
 
-
+}
