@@ -69,6 +69,12 @@ invisible(lapply(folders, function(x) {
 })
 )
 
+# Set up cycle labels for figures
+cycle_labs <- c("1" = "Cycle 1: 2009",
+                "2" = "Cycle 2: 2013",
+                "3" = "Cycle 3: 2017",
+                "4" = "Cycle 4: 2023")
+
 # Read in tree species groups for regen and tree pie charts
 trspp_grps <- read.csv("NPS_tree_species_groups.csv")
 

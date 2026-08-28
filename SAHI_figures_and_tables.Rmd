@@ -10,6 +10,7 @@ output:
       #after_body: "footer.html"
 params:
   report_year: 2024 # year report was generated for
+  make_maps: FALSE
 ---
 ```{r setup, include = FALSE, results = 'hide'}
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center', message = F, warning = F)
@@ -29,6 +30,10 @@ library(kableExtra)
 library(forestTrends)
 library(sf)
 library(vegan)
+
+server_add <- read.csv('../server.csv')[1,]
+forestMIDN::importData(instance = "server", server = server_add)
+make_maps = params$make_maps
 ```
 
 ```{r}
@@ -432,15 +437,9 @@ includeHTML("table4.html")
 <!-- Start of page 10 -->
 
 ###   {.page-break-before}
-```{r results = 'asis', warning = F, message = F}
+```{r results = 'asis', warning = F, message = F, eval = make_maps}
 includeHTML("html_header.html")
-```
-
-```{r results = 'asis'}
 cat(cap_t5)
-```
-
-```{r echo = F, eval = T, warning = F, message = F}
 includeHTML("table5.html")
 ```
 <br>
