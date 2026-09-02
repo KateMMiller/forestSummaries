@@ -297,7 +297,7 @@ dbh_trend_plot <-
   #                    labels = reg_labels)+
   # scale_fill_manual(values = reg_colors, name = "DBH Size Class",
   #                   labels = reg_labels)+
-  scale_x_discrete(name = "DBH Size Class",
+  scale_x_discrete(name = "DBH Size Class (cm)",
                    labels = dbh_labels)+ 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
         legend.position = 'none')
