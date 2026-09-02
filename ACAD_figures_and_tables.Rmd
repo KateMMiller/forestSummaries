@@ -27,7 +27,7 @@ params:
 
 ```{r setup, include = FALSE, results = 'hide'}
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
-options(knitr.kable.NA = '-')
+options(knitr.kable.NA = '  ---  ')
 
 library(pagedown)
 library(tidyverse)
@@ -113,9 +113,11 @@ source('./scripts/tree_regen_stem_changes_by_species_loess_NETN.R') # smoothed c
 ```
 
 ```{r results = 'hide', include = F}
-cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. Cycle numbers are abbreviated as 'C-#'", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >", DBI_threshold, ". These are the same thresholds used in Figure 2 and are described in Miller et al. 2023. ", "</p>")
+cap_t1 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1.</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. Cycle numbers are abbreviated as 'C-#'", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >", DBI_threshold, ". ", 
+                 ifelse(report_year < 2029, 'Note that plots that have not yet beeen sampled in the most recent cycle are denoted by "---".', ''), "</p>")
 
-cap_t1_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1 (cont.).</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. Cycle numbers are abbreviated as 'C-#'", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >", DBI_threshold, ". These are the same thresholds used in Figure 2 and are described in Miller et al. 2023.", "</p>")
+cap_t1_cont <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 1 (cont.).</b> Average plot-level seedling and sapling stem densities (stems per m<sup>2</sup>) and stocking index (at the 2m radius scale) by cycle. Only native, canopy-forming species are included. Note that Fraxinus spp. (ash species) are no longer considered canopy-forming species. Cycle numbers are abbreviated as 'C-#'", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). The stocking index quantifies whether current regeneration densities are sufficient to restock a forest canopy. The index is a weighted sum of seedling and sapling densities where larger seedling size classes get higher weights. Cells highlighted in green are plots that meet the minimum management target of 0.25 seedlings/m<sup>2</sup> and 0.14 saplings/m<sup>2</sup> or have a stocking index >", DBI_threshold, ". ",
+                      ifelse(report_year < 2029, 'Note that plots that have not yet beeen sampled in the most recent cycle are denoted by "---".', ''), "</p>")
 
 cap_t2 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 2.</b> Average % cover and number of invasive species detected in plots with at least one invasive species detection by cycle. ", paste0(cycle_labs, collapse = "; "), ". Plots are sampled in 4-year rotations, with a quarter of the plots sampled each year (i.e. a panel). ", " Plots with at least 1% average cover or 2 or more invasive species present are in yellow. ", "</p>")
 
@@ -124,7 +126,7 @@ num_plots <- sum(!is.na(inv_plots_wide$PlotCode))
 
 cap_t3 <- 
   paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 3.</b> Number of plots out of ", num_plots, " where exotic species were detected. ", paste0(cycle_labs, collapse = "; "), ".  Priority invasive species capable of dominating Eastern US forest habitats are highlighed in yellow and sorted first. ",
-  if(report_year < 2029){paste0("Note that only ", num_samp, " out of ", num_plots, " have been sampled in cycle ", cycle_latest,  ".")},        
+  if(report_year < 2029){paste0("Note that only ", num_samp, " out of ", num_plots, " plots have been sampled in cycle ", cycle_latest,  ".")},        
          "</p>")
 
 cap_t4 <- paste0("<p style='font-size:10px; padding:0 5px;'><b>Table 4.</b> Invasive plant and pest/pathogen early detections in ", park_long, " observed in the most recent census of each plot. Coordinates are in UTM NAD83 Zone ", substr(park_crs, 4, 5), "N.", if(park == "ROVA"){"Note that emerald ash borer, hemlock woolly adelgid, and elongate hemlock scale are established throughout the forest and not considered early detection."}, "</p>")
@@ -149,7 +151,7 @@ reg_pass <- "#BFDFC7"
 tab1_kab <- function(park, row_start = 1, row_end = num_plots, table_name = "table1"){
   df <- data.frame(reg_cycle_tab[row_start:row_end,])
   kable(df, col.names = tab1_row2, digits = 2, align = 'c', format = 'html', 
-        table.attr = "style='width:90%;height:95%;'", row.names = F) %>% #, caption = cap_t1) %>%
+        table.attr = "style='width:95%;height:95%;'", row.names = F) %>% #, caption = cap_t1) %>%
   add_header_above(c(" " = 1, " " = 1,
                      "Seedlings per sq.m" = cycle_latest,
                      "Saplings per sq.m" = cycle_latest,
@@ -157,6 +159,7 @@ tab1_kab <- function(park, row_start = 1, row_end = num_plots, table_name = "tab
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
                 full_width = TRUE, position = 'center', font_size = 9) %>%
   column_spec(1:ncol(df), border_left = T, border_right = T) %>%
+  column_spec(1:ncol(df), width_min = "20px") %>%
   column_spec(border_cols, extra_css = "border-right: 1.5px solid #000000;") %>%
   column_spec(1, extra_css = "border-left: 1.5px solid #000000;") %>%
   # color code cells based on their value per metric
@@ -190,6 +193,7 @@ tab1_kab("ACAD", 151, num_plots, "table1f")
 # Table 2 setup
 inv_cycle_tab <- inv_plots_wide |> arrange(PlotCode) |> 
   mutate(inv_pres = rowSums(inv_plots_wide[,3:ncol(inv_plots_wide)], na.rm = T)) |> 
+  rename(Plot = PlotCode, Panel = PanelCode) |> 
   data.frame() |> 
   filter(inv_pres > 0) |> 
   select(-inv_pres)
