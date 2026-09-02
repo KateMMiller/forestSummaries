@@ -256,12 +256,12 @@ if(!park %in% c("ROVA", "SARA", "ACAD")){
 ```
 ```{r include = F, eval = T, results = 'hide'}
 # Table 3 setup
-tab3_cols <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA")){c("Latin Name", "Common Name", 
+tab3_cols <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA", "WEFA")){c("Latin Name", "Common Name", 
                                   gsub("cycle_", "Cycle ", names(inv_spp[,4:ncol(inv_spp)])))
   } else {c("Latin Name", "Common Name", "Invasive", 
             gsub("cycle_", "Cycle ", names(inv_spp[,4:ncol(inv_spp)])))}
 
-inv_spp <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA")){
+inv_spp <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA", "WEFA")){
   inv_spp |> filter(!ScientificName %in% "None present") |> 
     select(-InvasiveNETN)
 } else {
@@ -269,7 +269,7 @@ inv_spp <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA")){
 }
 
 tab3 <- 
-  if(park %in% c("MIMA", "MORR", "ROVA", "SARA")){
+  if(park %in% c("MIMA", "MORR", "ROVA", "SARA", "WEFA")){
   kable(inv_spp, col.names = tab3_cols, digits = 0, align = 'c', format = 'html',
         table.attr = "style='width:93%;height:93%;'") %>% #, caption = cap_t3, title = NULL) %>%
   kable_styling(fixed_thead = FALSE, bootstrap_options = 'condensed',
