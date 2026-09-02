@@ -289,7 +289,7 @@ dbh_trend_plot <-
                      labels = reg_labels)+
   scale_fill_manual(values = reg_colors, name = "DBH Size Class",
                     labels = reg_labels)+
-  scale_x_discrete(name = "DBH Size Class",
+  scale_x_discrete(name = "DBH Size Class (cm)",
                    labels = dbh_labels)+ 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
         legend.position = 'none')
@@ -1044,7 +1044,8 @@ write.csv(inv_plots_wide, paste0(new_path, "tables/", "Table_2_", park,
                                  "_invasives_by_plot_cycle.csv"), row.names = FALSE)
 
 # Table 3 Exotic species by number of plots cycle -------------------------
-# for 2024 including all exotic species found in plots instead of only invasives, except for MORR
+# Code below combines species often reported at the genus level, so they don't 
+# show up as duplicates in the table.
 inv_spp1 <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) |>  
   mutate(present = ifelse(ScientificName == "None present", 0, 1)) |> 
   summarize(num_plots = sum(present), .by = c(ScientificName, cycle)) |>  
@@ -1057,57 +1058,119 @@ centaurea <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic'))
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
-              names_prefix = "cycle_") 
+              names_prefix = "cycle_")  |> 
+  summarize_if(is.numeric, sum) |> 
+  mutate(ScientificName = "Centaurea", CommonName = "knapweed") %>% 
+  mutate(InvasiveNETN = TRUE)
 
-colSums(centaurea[,-1])
+miss_cy <- setdiff(names(inv_spp1), names(centaurea))
+centaurea[miss_cy] <- 0
 
 lonicera <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Lonicera", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
-              names_prefix = "cycle_") 
+              names_prefix = "cycle_")  |> 
+  summarize_if(is.numeric, sum) |> 
+  mutate(ScientificName = "Lonicera - Exotic", CommonName = "honeysuckle - exotic") %>% 
+  mutate(InvasiveNETN = TRUE)
 
-colSums(lonicera[,-1])
+miss_cy <- setdiff(names(inv_spp1), names(lonicera))
+lonicera[miss_cy] <- 0
+
+elaeagnus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
+  filter(grepl("Elaeagnus", ScientificName)) %>% 
+  mutate(present = 1) %>% 
+  group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
+  pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
+              names_prefix = "cycle_") |> 
+  select(-Plot_Name) |> 
+  summarize_if(is.numeric, sum) |> 
+  mutate(ScientificName = "Euonymus", CommonName = "burningbush") %>% 
+  mutate(InvasiveNETN = TRUE)
+
+miss_cy <- setdiff(names(inv_spp1), names(elaeagnus))
+elaeagnus[miss_cy] <- 0
 
 euonymus <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Euonymus", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
-              names_prefix = "cycle_") 
+              names_prefix = "cycle_") |> 
+  summarize_if(is.numeric, sum) |> 
+  mutate(ScientificName = "Euonymus", CommonName = "burning-bush") %>% 
+  mutate(InvasiveNETN = TRUE)
 
-colSums(euonymus[,-1])
+miss_cy <- setdiff(names(inv_spp1), names(euonymus))
+euonymus[miss_cy] <- 0
 
 ligustrum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Ligustrum", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
-              names_prefix = "cycle_") 
+              names_prefix = "cycle_") |> 
+  summarize_if(is.numeric, sum) |> 
+  mutate(ScientificName = "Ligustrum", CommonName = "privet") %>% 
+  mutate(InvasiveNETN = TRUE)
 
-colSums(ligustrum[,-1])
+miss_cy <- setdiff(names(inv_spp1), names(ligustrum))
+ligustrum[miss_cy] <- 0
 
 vincetoxicum <- do.call(sumSpeciesList, args = c(args_all, speciesType = 'exotic')) %>% 
   filter(grepl("Vincetoxicum", ScientificName)) %>% 
   mutate(present = 1) %>% 
   group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
   pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
-              names_prefix = "cycle_") 
+              names_prefix = "cycle_") |> 
+  summarize_if(is.numeric, sum) |> 
+  mutate(ScientificName = "Vincetoxicum", CommonName = "swallowwort") %>% 
+  mutate(InvasiveNETN = TRUE)
 
-colSums(vincetoxicum[,-1])
+miss_cy <- setdiff(names(inv_spp1), names(vincetoxicum))
+vincetoxicum[miss_cy] <- 0
+
+wisteria <- do.call(sumSpeciesList, args = c(args_all)) %>% 
+  filter(grepl("Wisteria", ScientificName)) %>% 
+  mutate(present = 1) %>% 
+  group_by(Plot_Name, cycle) %>% summarize(num_plots = ifelse(sum(present) > 0, 1, 0), .groups = 'drop') %>% 
+  pivot_wider(names_from = cycle, values_from = num_plots, values_fill = 0,
+              names_prefix = "cycle_")  |> 
+  summarize_if(is.numeric, sum) |> 
+  mutate(ScientificName = "Wisteria", CommonName = "exotic wisteria") %>% 
+  mutate(InvasiveNETN = TRUE)
+
+miss_cy <- setdiff(names(inv_spp1), names(wisteria))
+wisteria[miss_cy] <- 0
 
 inv_spp2 <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName, InvasiveNETN),
-                     by = "ScientificName") %>% select(ScientificName, CommonName, everything())
+                     by = "ScientificName") %>% select(ScientificName, CommonName, everything()) |> 
+  filter(!ScientificName %in% c("Elaeagnus angustifolia", "Elaeagnus umbellata", "Elaeagnus",
+                                "Euonymus alatus", "Euonymus", "Euonymus atropurpureus",
+                                "Ligustrum", "Ligustrum vulgare", "Ligustrum obtusifolium",
+                                "Lonicera morrowii", "Lonicera tatartica", "Lonicera X bella",
+                                "Lonicera maackii", "Lonicera - Exotic", "Lonicera",
+                                "Centaurea", "Centaurea stoebe", "Centaurea jacea",
+                                "Vincetoxicum", "Vincetoxicum nigrum", "Vincetoxicum rossicum", 
+                                "Vincetoxicum hirundinaria", 
+                                "Wisteria", "Wisteria floribunda", "Wisteria sinensis"))
 
-inv_spp3 <- inv_spp2 %>%  filter(ScientificName != 'None present') %>% 
-                         mutate(InvasiveNETN = case_when(InvasiveNETN == 'TRUE' ~ 'Yes',
-                                                         InvasiveNETN =='FALSE' ~ 'No')) %>% 
-                         relocate(InvasiveNETN, .after = CommonName) |> arrange(ScientificName)
+inv_spp3 <- rbind(inv_spp2, centaurea, lonicera, euonymus, 
+                  ligustrum, vincetoxicum, elaeagnus, wisteria) %>% 
+  relocate(InvasiveNETN, .after = CommonName) %>% 
+  mutate(num = rowSums(.[4:ncol(.)])) |> 
+  filter(num > 0) |> select(-num) |> arrange(ScientificName)
+
+inv_spp4 <- inv_spp3 %>%  filter(ScientificName != 'None present') %>% 
+                          mutate(InvasiveNETN = case_when(InvasiveNETN == TRUE ~ 'Yes',
+                                                          InvasiveNETN == FALSE ~ 'No')) %>% 
+                          relocate(InvasiveNETN, .after = CommonName) |> arrange(ScientificName)
 
 inv_spp <- if(park %in% c("MIMA", "MORR", "ROVA", "SARA", "WEFA")){ # too many species to include all
-  inv_spp3 |> filter(InvasiveNETN == "Yes")
-  } else {inv_spp3}
+  inv_spp4 |> filter(InvasiveNETN == "Yes") 
+  } else {inv_spp4}
 
 write.csv(inv_spp, paste0(new_path, "tables/", "Table_3_", park,
                           "_num_invspp_by_cycle.csv"), row.names = FALSE)
