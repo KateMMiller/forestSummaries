@@ -269,7 +269,7 @@ dbh_trend_plot <-
   #                    labels = reg_labels)+
   # scale_fill_manual(values = reg_colors, name = "DBH Size Class",
   #                   labels = reg_labels)+
-  scale_x_discrete(name = "DBH Size Class",
+  scale_x_discrete(name = "DBH Size Class (cm)",
                    labels = dbh_labels)+ 
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), 
         legend.position = 'none')
@@ -904,7 +904,7 @@ inv_spp <- left_join(inv_spp1, prepTaxa() %>% select(ScientificName, CommonName,
                                 "Centaurea", "Centaurea stoebe", "Centaurea jacea",
                                 "Vincetoxicum", "Vincetoxicum nigrum", "Vincetoxicum rossicum", 
                                 "Vincetoxicum hirundinaria", 
-                                "Wisteria", "Wisteria florubunda", "Wisteria sinensis"))
+                                "Wisteria", "Wisteria floribunda", "Wisteria sinensis"))
 
 inv_spp2 <- rbind(inv_spp, centaurea, lonicera, euonymus, 
                   ligustrum, vincetoxicum, elaeagnus, wisteria) %>% 
